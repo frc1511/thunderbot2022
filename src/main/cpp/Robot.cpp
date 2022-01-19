@@ -11,7 +11,13 @@ void Robot::AutonomousInit() {}
 void Robot::AutonomousPeriodic() {}
 
 void Robot::TeleopInit() {}
-void Robot::TeleopPeriodic() {}
+void Robot::TeleopPeriodic() {
+  controls.process();
+  drive.process();
+  gamEpiece.process();
+  hang.process();
+  limelight.process();
+}
 
 void Robot::DisabledInit() {}
 void Robot::DisabledPeriodic() {}
