@@ -5,9 +5,14 @@
 #pragma once
 
 #include <frc/TimedRobot.h>
+#include "Controls.h"
+#include "Drive.h"
+#include "GamEpiece.h"
+#include "Hang.h"
+#include "Limelight.h"
 
 class Robot : public frc::TimedRobot {
- public:
+public:
   void RobotInit() override;
   void RobotPeriodic() override;
 
@@ -22,4 +27,11 @@ class Robot : public frc::TimedRobot {
 
   void TestInit() override;
   void TestPeriodic() override;
+  
+private:
+  Drive drive {};
+  GamEpiece gamEpiece {};
+  Hang hang {};
+  Limelight limelight {};
+  Controls controls { &drive };
 };
