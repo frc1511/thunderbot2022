@@ -11,3 +11,7 @@ Shooter::~Shooter() {
 void Shooter::process() {
 
 }
+
+void Shooter::reset(){
+    
+}

@@ -6,6 +6,7 @@ public:
     ~Intake();
 
     void process();
+    void reset();
 
 private:
     // Something here...

@@ -6,6 +6,7 @@ public:
     ~Storage();
 
     void process();
+    void reset();
 
 private:
     // Something here...

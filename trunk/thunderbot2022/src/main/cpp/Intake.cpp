@@ -11,3 +11,7 @@ Intake::~Intake() {
 void Intake::process() {
 
 }
+
+void Intake::reset(){
+    
+}
