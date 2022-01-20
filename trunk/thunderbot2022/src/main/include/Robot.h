@@ -33,5 +33,5 @@ private:
   GamEpiece gamEpiece {};
   Hang hang {};
   Limelight limelight {};
-  Controls controls { &drive };
+  Controls controls { &drive, &gamEpiece, &hang, &limelight };
 };
