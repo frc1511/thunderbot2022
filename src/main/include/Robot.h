@@ -10,6 +10,7 @@
 #include "GamEpiece.h"
 #include "Hang.h"
 #include "Limelight.h"
+#include "Feedback.h"
 
 class Robot : public frc::TimedRobot {
 public:
@@ -34,4 +35,5 @@ private:
   Hang hang {};
   Limelight limelight {};
   Controls controls { &drive, &gamEpiece, &hang, &limelight };
+  Feedback feedback {};
 };

@@ -11,3 +11,7 @@ Storage::~Storage() {
 void Storage::process() {
 
 }
+
+void Storage::reset(){
+    
+}
