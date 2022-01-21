@@ -195,8 +195,8 @@ private:
 
     frc::ADIS16470_IMU imu {};
     
-    // The trajectory tracker used to create chassis speeds for a drive command (Forgo simulated PID by giving 0 to all the values).
-    frc::HolonomicDriveController cmdController { {0, 0, 0, 0_ms}, {0, 0, 0, 0_ms}, {0, 0, 0, {}, 0_ms} };
+    // The trajectory tracker used to create chassis speeds for a drive command (Input PID values for error correction).
+    frc::HolonomicDriveController cmdController { { 1, 0, 0 }, { 1, 0, 0 }, { 1, 0, 0, {} } };
 
     // Whether a drive command is running.
     bool cmdRunning = false;
