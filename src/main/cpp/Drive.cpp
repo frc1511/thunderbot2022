@@ -1,5 +1,6 @@
 #include "Drive.h"
 #include <cmath>
+#include <vector>
 
 // The circumference of each wheel (meters).
 #define WHEEL_CIRCUMFERENCE 0.21
@@ -123,7 +124,7 @@ void SwerveModule::setTurningMotor(units::radian_t angle) {
     // Subtract the absolute rotation from the target rotation.
     units::radian_t rotation(angle - getAbsoluteRotation());
     
-    // Fix the discontinuity problem.
+    // Fix the discontinuity problem by converting a -2π to 2π value into -π to π value.
     // If the value is above π rad or below -π rad...
     if(units::math::abs(rotation).value() > wpi::numbers::pi) {
         // Subtract 2π rad, or add 2π rad depending on the sign.
@@ -168,15 +169,33 @@ Drive::~Drive() {
 }
 
 void Drive::process() {
+    // Update the position on the field.
     updateOdometry();
+    
+    // If a drive command is executing.
+    if (cmdRunning) {
+        // If the drive command has finished.
+        if (cmdTimer.HasElapsed(cmdTargetTrajectory.TotalTime())) {
+            cmdCancel();
+        }
+        // Execute the drive command.
+        else {
+            // Get the current time of the trajectory.
+            units::second_t curTime = cmdTimer.Get();
+            // Sample the state at the current time.
+            frc::Trajectory::State state = cmdTargetTrajectory.Sample(curTime);
+            // Set the swerve modules.
+            setModuleStates(cmdController.Calculate(getPose(), state, state.pose.Rotation()));
+        }
+    }
 }
 
 frc::Rotation2d Drive::getRotation() {
-    double rotation = fmod(imu.GetAngle().value(), 360);
+    units::radian_t rotation = units::radian_t(fmod(imu.GetAngle().value(), 360));
 
-    // Convert -360 to 360 value into -180 to 180 value.
-    if(abs(rotation) > 180) {
-        rotation -= (360 * (std::signbit(rotation) ? -1 : 1));
+    // Convert -2π to 2π value into -π to π value.
+    if(units::math::abs(rotation).value() > wpi::numbers::pi) {
+        rotation = units::radian_t(rotation.value() - (2 * wpi::numbers::pi) * (std::signbit(rotation.value()) ? -1 : 1));
     }
     
     return frc::Rotation2d(units::degree_t(rotation));
@@ -191,6 +210,10 @@ void Drive::calibrateIMU() {
 }
 
 void Drive::setVelocities(double xVel, double yVel, double rotVel, bool fieldCentric) {
+    // Take control if drive command is running.
+    cmdCancel();
+    
+    // Generate chassis speeds depending on control mode.
     if (fieldCentric) {
         setModuleStates(frc::ChassisSpeeds::FromFieldRelativeSpeeds(units::meters_per_second_t(xVel), units::meters_per_second_t(yVel), units::radians_per_second_t(rotVel), getRotation()));
     } else {
@@ -198,21 +221,63 @@ void Drive::setVelocities(double xVel, double yVel, double rotVel, bool fieldCen
     }
 }
 
-void Drive::cmdRotate(units::radian_t anlge) {
+void Drive::cmdRotate(frc::Rotation2d angle) {
+    // Cancel a command if running.
+    cmdCancel();
+    cmdRunning = true;
 
+    // Get the current pose of the robot.
+    frc::Pose2d pose = getPose();
+
+    // Add displacement to current pose.
+    std::vector<frc::Trajectory::State> states { { 0_s, 0_mps, 0_mps_sq, { pose.X(), pose.Y(), pose.Rotation() + angle }, {} } };
+    
+    cmdTargetTrajectory = frc::Trajectory(states);
+    
+    // Start the timer.
+    cmdTimer.Reset();
+    cmdTimer.Start();
 }
 
-void Drive::cmdDrive(units::meter_t x, units::meter_t y, units::radian_t angle) {
+void Drive::cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle) {
+    // Cancel a command if running.
+    cmdCancel();
+    cmdRunning = true;
+    
+    // Get the current pose of the robot.
+    frc::Pose2d pose = getPose();
 
+    // Add displacement to current pose.
+    std::vector<frc::Trajectory::State> states { { 0_s, 0_mps, 0_mps_sq, { pose.X() + x, pose.Y() + y, pose.Rotation() + angle }, {} } };
+    
+    cmdTargetTrajectory = frc::Trajectory(states);
+    
+    // Start the timer.
+    cmdTimer.Reset();
+    cmdTimer.Start();
+}
+
+void Drive::cmdTrajectory(frc::Trajectory trajectory) {
+    // Cancel a command if running.
+    cmdCancel();
+    cmdRunning = true;
+    
+    cmdTargetTrajectory = trajectory;
+    
+    // Start the timer.
+    cmdTimer.Reset();
+    cmdTimer.Start();
 }
 
 bool Drive::cmdIsFinished() {
-
-    return true;
+    return !cmdRunning;
 }
 
 void Drive::cmdCancel() {
-
+    if (!cmdRunning) return;
+    
+    cmdRunning = false;
+    cmdTimer.Stop();
 }
 
 void Drive::setModuleStates(frc::ChassisSpeeds chassisSpeeds) {
