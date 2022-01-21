@@ -1,11 +1,10 @@
 #pragma once
 #include "IOMap.h"
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wattributes"
 #include "rev/CANSparkMax.h"
-#pragma GCC diagnostic pop
 #include <frc/DoubleSolenoid.h>
-
+#include <frc/Encoder.h>
+#include <frc/DigitalSource.h>
+#include <frc/DigitalInput.h>
 
 /*
 PART 1
@@ -48,34 +47,52 @@ public:
     Hang();
     ~Hang();
 
-    //functions
-    //does the important stuff
+//functions
+    //does the important stuff to make the mechanism work
     void process();
-    //sends functions to dashboard
+    //sends stuff to dashboard for debugging purposes
     void debug();
     //resets variables
     void reset();
-    //pivots hang
+    //pivots the extending arms forwards/backwards
     void pivot();
-    //pivots the arms backwards
+    //pivots the extending arms just a little bit so the arms hit the bar
     void reversePivot();
-    //engages brake to stop arms
+    //engages brake to stop arms from extending more
     void engageBrake();
-    //disengages brake to release arms
+    //disengages brake to extend arms
     void disengageBrake();
     //retracts arms
     void retract();
+    //extends arms
+    void extend();
 
     //bar that the robot is going to
     enum HangState{TRAVERSAL, HIGH, MID, NOT_ON_BAR};
     //enumerator variable thing
     HangState hangState;
 
+    enum IsHangWorking{BROKEN, FUNCTIONAL};
+    IsHangWorking isHangWorking;
+
 private:
-    //step that the robot is on in the motion to traversal;
+    //step that the robot is on in the motion to traversal
     int step = 0;
+    //step to reach mid bar
+    int midBarStep = 0;
     //whether the robot is on the bar
     bool isOnBar = false;
+
+//sensors
+    //encoder on winch to tell how far its gone
+    frc::Encoder winchEncoder {CAN_HANG_ENCODER_A,  CAN_HANG_ENCODER_B};
+    //flag sensor on the left arm to tell when its extended	
+    frc::DigitalInput leftFlag {DIO_HANG_FLAG_SENSOR_LEFT};
+    //flag sensor on the right arm to tell when its extended
+    frc::DigitalInput rightFlag {DIO_HANG_FLAG_SENSOR_RIGHT};
+    //sensor on the bottom of the arm to tell when fully retracted, doesnt matter which
+    //could also be on the winch i dont know yet
+    frc::DigitalInput homeSensor {DIO_HANG_OPTICAL_HOME_SENSOR};
 
     //actuator stuff
     rev::CANSparkMax winchMotor{CAN_HANG_WINCH_MOTOR, rev::CANSparkMax::MotorType::kBrushless};
