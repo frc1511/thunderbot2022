@@ -8,6 +8,9 @@
 #include <frc/kinematics/SwerveDriveOdometry.h>
 #include <frc/kinematics/SwerveModuleState.h>
 #include <frc/kinematics/ChassisSpeeds.h>
+#include <frc/trajectory/Trajectory.h>
+#include <frc/controller/HolonomicDriveController.h>
+#include <frc/Timer.h>
 #include <frc/ADIS16470_IMU.h>
 #include <rev/CANSparkMax.h>
 #include <ctre/phoenix/sensors/CANCoder.h>
@@ -63,7 +66,7 @@ private:
 
     /**
      * Returns the absolute rotation of the module (CANCoder).
-     */ 
+     */
     units::radian_t getAbsoluteRotation();
 
     // The drive motor (NEO Brushless motor).
@@ -94,7 +97,7 @@ public:
     ~Drive();
 
     void process();
-    
+
     /**
      * Returns the rotation of the robot.
      */
@@ -114,22 +117,27 @@ public:
      * Sets the velocities of the robot.
      */
     void setVelocities(double xVel, double yVel, double rotVel, bool fieldCentric = true);
-    
+
     /**
      * Begins a command to rotate a specified angle.
      */
-    void cmdRotate(units::radian_t anlge);
+    void cmdRotate(frc::Rotation2d angle);
 
     /**
      * Begins a command to drive a specified distance.
      */
-    void cmdDrive(units::meter_t x, units::meter_t y, units::radian_t angle = units::radian_t(0));
-    
+    void cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle = frc::Rotation2d());
+
+    /**
+     * Begins a command to drive a specified trajectory.
+     */
+    void cmdTrajectory(frc::Trajectory trajectory);
+
     /**
      * Returns whether the last command has finished.
      */
     bool cmdIsFinished();
-    
+
     /**
      * Cancels the current command.
      */
@@ -168,7 +176,7 @@ private:
         frc::Translation2d(+ROBOT_WIDTH/2, -ROBOT_LENGTH/2), // Back right.
         frc::Translation2d(+ROBOT_WIDTH/2, +ROBOT_LENGTH/2), // Front right.
     };
-    
+
     // The swerve modules on the robot.
     wpi::array<SwerveModule*, 4> swerveModules {
       new SwerveModule(CAN_SWERVE_FL_DRIVE_MOTOR, CAN_SWERVE_FL_ROT_MOTOR, CAN_SWERVE_FL_ROT_CAN_CODER, +0),
@@ -176,14 +184,26 @@ private:
       new SwerveModule(CAN_SWERVE_BR_DRIVE_MOTOR, CAN_SWERVE_BR_ROT_MOTOR, CAN_SWERVE_BR_ROT_CAN_CODER, +0),
       new SwerveModule(CAN_SWERVE_FR_DRIVE_MOTOR, CAN_SWERVE_FR_ROT_MOTOR, CAN_SWERVE_FR_ROT_CAN_CODER, +0),
     };
-  
+
     // The helper class that converts chassis speeds into swerve module states.
     frc::SwerveDriveKinematics<4> kinematics { locations };
-    
+
     // The odometry class that tracks the position of the robot on the field.
     frc::SwerveDriveOdometry<4> odometry { kinematics, getRotation() };
-    
+
     // The ADIS16470 IMU (3D gyro and accelerometer).
 
     frc::ADIS16470_IMU imu {};
+    
+    // The trajectory tracker used to create chassis speeds for a drive command (Forgo simulated PID by giving 0 to all the values).
+    frc::HolonomicDriveController cmdController { {0, 0, 0, 0_ms}, {0, 0, 0, 0_ms}, {0, 0, 0, {}, 0_ms} };
+
+    // Whether a drive command is running.
+    bool cmdRunning = false;
+    
+    // The trajectory for a drive command to follow.
+    frc::Trajectory cmdTargetTrajectory;
+    
+    // A timer to time a drive command.
+    frc::Timer cmdTimer {};
 };
