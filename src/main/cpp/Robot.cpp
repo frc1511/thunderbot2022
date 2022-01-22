@@ -16,7 +16,6 @@ void Robot::TeleopPeriodic() {
   drive.process();
   gamEpiece.process();
   hang.process();
-  limelight.process();
 }
 
 void Robot::DisabledInit() {}
