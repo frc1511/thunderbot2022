@@ -5,6 +5,7 @@
 #include <frc/Encoder.h>
 #include <frc/DigitalSource.h>
 #include <frc/DigitalInput.h>
+#include "Feedback.h"
 
 /*
 PART 1
@@ -47,11 +48,16 @@ public:
     Hang();
     ~Hang();
 
+//booleans
+    //whether anything went wrong and the climb process should not continue
+    bool isHangWorking;
+    bool wantToChange;
+
 //functions
     //does the important stuff to make the mechanism work
     void process();
     //sends stuff to dashboard for debugging purposes
-    void debug();
+    void debug(Feedback *feedback);
     //resets variables
     void reset();
     //pivots the extending arms forwards/backwards
@@ -66,22 +72,27 @@ public:
     void retract();
     //extends arms
     void extend();
+    //changes which bar the robot will go to
+    void changeState();
 
     //bar that the robot is going to
     enum HangState{TRAVERSAL, HIGH, MID, NOT_ON_BAR};
     //enumerator variable thing
     HangState hangState;
 
-    enum IsHangWorking{BROKEN, FUNCTIONAL};
-    IsHangWorking isHangWorking;
-
 private:
     //step that the robot is on in the motion to traversal
-    int step = 0;
+    int highBarStep = 0;
     //step to reach mid bar
     int midBarStep = 0;
     //whether the robot is on the bar
     bool isOnBar = false;
+    //hang max height, dependent on how far it extended
+    double hangMaxHeight;
+    //height that hang should start slowing down
+    double hangSlowDownHeight;
+    //height hang should slow down even more
+    double hangSlowDownMoreHeight;
 
 //sensors
     //encoder on winch to tell how far its gone
