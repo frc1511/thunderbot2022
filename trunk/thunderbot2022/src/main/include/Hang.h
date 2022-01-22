@@ -1,4 +1,6 @@
 #pragma once
+
+#include "Mechanism.h"
 #include "IOMap.h"
 #include "rev/CANSparkMax.h"
 #include <frc/DoubleSolenoid.h>
@@ -43,7 +45,7 @@ PART 2
             -engage brake-brake piston
 */
 
-class Hang {
+class Hang : public Mechanism {
 public:
     Hang();
     ~Hang();
@@ -54,12 +56,12 @@ public:
     bool wantToChange;
 
 //functions
-    //does the important stuff to make the mechanism work
-    void process();
-    //sends stuff to dashboard for debugging purposes
-    void debug(Feedback *feedback);
-    //resets variables
-    void reset();
+    void resetToMode(MatchMode mode) override;
+    void sendFeedback() override;
+    void process() override;
+
+    //hi ishan
+
     //pivots the extending arms forwards/backwards
     void pivot();
     //pivots the extending arms just a little bit so the arms hit the bar
@@ -109,5 +111,5 @@ private:
     rev::CANSparkMax winchMotor{CAN_HANG_WINCH_MOTOR, rev::CANSparkMax::MotorType::kBrushless};
     frc::DoubleSolenoid hangPivot{frc::PneumaticsModuleType::CTREPCM, INTAKE_PIVOT_EXTEND, INTAKE_PIVOT_RETRACT};
     frc::DoubleSolenoid brake{frc::PneumaticsModuleType::CTREPCM, PCM1_HANG_LEFT_BRAKE_PISTON_EXTEND, PCM1_HANG_LEFT_BRAKE_PISTON_RETRACT};
-
+    //hi trevor
 };

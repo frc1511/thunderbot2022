@@ -1,13 +1,17 @@
 #pragma once
 
-class Intake {
+#include "Mechanism.h"
+#include "Feedback.h"
+
+class Intake : public Mechanism {
 public:
     Intake();
     ~Intake();
 
-    void process();
-    void reset();
+    void resetToMode(MatchMode mode) override;
+    void sendFeedback() override;
+    void process() override;
 
 private:
-    // Something here...
+        // Something here...
 };

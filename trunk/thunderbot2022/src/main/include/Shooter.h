@@ -1,12 +1,16 @@
 #pragma once
 
-class Shooter {
+#include "Mechanism.h"
+#include "Feedback.h"
+
+class Shooter : public Mechanism {
 public:
     Shooter();
     ~Shooter();
 
-    void process();
-    void reset();
+    void resetToMode(MatchMode mode) override;
+    void sendFeedback() override;
+    void process() override;
 
 private:
     // Something here...

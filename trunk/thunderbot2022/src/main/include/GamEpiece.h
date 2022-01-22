@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Mechanism.h"
 #include "Intake.h"
 #include "Storage.h"
 #include "Shooter.h"
@@ -11,14 +12,14 @@
 #include <frc/DigitalInput.h>
 #include "IOMap.h"
 
-class GamEpiece {
+class GamEpiece : public Mechanism {
 public:
     GamEpiece(Limelight* limelight);
     ~GamEpiece();
 
-    void process();
-    void reset(int ballCount);
-    void debug(Feedback* feedback);
+    void resetToMode(MatchMode mode) override;
+    void sendFeedback() override;
+    void process() override;
 
     enum IntakeState{
         INTAKE, //deploy intake mech, spin intake in, spin storage up, stop spin and retract mech when at 2 balls and comfortable in position

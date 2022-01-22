@@ -8,10 +8,14 @@ Shooter::~Shooter() {
 
 }
 
-void Shooter::process() {
+void Shooter::resetToMode(MatchMode mode) {
 
 }
 
-void Shooter::reset(){
-    
+void Shooter::sendFeedback() {
+
+}
+
+void Shooter::process() {
+
 }

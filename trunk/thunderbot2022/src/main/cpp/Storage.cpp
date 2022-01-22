@@ -8,10 +8,14 @@ Storage::~Storage() {
 
 }
 
-void Storage::process() {
+void Storage::resetToMode(MatchMode mode) {
 
 }
 
-void Storage::reset(){
-    
+void Storage::sendFeedback() {
+
+}
+
+void Storage::process() {
+
 }

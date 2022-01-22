@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Mechanism.h"
 #include <frc/smartdashboard/Smartdashboard.h>
 #include <networktables/NetworkTable.h>
 #include <networktables/NetworkTableInstance.h>
@@ -9,7 +10,7 @@
 /**
  * Represents the limelight sensor on the robot. :D
  */
-class Limelight {
+class Limelight : public Mechanism {
 public:
     Limelight();
     ~Limelight();

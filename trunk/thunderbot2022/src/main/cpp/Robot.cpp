@@ -7,10 +7,18 @@
 void Robot::RobotInit() {}
 void Robot::RobotPeriodic() {}
 
-void Robot::AutonomousInit() {}
-void Robot::AutonomousPeriodic() {}
+void Robot::AutonomousInit() {
+  resetMechanisms(Mechanism::MODE_AUTO);
+}
 
-void Robot::TeleopInit() {}
+void Robot::AutonomousPeriodic() {
+
+}
+
+void Robot::TeleopInit() {
+  resetMechanisms(Mechanism::MODE_TELEOP);
+}
+
 void Robot::TeleopPeriodic() {
   controls.process();
   drive.process();
@@ -18,11 +26,30 @@ void Robot::TeleopPeriodic() {
   hang.process();
 }
 
-void Robot::DisabledInit() {}
-void Robot::DisabledPeriodic() {}
+void Robot::DisabledInit() {
+  resetMechanisms(Mechanism::MODE_DISABLED);
+}
 
-void Robot::TestInit() {}
-void Robot::TestPeriodic() {}
+void Robot::DisabledPeriodic() {
+
+}
+
+void Robot::TestInit() {
+  resetMechanisms(Mechanism::MODE_TEST);
+}
+
+void Robot::TestPeriodic() {
+  // Why would we use test?
+}
+
+void Robot::resetMechanisms(Mechanism::MatchMode mode) {
+  limelight.resetToMode(mode);
+  drive.resetToMode(mode);
+  gamEpiece.resetToMode(mode);
+  hang.resetToMode(mode);
+  controls.resetToMode(mode);
+  autonomous.resetToMode(mode);
+}
 
 #ifndef RUNNING_FRC_TESTS
 int main() {

@@ -1,12 +1,16 @@
 #pragma once
 
-class Storage {
+#include "Mechanism.h"
+#include "Feedback.h"
+
+class Storage : public Mechanism {
 public:
     Storage();
     ~Storage();
 
-    void process();
-    void reset();
+    void resetToMode(MatchMode mode) override;
+    void sendFeedback() override;
+    void process() override;
 
 private:
     // Something here...
