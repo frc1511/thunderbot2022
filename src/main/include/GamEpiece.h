@@ -13,7 +13,7 @@
 
 class GamEpiece {
 public:
-    GamEpiece();
+    GamEpiece(Limelight* limelight);
     ~GamEpiece();
 
     void process();
@@ -49,7 +49,8 @@ public:
 
 
 private:
-    
+    Limelight* limelight;
+
     Intake intake {}; // not completly sure what this does but i know it's important
     Storage storage {}; // not completly sure what this does but i know it's important
     Shooter shooter {};// not completly sure what this does but i know it's important

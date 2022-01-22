@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IOMap.h"
+#include "Limelight.h"
 #include <frc/geometry/Transform2d.h>
 #include <frc/geometry/Rotation2d.h>
 #include <frc/geometry/Pose2d.h>
@@ -93,7 +94,7 @@ private:
  */
 class Drive {
 public:
-    Drive();
+    Drive(Limelight* limelight);
     ~Drive();
 
     void process();
@@ -117,6 +118,11 @@ public:
      * Sets the velocities of the robot.
      */
     void setVelocities(double xVel, double yVel, double rotVel, bool fieldCentric = true);
+
+    /**
+     * Begins a command to rotate the robot to the target.
+     */
+    bool cmdRotateToTarget();
 
     /**
      * Begins a command to rotate a specified angle.
@@ -168,6 +174,9 @@ private:
      * Resets the IMU to 0.
      */
     void resetIMU();
+
+    // The limelight sensor.
+    Limelight* limelight;
 
     // The locations of the swerve modules on the robot.
     wpi::array<frc::Translation2d, 4> locations {
