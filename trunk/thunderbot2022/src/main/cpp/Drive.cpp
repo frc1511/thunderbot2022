@@ -152,7 +152,9 @@ units::radian_t SwerveModule::getAbsoluteRotation() {
 
 // --- Drivetrain ---
 
-Drive::Drive() {
+Drive::Drive(Limelight* limelight)
+  : limelight(limelight) {
+    
     resetIMU();
     // Configure the calibration time to 4 seconds.
     imu.ConfigCalTime(frc::ADIS16470_IMU::CalibrationTime::_4s);
@@ -219,6 +221,19 @@ void Drive::setVelocities(double xVel, double yVel, double rotVel, bool fieldCen
     } else {
         setModuleStates({ units::meters_per_second_t(xVel), units::meters_per_second_t(yVel), units::radians_per_second_t(rotVel) });
     }
+}
+
+bool Drive::cmdRotateToTarget() {
+    // Make sure the limelight sees a target.
+    if (!limelight->hasTarget()) return false;
+    
+    // Get the horizontal angle from limelight.
+    units::radian_t angle = limelight->getAngleHorizontal();
+
+    // Start a rotate command.
+    cmdRotate(angle);
+
+    return true;
 }
 
 void Drive::cmdRotate(frc::Rotation2d angle) {

@@ -1,6 +1,7 @@
 #include "GamEpiece.h"
 
-GamEpiece::GamEpiece() {
+GamEpiece::GamEpiece(Limelight* limelight)
+  : limelight(limelight) {
     //intake = new Intake();
     //storage = new Storage();
     //shooter = new Shooter();

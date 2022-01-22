@@ -30,10 +30,10 @@ public:
   void TestPeriodic() override;
   
 private:
-  Drive drive {};
-  GamEpiece gamEpiece {};
-  Hang hang {};
   Limelight limelight {};
-  Controls controls { &drive, &gamEpiece, &hang, &limelight };
+  Drive drive { &limelight };
+  GamEpiece gamEpiece { &limelight };
+  Hang hang {};
+  Controls controls { &drive, &gamEpiece, &hang };
   Feedback feedback {};
 };

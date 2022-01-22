@@ -7,7 +7,7 @@
 
 class Controls {
 public:
-    Controls(Drive* drive, GamEpiece* gamEpiece, Hang* hang, Limelight* limelight);
+    Controls(Drive* drive, GamEpiece* gamEpiece, Hang* hang);
     ~Controls();
 
     void process();
@@ -16,7 +16,6 @@ private:
     Drive* drive;
     GamEpiece* gamEpiece;
     Hang* hang;
-    Limelight* limelight;
 
     // Something here...
 };
