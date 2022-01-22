@@ -4,7 +4,6 @@
 #include <string>
 #include <stdarg.h>
 
-// stolen from 2020
 void Feedback::sendString(const char* subsystem, const char* name, const char* format,...) {
     std::string keyName = subsystem;
     keyName += "_";

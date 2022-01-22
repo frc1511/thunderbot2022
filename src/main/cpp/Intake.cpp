@@ -8,10 +8,14 @@ Intake::~Intake() {
 
 }
 
-void Intake::process() {
+void Intake::resetToMode(MatchMode mode) {
 
 }
 
-void Intake::reset(){
-    
+void Intake::sendFeedback() {
+
+}
+
+void Intake::process() {
+
 }

@@ -5,11 +5,48 @@ const double kHangWinchSpeed = .4;
 const double kHangWinchSlowSpeed = kHangWinchSpeed*.5;
 const double kHangWinchSlowerSpeed = kHangWinchSlowSpeed*.5;
 
-Hang::Hang() {
-reset();
+Hang::Hang() {}
+Hang::~Hang() {}
+
+void Hang::resetToMode(MatchMode mode) {
+    if (mode == MODE_TELEOP) {
+        int highBarStep = 0;
+        bool isOnBar = false;
+        hangState = NOT_ON_BAR;
+        winchMotor.Set(0);
+        brake.Set(frc::DoubleSolenoid::Value::kForward);
+        hangPivot.Set(frc::DoubleSolenoid::Value::kReverse);
+        isHangWorking = true;
+        bool wantToChange = false;
+    }
 }
 
-Hang::~Hang() {}
+void Hang::sendFeedback() {
+    std::string stateString = "";
+    switch(hangState)
+    {
+        case MID:
+            stateString = "going to/on mid";
+            break;
+        case HIGH:
+            stateString = "going to/on high";
+            break;
+        case TRAVERSAL:
+            stateString = "going to/on traversal";
+            break;
+        case NOT_ON_BAR:
+            stateString = "not currently on a bar";
+            break;
+    }
+
+    Feedback::sendBoolean("Hang", "is hang working", isHangWorking);
+    Feedback::sendDouble("Hang", "encoder value", winchEncoder.Get());
+    Feedback::sendDouble("Hang", "winch motor speed", winchMotor.Get());
+    Feedback::sendBoolean("Hang", "is on bar", isOnBar);
+    Feedback::sendDouble("Hang", "Max extending arm height", hangMaxHeight);
+    Feedback::sendDouble("Hang", "mid bar step", midBarStep);
+    Feedback::sendDouble("Hang", "high/traversal bar step", highBarStep);
+}
 
 void Hang::process() {
     
@@ -66,44 +103,6 @@ void Hang::process() {
                 wantToChange = false;
                 break;
     }
-}
-
-void Hang::reset() {
-    int highBarStep = 0;
-    bool isOnBar = false;
-    hangState = NOT_ON_BAR;
-    winchMotor.Set(0);
-    brake.Set(frc::DoubleSolenoid::Value::kForward);
-    hangPivot.Set(frc::DoubleSolenoid::Value::kReverse);
-    isHangWorking = true;
-    bool wantToChange = false;
-}
-
-void Hang::debug(Feedback *feedback) {
-    std::string stateString = "";
-    switch(hangState)
-    {
-        case MID:
-            stateString = "going to/on mid";
-            break;
-        case HIGH:
-            stateString = "going to/on high";
-            break;
-        case TRAVERSAL:
-            stateString = "going to/on traversal";
-            break;
-        case NOT_ON_BAR:
-            stateString = "not currently on a bar";
-            break;
-    }
-
-    feedback->sendBoolean("Hang", "is hang working", isHangWorking);
-    feedback->sendDouble("Hang", "encoder value", winchEncoder.Get());
-    feedback->sendDouble("Hang", "winch motor speed", winchMotor.Get());
-    feedback->sendBoolean("Hang", "is on bar", isOnBar);
-    feedback->sendDouble("Hang", "Max extending arm height", hangMaxHeight);
-    feedback->sendDouble("Hang", "mid bar step", midBarStep);
-    feedback->sendDouble("Hang", "high/traversal bar step", highBarStep);
 }
 
 void Hang::pivot() {

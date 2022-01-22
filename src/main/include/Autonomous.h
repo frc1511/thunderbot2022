@@ -1,12 +1,19 @@
 #pragma once
 
-class Autonomous {
+#include "Mechanism.h"
+#include "Drive.h"
+#include "GamEpiece.h"
+
+class Autonomous : public Mechanism {
 public:
-    Autonomous();
+    Autonomous(Drive* drive, GamEpiece* gamEpiece);
     ~Autonomous();
 
-    void process();
+    void resetToMode(MatchMode mode) override;
+    void sendFeedback() override;
+    void process() override;
 
 private:
-    // Something here...
+    Drive* drive;
+    GamEpiece* gamEpiece;
 };

@@ -170,6 +170,14 @@ Drive::~Drive() {
     }
 }
 
+void Drive::resetToMode(MatchMode mode) {
+    cmdCancel();
+}
+
+void Drive::sendFeedback() {
+    // TODO Send feedback...
+}
+
 void Drive::process() {
     // Update the position on the field.
     updateOdometry();

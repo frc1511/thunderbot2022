@@ -11,6 +11,7 @@
 #include "Hang.h"
 #include "Limelight.h"
 #include "Feedback.h"
+#include "Autonomous.h"
 
 class Robot : public frc::TimedRobot {
 public:
@@ -28,6 +29,8 @@ public:
 
   void TestInit() override;
   void TestPeriodic() override;
+
+  void resetMechanisms(Mechanism::MatchMode);
   
 private:
   Limelight limelight {};
@@ -35,5 +38,5 @@ private:
   GamEpiece gamEpiece { &limelight };
   Hang hang {};
   Controls controls { &drive, &gamEpiece, &hang };
-  Feedback feedback {};
+  Autonomous autonomous { &drive, &gamEpiece };
 };

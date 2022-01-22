@@ -2,14 +2,54 @@
 
 GamEpiece::GamEpiece(Limelight* limelight)
   : limelight(limelight) {
-    //intake = new Intake();
-    //storage = new Storage();
-    //shooter = new Shooter();
     lastIntakeBeamValue = intakeBeam.Get();
 }
 
 GamEpiece::~GamEpiece() {
 
+}
+
+void GamEpiece::resetToMode(MatchMode mode) {
+    intake.resetToMode(mode);
+    storage.resetToMode(mode);
+    shooter.resetToMode(mode);
+
+    if (mode == MODE_TELEOP || mode == MODE_AUTO) {
+        double ballCount = Feedback::getEditableDouble("gamEpiece", "starting_ball_count", -1);
+        if(ballCount >= 0 /*&& !intakeCounterBroken && !shooterCounterBroken*/){
+            currentBallCount = ballCount;
+        }
+        intakeState = NOTTAKE;
+        shooterState = NOTSHOOTING;
+    }
+}
+
+void GamEpiece::sendFeedback() {
+    /*feedback->sendDouble("thunderdashboard", "ballcount", currentBallCount);
+
+    switch(intakeState){
+        case INTAKE:
+            feedback->sendString("gamEpiece", "intakeState", "INTAKE");
+            break;
+        case OUTTAKE:
+            feedback->sendString("gamEpiece", "intakeState", "OUTTAKE");
+            break;
+        case NOTTAKE:
+            feedback->sendString("gamEpiece", "intakeState", "NOTTAKE");
+            break;
+    }
+
+    switch(shooterState){
+        case NOTSHOOTING:
+            feedback->sendString("gamEpiece", "shooterState" , "NOTSHOOTING");
+            break;
+        case WANTTOSHOOT:
+            feedback->sendString("gamEpiece" , "shooterState" , "WANTTOSHOOT");
+            break;
+        case SHOOTING:
+            feedback->sendString("gamEpiece" , "shooterState" , "SHOOTING");
+            break;
+    }*/
 }
 
 void GamEpiece::process() {
@@ -60,17 +100,6 @@ void GamEpiece::process() {
     shooter.process();
 }
 
-void GamEpiece::reset(int ballCount = -1) {
-    if(ballCount >= 0 /*&& !intakeCounterBroken && !shooterCounterBroken*/){  
-        currentBallCount = ballCount;
-    }
-    intakeState = NOTTAKE;
-    shooterState = NOTSHOOTING;
-    intake.reset();
-    storage.reset();
-    shooter.reset();
-}
-
 void GamEpiece::setIntakeState(IntakeState intState){ // intState is a local variable which is a "copy of intakeState"
     intakeState = intState;
 }
@@ -86,33 +115,4 @@ void GamEpiece::setBallCounterBroken(bool ballCounter){
     if(ballCounter){
         currentBallCount = BALL_COUNT_UNKNOWN;
     }
-}
-
-
-void GamEpiece::debug(Feedback* feedback){
-    /*feedback->sendDouble("thunderdashboard", "ballcount", currentBallCount);
-
-    switch(intakeState){
-        case INTAKE:
-            feedback->sendString("gamepiece", "intakeState", "INTAKE");
-            break;
-        case OUTTAKE:
-            feedback->sendString("gamepiece", "intakeState", "OUTTAKE");
-            break;
-        case NOTTAKE:
-            feedback->sendString("gamepiece", "intakeState", "NOTTAKE");
-            break;
-    }
-
-    switch(shooterState){
-        case NOTSHOOTING:
-            feedback->sendString("gamepiece", "shooterState" , "NOTSHOOTING");
-            break;
-        case WANTTOSHOOT:
-            feedback->sendString("gamepiece" , "shooterState" , "WANTTOSHOOT");
-            break;
-        case SHOOTING:
-            feedback->sendString("gamepiece" , "shooterState" , "SHOOTING");
-            break;
-    }*/
 }

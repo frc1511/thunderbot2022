@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Mechanism.h"
 #include "IOMap.h"
 #include "Limelight.h"
 #include <frc/geometry/Transform2d.h>
@@ -92,12 +93,14 @@ private:
 /**
  * Represents the drivetrain of the robot and handles all drive-related functionality.
  */
-class Drive {
+class Drive : public Mechanism {
 public:
     Drive(Limelight* limelight);
     ~Drive();
 
-    void process();
+    void resetToMode(MatchMode mode) override;
+    void sendFeedback() override;
+    void process() override;
 
     /**
      * Returns the rotation of the robot.
