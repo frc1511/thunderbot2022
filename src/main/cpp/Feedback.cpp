@@ -5,7 +5,7 @@
 #include <stdarg.h>
 
 // stolen from 2020
-/*void Feedback::sendString(const char* subsystem, const char* name, const char* format,...) {
+void Feedback::sendString(const char* subsystem, const char* name, const char* format,...) {
     std::string keyName = subsystem;
     keyName += "_";
     keyName += name;
@@ -46,4 +46,4 @@ double Feedback::getEditableDouble(const char* subsystem, const char* name, doub
     keyName += "_e";
 
     return frc::SmartDashboard::GetNumber(keyName.c_str(), fallback);
-}*/
+}

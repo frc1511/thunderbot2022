@@ -1,5 +1,5 @@
 #pragma once
-// stolen from 2020
+// stolen from 2020 by Trevor Wiesen
 class Feedback {
 public:
     void sendString(const char* subsystem, const char* name, const char* format, ...);
