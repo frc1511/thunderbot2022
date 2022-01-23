@@ -1,5 +1,5 @@
 #include "Camera.h"
-
+#if 0
 #define CAMERA_WIDTH 320
 #define CAMERA_HEIGHT 240
 #define CAMERA_FPS 30
@@ -118,3 +118,4 @@ Camera::FrameSector Camera::locateTarget(Frame& frame) {
         return CENTER;
     }
 }
+#endif

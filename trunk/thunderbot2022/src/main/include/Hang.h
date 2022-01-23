@@ -79,6 +79,10 @@ public:
     HangState hangState;
     //pass hangState enum through function
     void changeState(HangState stage);
+    //move functions to private
+    //make stop command
+    //make cimmand enumerator
+    
 
 private:
     //step that the robot is on in the overall process: mid, high, traversal, and what it is doing in general
