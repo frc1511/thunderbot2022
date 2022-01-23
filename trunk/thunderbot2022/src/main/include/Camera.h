@@ -9,7 +9,6 @@
 #include <opencv2/features2d.hpp>
 #include <frc/DriverStation.h>
 #include <units/math.h>
-#include <optional>
 #include <vector>
 
 /**
@@ -39,6 +38,7 @@ public:
     
     // The region of the frame.
     enum FrameSector {
+        UNKNOWN = 0,
         LEFT,
         CENTER,
         RIGHT,
@@ -47,7 +47,7 @@ public:
     /**
      * Attempts to locate a cargo in front of the robot and returns the sector the cargo is in.
      */
-    std::optional<FrameSector> locateTarget(Frame& frame);
+    FrameSector locateTarget(Frame& frame);
     
 private:
     // The USB Camera.
