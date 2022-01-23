@@ -4,10 +4,12 @@
 #include "IOMap.h"
 #include "rev/CANSparkMax.h"
 #include <frc/DoubleSolenoid.h>
+//hi jeff
 #include <frc/Encoder.h>
 #include <frc/DigitalSource.h>
 #include <frc/DigitalInput.h>
 #include "Feedback.h"
+#include <frc/Timer.h>
 
 /*
 PART 1
@@ -53,9 +55,11 @@ public:
 //booleans
     //whether anything went wrong and the climb process should not continue
     bool isHangWorking;
+    //if the robot wants to change the bar it is going to -- mainly for controls
     bool wantToChange;
 
 //functions
+    //sendFeedback should be named debug. 
     void resetToMode(MatchMode mode) override;
     void sendFeedback() override;
     void process() override;
@@ -68,6 +72,7 @@ public:
     void reversePivot();
     //engages brake to stop arms from extending more
     void engageBrake();
+    //hi jeff
     //disengages brake to extend arms
     void disengageBrake();
     //retracts arms
@@ -76,6 +81,13 @@ public:
     void extend();
     //changes which bar the robot will go to
     void changeState();
+    //is hang working function
+    void hangCurrentState(bool isHangWorking);
+    //is on bar function
+    void onBar(bool isOnBar);
+    //want to change function
+    void changeBar(bool wantToChange);
+
 
     //bar that the robot is going to
     enum HangState{TRAVERSAL, HIGH, MID, NOT_ON_BAR};
@@ -83,10 +95,8 @@ public:
     HangState hangState;
 
 private:
-    //step that the robot is on in the motion to traversal
-    int highBarStep = 0;
-    //step to reach mid bar
-    int midBarStep = 0;
+    //step that the robot is on in the current stage: mid, high, traversal
+    int step = 0;
     //whether the robot is on the bar
     bool isOnBar = false;
     //hang max height, dependent on how far it extended
@@ -109,7 +119,10 @@ private:
 
     //actuator stuff
     rev::CANSparkMax winchMotor{CAN_HANG_WINCH_MOTOR, rev::CANSparkMax::MotorType::kBrushless};
-    frc::DoubleSolenoid hangPivot{frc::PneumaticsModuleType::CTREPCM, INTAKE_PIVOT_EXTEND, INTAKE_PIVOT_RETRACT};
-    frc::DoubleSolenoid brake{frc::PneumaticsModuleType::CTREPCM, PCM1_HANG_LEFT_BRAKE_PISTON_EXTEND, PCM1_HANG_LEFT_BRAKE_PISTON_RETRACT};
+    frc::DoubleSolenoid hangPivot{frc::PneumaticsModuleType::CTREPCM, PCM1_HANG_PIVOT_EXTEND, PCM1_HANG_PIVOT_RETRACT};
+    frc::DoubleSolenoid brake{frc::PneumaticsModuleType::CTREPCM, /*hi jeff*/PCM1_HANG_BRAKE_PISTON_EXTEND, PCM1_HANG_BRAKE_PISTON_RETRACT};
     //hi trevor
+
+    //timer
+    frc::Timer pivotTimer;
 };
