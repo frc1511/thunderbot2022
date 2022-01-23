@@ -52,12 +52,6 @@ public:
     Hang();
     ~Hang();
 
-//booleans
-    //whether anything went wrong and the climb process should not continue
-    bool isHangWorking;
-    //if the robot wants to change the bar it is going to -- mainly for controls
-    bool wantToChange;
-
 //functions
     //sendFeedback should be named debug. 
     void resetToMode(MatchMode mode) override;
@@ -79,19 +73,20 @@ public:
     void retract();
     //extends arms
     void extend();
-    //changes which bar the robot will go to
-    void changeState();
-
     //bar that the robot is going to
     enum HangState{TRAVERSAL, HIGH, MID, NOT_ON_BAR};
     //enumerator variable thing
     HangState hangState;
+    //pass hangState enum through function
+    void changeState(HangState stage);
 
 private:
-    //step that the robot is on in the current stage: mid, high, traversal
+    //step that the robot is on in the overall process: mid, high, traversal, and what it is doing in general
     int step;
-    //whether the robot is on the bar
-    bool isOnBar;
+    //step it is in in the retract action
+    int retractStep;
+    //step it is in in the extend action
+    int extendStep;
     //hang max height, dependent on how far it extended
     double hangMaxHeight;
     //height that hang should start slowing down

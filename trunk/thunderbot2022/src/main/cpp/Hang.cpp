@@ -13,14 +13,13 @@ void Hang::resetToMode(MatchMode mode)
     if (mode == MODE_TELEOP)
     {
         step = 0;
-        isOnBar = false;
         hangState = NOT_ON_BAR;
         winchMotor.Set(0);
         brake.Set(frc::DoubleSolenoid::Value::kForward);
         hangPivot.Set(frc::DoubleSolenoid::Value::kReverse);
-        isHangWorking = true;
-        wantToChange = false;
         pivotTimer.Reset();
+        retractStep = 0;
+        extendStep = 0;
     }
 }
 
@@ -42,13 +41,10 @@ void Hang::sendFeedback()
         stateString = "not currently on a bar";
         break;
     }
-    Feedback::sendBoolean("Hang", "is hang working", isHangWorking);
     Feedback::sendDouble("Hang", "encoder value", winchEncoder.Get());
     Feedback::sendDouble("Hang", "winch motor speed", winchMotor.Get());
-    Feedback::sendBoolean("Hang", "is on bar", isOnBar);
     Feedback::sendDouble("Hang", "Max extending arm height", hangMaxHeight);
     Feedback::sendDouble("Hang", "current step", step);
-    Feedback::sendBoolean("Hang", "is the button pressed to change", wantToChange);
 }
 
 void Hang::process()
@@ -56,29 +52,62 @@ void Hang::process()
 
     switch (hangState)
     {
+    case NOT_ON_BAR:
+        engageBrake();//adds 1 from the start
+        winchMotor.Set(0);
+    break;
     case MID:
-        if (step == 0 && wantToChange == true)
+        step = 0;
+        if (step == 0)
         {
             extend();
+            extendStep = 0;
         }
         else if (step == 2)
         {
             retract();
+            retractStep = 0;
+        }
+        else if (step == 3)
+        {
+            engageBrake();
+        }
+        break;
+    case HIGH:
+        if (step == 4)
+        {
+            pivot();
+        //hi jeff
+        }
+        else if (step == 6)
+        {
+            extend();
+            extendStep = 0;
+            //need a step to reset step
+        }
+        else if (step == 7)
+        {
+            reversePivot();
+        }
+        else if (step == 8)
+        {
+            retract();
+            retractStep = 0;
         }
         else if (step == 9)
         {
             engageBrake();
         }
         break;
-    case HIGH:
-        if (step == 10 && wantToChange == true)
+    case TRAVERSAL:
+        if (step == 10)
         {
             pivot();
-        //hi jeff
         }
         else if (step == 11)
         {
             extend();
+            extendStep = 0;
         }
         else if (step == 13)
         {
@@ -87,38 +116,12 @@ void Hang::process()
         else if (step == 14)
         {
             retract();
+            retractStep = 0;
         }
-        else if (step == 21)
+        else if (step == 15)
         {
             engageBrake();
         }
-        break;
-    case TRAVERSAL:
-        if (step == 22 && wantToChange == true)
-        {
-            pivot();
-        }
-        else if (step == 23)
-        {
-            extend();
-        }
-        else if (step == 25)
-        {
-            reversePivot();
-        }
-        else if (step == 26)
-        {
-            retract();
-        }
-        else if (step == 33)
-        {
-            engageBrake();
-        }
-        break;
-    case NOT_ON_BAR:
-        engageBrake();
-        winchMotor.Set(0);
-        wantToChange = false;
         break;
     }
 }
@@ -141,74 +144,69 @@ void Hang::extend()
     to change state to releasing brake, toggle the brake piston to extend brake
     check if extended with flag sensors
     */
-    if ((homeSensor.Get() == 1) && (brake.Get() == frc::DoubleSolenoid::Value::kForward) && (leftFlag.Get() == 0) && (rightFlag.Get() == 0))
+    if ((homeSensor.Get() == 1) && (brake.Get() == frc::DoubleSolenoid::Value::kForward) && (leftFlag.Get() == 0 && rightFlag.Get() == 0))
     {
         disengageBrake();
-        isHangWorking = true;
-        step++;
+        extendStep++;
     }
     else if (leftFlag.Get() == 0 && rightFlag.Get() == 0)
     {
-        isHangWorking = false;
         engageBrake();
     }
-    else if (step == 1)
+    else if (extendStep == 1)
     {
         step++;
     }
 }
 
 void Hang::retract()
-{ // adds 7 to step
+{ // adds 1 to step
     /*if BOTH flag sensors == 1 && brake piston is disengaged
         rotate winch motor to max value w/encoder
         check that the homing sensor == 1
         engage brake
         */
-    if ((leftFlag.Get() == true) && (rightFlag.Get() == true) && (brake.Get() == frc::DoubleSolenoid::Value::kReverse) && (step == 2))
+    if ((leftFlag.Get() == true) && (rightFlag.Get() == true) && (brake.Get() == frc::DoubleSolenoid::Value::kReverse))
     {
         hangMaxHeight = winchEncoder.Get();
         hangSlowDownHeight = hangMaxHeight * .4;
         hangSlowDownMoreHeight = hangMaxHeight * .1;
         winchMotor.Set(kHangWinchSpeed);
-        step++;
-        isHangWorking = true;
+        retractStep++;
     }
     else if ((leftFlag.Get() == false) || (rightFlag.Get() == false))
     {
         winchMotor.Set(0);
-        isHangWorking = false;
     }
-    else if (step == 3)
+    else if (retractStep == 1)
     {
         if (winchEncoder.Get() == hangSlowDownHeight)
         {
-            step++;
+            retractStep++;
             winchMotor.Set(kHangWinchSlowSpeed);
         }
     }
-    else if (step == 4)
+    else if (retractStep == 2)
     {
         if (winchEncoder.Get() == hangSlowDownMoreHeight)
         {
             winchMotor.Set(kHangWinchSlowerSpeed);
-            step++;
+            retractStep++;
         }
     }
-    else if (step == 5)
+    else if (retractStep == 3)
     {
         if (winchEncoder.Get() == hangMaxHeight)
         {
             winchMotor.Set(0);
-            step++;
+            retractStep++;
         }
     }
-    else if (step == 6)
+    else if (retractStep == 4)
     {
         if (homeSensor.Get() == 1)
         {
             winchMotor.Set(0);
-            isOnBar = true;
             step++;
         }
     }
@@ -252,24 +250,6 @@ void Hang::disengageBrake()
     }
 }
 
-void Hang::changeState()
-{
-    /*
-    if the state is x and step is y and the robot is on bar
-        change state to the next one
-    else{
-        do nothing
-    }
-    */
-    if (hangState == MID && step == 10 && isOnBar == true && wantToChange == true)
-    {
-        hangState = HIGH;
-    }
-    else if (hangState == HIGH && step == 22 && isOnBar == true && wantToChange == true)
-    {
-        hangState = TRAVERSAL;
-    }
-    else
-    {
-    }
+void Hang::changeState(HangState stage){
+    hangState = stage;
 }
