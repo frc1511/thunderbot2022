@@ -12,14 +12,14 @@ void Hang::resetToMode(MatchMode mode)
 {
     if (mode == MODE_TELEOP)
     {
-        int step = 0;
-        bool isOnBar = false;
+        step = 0;
+        isOnBar = false;
         hangState = NOT_ON_BAR;
         winchMotor.Set(0);
         brake.Set(frc::DoubleSolenoid::Value::kForward);
         hangPivot.Set(frc::DoubleSolenoid::Value::kReverse);
         isHangWorking = true;
-        bool wantToChange = false;
+        wantToChange = false;
         pivotTimer.Reset();
     }
 }
@@ -149,7 +149,7 @@ void Hang::extend()
     }
     else if (leftFlag.Get() == 0 && rightFlag.Get() == 0)
     {
-        isHangWorking == false;
+        isHangWorking = false;
         engageBrake();
     }
     else if (step == 1)

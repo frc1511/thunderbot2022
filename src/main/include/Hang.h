@@ -89,9 +89,9 @@ public:
 
 private:
     //step that the robot is on in the current stage: mid, high, traversal
-    int step = 0;
+    int step;
     //whether the robot is on the bar
-    bool isOnBar = false;
+    bool isOnBar;
     //hang max height, dependent on how far it extended
     double hangMaxHeight;
     //height that hang should start slowing down
