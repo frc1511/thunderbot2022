@@ -18,13 +18,14 @@
  *     - Neo550 Motor, SparkMax - used to control the two stage two bars and the transition wheel (ALL ONE MOTOR)
  *     - Two Neo Motors, SparkMax's - used for the left and right flywheels for the shooter
  *     - "Servo" - used to move the hood forward and backwards
+ *     - Two Double Solonoids - used to lower and raise intake
  *       
  * Sensors used and purpose
  *     - banner sensor - start of the balls path to count them
  *     - banner sensor - at stage one to see if there is a ball there
  *     - banner sensor - at stage two to see if there is a ball there and stop stage two
  *     - banner sensor - at shooter to count balls that leave
- *     - Encoder - internal encoders of the Neo's can be used for manual stuff probably
+ *     - Encoder - internal encoders of the Neo's can be used to see if shooter is at speed and for manual stuff probably also 
  *     - potentiometer - used to see where the current hood position is
  * Feedback to drivers
  *     - ball count (visual display on dashboard)
@@ -48,46 +49,43 @@ public:
     enum PositionOnMap{
         LAUNCH_PAD,
         TARMAC_LINE,
-        UP_TO_LIMELIGHT,
-        UP_TO_CONTROLS
+        UP_TO_LIMELIGHT, //limelight decides settings
+        MAUNUAL // used manual setting that were given previously
     };
     PositionOnMap positionOnMap;
     // called by controls to get the shooting wheels up to speed
     void startWarmingUpShooter(PositionOnMap positionOnMap); 
 
     // called by controls to say they want to start actually shooting the balls
-    void startShootingTheBalls(); 
-    // FOR CONTROLS PERSON: when you startShootingTheBalls() call startShootingTheBalls() as well please :D
-    //warming up can be called alone, shooting should only be called with warming up aswell
+    void startShootingTheBalls(PositionOnMap positionOnMap); 
 
     // called by controls to say they dont want to shoot 
     void stopShooting(); 
 
-    // called by controls to start intaking balls
-    void startIntaking();
+    enum IntakeDirection{
+        IINTAKE, //deploy intake mech, spin intake in, spin storage up, stop spin and retract mech when at 2 balls and comfortable in position
+        OUTTAKE, //retract intake mech, spin outtake out, spin storage wheels out
+        NOTTAKE //retract intake mech, stop intake spin, stop storage spin when ball is in the correct stage 1/2
+    };
 
-    // called by controls to start outtaking balls
-    void startOuttaking();
-
-    // called by controls to have intake do nothing at all
-    void doNotIntake();
+    void setIntakeDirection(IntakeDirection intakeDirection);
 
 
-    // called by controls to slowly increase the position of the hood manually  (might not be used)
-    void increaseHoodPosition();
+    // called by controls to slowly increase the position of the hood manually  (used only for manual operation, otherwise ignored)
+    void setManualHoodPosition(double position);
 
-    // called by controls to slowly decrease the position of the hood manually  (might not be used)
-    void decreaseHoodPosition();
 
-    // called by controls to slowly increase the speed of the shooter manually  (might not be used)
-    void increaseShooterSpeed();
+    // called by controls to slowly increase the speed of the shooter manually  (used only for manual operation, otherwise ignored)
+    void setManualShooterSpeed(double speed);
 
-    // called by controls to slowly decrease the speed of the shooter manually  (might not be used)
-    void decreaseShooterSpeed();
 
     // used by controls for a broken switch that will turn off the ball counter
     void setBallCounterBroken(bool ballBroken);
     static const int BALL_COUNT_UNKNOWN = -1;
+    // do the motors actuators etc list
+    //add priming chang shooter enumand funcrion to be more make sense
+    // can add manual mode to find field position from controls and the query thing
+    // hood position control stuff
 
     
     // rework stuff for contrils
@@ -113,16 +111,7 @@ private:
 
     bool lastIntakeBeamValue;
 
-    enum IntakeState{
-        INTAKE, //deploy intake mech, spin intake in, spin storage up, stop spin and retract mech when at 2 balls and comfortable in position
-        OUTTAKE, //retract intake mech, spin outtake out, spin storage wheels out
-        NOTTAKE //retract intake mech, stop intake spin, stop storage spin when ball is in the correct stage 1/2
-    };
-    // object for IntakeState setting
-    IntakeState intakeState;
     
-    // used by controls to set the state of the intake between INTAKE, OUTTAKE, and NOTTAKE
-    void setIntakeState(IntakeState intState); 
 
     enum ShooterState{
         NOTSHOOTING, //default state; flywheels off, transition wheel off
@@ -135,6 +124,9 @@ private:
 
     // used by controls to set the state of the shooter between WANTTOSHOOT and SHOOTING
     void setShooterState(ShooterState shootState); 
+
+    
+    IntakeDirection intakeDirection;
     
 
 

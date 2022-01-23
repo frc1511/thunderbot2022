@@ -10,6 +10,7 @@ GamEpiece::~GamEpiece() {
 }
 
 void GamEpiece::resetToMode(MatchMode mode) {
+    #if 0
     intake.resetToMode(mode);
     storage.resetToMode(mode);
     shooter.resetToMode(mode);
@@ -19,23 +20,24 @@ void GamEpiece::resetToMode(MatchMode mode) {
         if(ballCount >= 0 /*&& !intakeCounterBroken && !shooterCounterBroken*/){
             currentBallCount = ballCount;
         }
-        intakeState = NOTTAKE;
+        intakeDirection = NOTTAKE;
         shooterState = NOTSHOOTING;
     }
+    #endif
 }
 
 void GamEpiece::sendFeedback() {
     /*feedback->sendDouble("thunderdashboard", "ballcount", currentBallCount);
 
-    switch(intakeState){
+    switch(intakeDirection){
         case INTAKE:
-            feedback->sendString("gamEpiece", "intakeState", "INTAKE");
+            feedback->sendString("gamEpiece", "intakeDirection", "INTAKE");
             break;
         case OUTTAKE:
-            feedback->sendString("gamEpiece", "intakeState", "OUTTAKE");
+            feedback->sendString("gamEpiece", "intakeDirection", "OUTTAKE");
             break;
         case NOTTAKE:
-            feedback->sendString("gamEpiece", "intakeState", "NOTTAKE");
+            feedback->sendString("gamEpiece", "intakeDirection", "NOTTAKE");
             break;
     }
 
@@ -53,6 +55,7 @@ void GamEpiece::sendFeedback() {
 }
 
 void GamEpiece::process() {
+    #if 0
     if (!ballCounterBroken) { // ball counter works
         if(intakeBeam.Get() == true){ // there is a ball in front
             lastIntakeBeamValue = true;
@@ -65,7 +68,7 @@ void GamEpiece::process() {
             lastIntakeBeamValue = false;
         }
     }
-    switch(intakeState){
+    switch(intakeDirection){
         case(INTAKE):
             // depends on how intake person does stuf
             break;
@@ -81,7 +84,7 @@ void GamEpiece::process() {
         case(NOTSHOOTING):
             // set something to make shooter not spin
             break;
-        case(WANTTOSHOOT):
+        case(WANT_TOSHOOT):
             if(currentBallCount != 0){
                 // set something to make shooter spin
                 // idk move to SHOOTING when shooter tells me it is ready and there is a ball
@@ -98,10 +101,11 @@ void GamEpiece::process() {
     intake.process();
     storage.process();
     shooter.process();
+    #endif
 }
-
-void GamEpiece::setIntakeState(IntakeState intState){ // intState is a local variable which is a "copy of intakeState"
-    intakeState = intState;
+#if 0
+void GamEpiece::setintakeDirection(intakeDirection intState){ // intState is a local variable which is a "copy of intakeDirection"
+    intakeDirection = intState;
 }
 
 void GamEpiece::setShooterState(ShooterState shootState){ // shootState is a local variable which is a "copy of ShooterState"
@@ -116,3 +120,4 @@ void GamEpiece::setBallCounterBroken(bool ballCounter){
         currentBallCount = BALL_COUNT_UNKNOWN;
     }
 }
+#endif

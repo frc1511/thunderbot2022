@@ -22,7 +22,7 @@ void Robot::TeleopInit() {
 void Robot::TeleopPeriodic() {
   controls.process();
   drive.process();
-  gamEpiece.process();
+  //gamEpiece.process();
   hang.process();
 }
 
@@ -45,7 +45,7 @@ void Robot::TestPeriodic() {
 void Robot::resetMechanisms(Mechanism::MatchMode mode) {
   limelight.resetToMode(mode);
   drive.resetToMode(mode);
-  gamEpiece.resetToMode(mode);
+  //gamEpiece.resetToMode(mode);
   hang.resetToMode(mode);
   controls.resetToMode(mode);
   autonomous.resetToMode(mode);
