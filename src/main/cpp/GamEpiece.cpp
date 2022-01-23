@@ -15,7 +15,7 @@ void GamEpiece::resetToMode(MatchMode mode) {
     shooter.resetToMode(mode);
 
     if (mode == MODE_TELEOP || mode == MODE_AUTO) {
-        double ballCount = Feedback::getEditableDouble("gamEpiece", "starting_ball_count", -1);
+        double ballCount = Feedback::getEditableDouble("thunderdashboard", "starting_ball_count", -1);
         if(ballCount >= 0 /*&& !intakeCounterBroken && !shooterCounterBroken*/){
             currentBallCount = ballCount;
         }
