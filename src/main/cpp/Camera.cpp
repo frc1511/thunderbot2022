@@ -49,12 +49,9 @@ void Camera::sendFrame(Frame& frame) {
     outputStream.PutFrame(frame.matrix);
 }
 
-std::optional<Camera::FrameSector> Camera::locateTarget(Frame& frame) {
+Camera::FrameSector Camera::locateTarget(Frame& frame) {
     cv::Mat targetMatrix;
 
-    // Convert colorspace to HSV.
-    cv::cvtColor(frame.matrix, targetMatrix, cv::COLOR_BGR2HSV);
-    
     // Apply threshold to matrix (depending on alliance color).
     switch (frc::DriverStation::GetAlliance()) {
         case frc::DriverStation::kRed:
@@ -64,14 +61,11 @@ std::optional<Camera::FrameSector> Camera::locateTarget(Frame& frame) {
             cv::inRange(targetMatrix, CAMERA_BLUE_LOW, CAMERA_BLUE_HIGH, targetMatrix);
             break;
         case frc::DriverStation::kInvalid:
-            return {};
+            return UNKNOWN;
     }
     
     // Blur image.
-    cv::medianBlur(targetMatrix, targetMatrix, 3);
-    
-    // Convert colorspace to BGR.
-    cv::cvtColor(targetMatrix, targetMatrix, cv::COLOR_GRAY2BGR);
+    cv::medianBlur(targetMatrix, targetMatrix, 3);    
     
     std::vector<std::vector<cv::Point>> contours;
     std::vector<cv::Vec4i> hierarchy;
@@ -82,21 +76,21 @@ std::optional<Camera::FrameSector> Camera::locateTarget(Frame& frame) {
     const size_t contourNum = contours.size();
     
     if (contourNum == 0) {
-        return {};
+        return UNKNOWN;
     }
     
     // Draw contours on image.
     for (size_t i = 0; i < contourNum; ++i) {
-        cv::Scalar contourColor = cv::Scalar(255, 0, 0);
+        cv::Scalar contourColor(255, 0, 0);
         cv::drawContours(targetMatrix, contours, (int)i, contourColor, 2, 8, hierarchy, 0, cv::Point());
     }
     
-    size_t largestArea = 0;
-    std::vector<cv::Point>* targetContours = nullptr;
+    double largestArea = 0;
+    std::vector<cv::Point>* targetContours;
     
     // Find the largest mass.
     for (size_t i = 0; i < contourNum; ++i) {
-        size_t area = cv::contourArea(contours[i]);
+        double area = cv::contourArea(contours[i]);
         if (area > largestArea) {
             largestArea = area;
             targetContours = &contours[i];
