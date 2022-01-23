@@ -273,13 +273,3 @@ void Hang::changeState()
     {
     }
 }
-
-void Hang::onBar(bool isOnBar){
-
-}
-void Hang::hangCurrentState(bool isHangWorking){
-
-}
-void Hang::changeBar(bool wantToChange){
-
-}

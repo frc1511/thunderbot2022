@@ -81,13 +81,6 @@ public:
     void extend();
     //changes which bar the robot will go to
     void changeState();
-    //is hang working function
-    void hangCurrentState(bool isHangWorking);
-    //is on bar function
-    void onBar(bool isOnBar);
-    //want to change function
-    void changeBar(bool wantToChange);
-
 
     //bar that the robot is going to
     enum HangState{TRAVERSAL, HIGH, MID, NOT_ON_BAR};
