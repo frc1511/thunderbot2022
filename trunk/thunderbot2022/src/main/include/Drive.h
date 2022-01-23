@@ -101,11 +101,11 @@ public:
     void resetToMode(MatchMode mode) override;
     void sendFeedback() override;
     void process() override;
-
+        
     /**
-     * Returns the rotation of the robot.
+     * Returns the current pose.
      */
-    frc::Rotation2d getRotation();
+    frc::Pose2d getPose();
 
     /**
      * Resets the rotation of the robot (field-centric).
@@ -113,17 +113,17 @@ public:
     void resetForward();
 
     /**
-     * Calibrates the IMU.
+     * Calibrates the IMU (Done once when robot is not moving).
      */
     void calibrateIMU();
 
     /**
-     * Sets the velocities of the robot.
+     * Manually set the velocities of the robot.
      */
-    void setVelocities(double xVel, double yVel, double rotVel, bool fieldCentric = true);
+    void manualDrive(double xVel, double yVel, double rotVel, bool fieldCentric = true);
 
     /**
-     * Begins a command to rotate the robot to the target.
+     * Begins a command to rotate the robot to the high hub using limelight.
      */
     bool cmdRotateToTarget();
 
@@ -169,14 +169,14 @@ private:
     void resetOdometry(frc::Pose2d pose = frc::Pose2d());
 
     /**
-     * Returns the current pose.
-     */
-    frc::Pose2d getPose();
-
-    /**
      * Resets the IMU to 0.
      */
     void resetIMU();
+    
+    /**
+     * Returns the rotation of the robot.
+     */
+    frc::Rotation2d getRotation();
 
     // The limelight sensor.
     Limelight* limelight;

@@ -219,7 +219,7 @@ void Drive::calibrateIMU() {
     imu.Calibrate();
 }
 
-void Drive::setVelocities(double xVel, double yVel, double rotVel, bool fieldCentric) {
+void Drive::manualDrive(double xVel, double yVel, double rotVel, bool fieldCentric) {
     // Take control if drive command is running.
     cmdCancel();
     
