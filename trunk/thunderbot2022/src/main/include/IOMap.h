@@ -9,7 +9,10 @@
 ╚═╝ ╚═════╝     ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝     v2022
 */
 
-//PWM-nothing right now
+//PWM
+#define PWM_HANG_LEFT_SERVO_STOP 0
+#define PWM_HANG_RIGHT_SERVO_STOP 1
+#define PWM HANG_RACHET_AND_PAWL 2
 
 //CAN
 #define CAN_HANG_WINCH_MOTOR 2
