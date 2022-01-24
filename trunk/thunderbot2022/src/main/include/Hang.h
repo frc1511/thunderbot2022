@@ -48,20 +48,24 @@ PART 2
 */
 
 class Hang : public Mechanism {
-public:
-    Hang();
-    ~Hang();
 
-//functions
-    //sendFeedback should be named debug. 
-    void resetToMode(MatchMode mode) override;
-    void sendFeedback() override;
-    void process() override;
-
-    //hi ishan
-
+private:
+    //manual enumerator for actions
+    enum Manual{EXTEND, RETRACT, EXTEND_A_LITTLE, PIVOT, REVERSE_PIVOT, ENGAGE_BRAKE, DISENGAGE_BRAKE};
+    //enumerator variable thing
+    Manual manual;
+    //bar that the robot is going to
+    enum HangState{TRAVERSAL, HIGH, MID, NOT_ON_BAR, STOP};
+    //enumerator variable thing
+    HangState targetStage;
     //pivots the extending arms forwards/backwards
     void pivot();
+    //retract function if sensors broke
+    void brokenRetract();
+    //extend function if sensors broke
+    void brokenExtend();
+    //extendALittle function if sensors broke
+    void brokenExtendALittle();
     //pivots the extending arms just a little bit so the arms hit the bar
     void reversePivot();
     //engages brake to stop arms from extending more
@@ -71,27 +75,19 @@ public:
     void disengageBrake();
     //retracts arms
     void retract();
-    //extends arms
+    //extends arms fully
     void extend();
-    //bar that the robot is going to
-    enum HangState{TRAVERSAL, HIGH, MID, NOT_ON_BAR};
-    //enumerator variable thing
-    HangState hangState;
-    //pass hangState enum through function
-    void changeState(HangState stage);
-    //move functions to private
-    //make stop command
-    //make cimmand enumerator
-    
-
-private:
+    //extends the extending arms a little to get off the bar
+    void extendALittle();
     //step that the robot is on in the overall process: mid, high, traversal, and what it is doing in general
     int step;
+    //broken step 
+    int brokenStep;
     //step it is in in the retract action
     int retractStep;
     //step it is in in the extend action
     int extendStep;
-    //hang max height, dependent on how far it extended
+    //step for the extendALittle function
     double hangMaxHeight;
     //height that hang should start slowing down
     double hangSlowDownHeight;
@@ -117,4 +113,21 @@ private:
 
     //timer
     frc::Timer pivotTimer;
+
+    public:
+    Hang();
+    ~Hang();
+
+//functions
+    //sendFeedback should be named debug. 
+    void resetToMode(MatchMode mode) override;
+    void sendFeedback() override;
+    void process() override;
+
+    //hi ishan
+
+    //command to change the target bar
+    void targetBar(HangState stage);
+    void commandManual(Manual manualCommands);
+    //make command enum
 };
