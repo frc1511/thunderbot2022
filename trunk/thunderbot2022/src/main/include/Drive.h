@@ -11,16 +11,23 @@
 #include <frc/kinematics/SwerveModuleState.h>
 #include <frc/kinematics/ChassisSpeeds.h>
 #include <frc/trajectory/Trajectory.h>
-#include <frc/controller/HolonomicDriveController.h>
+#include <frc/trajectory/TrajectoryUtil.h>
+#include <frc/trajectory/TrajectoryGenerator.h>
+#include <frc2/command/SwerveControllerCommand.h>
+#include <frc/Filesystem.h>
 #include <frc/Timer.h>
 #include <frc/ADIS16470_IMU.h>
 #include <rev/CANSparkMax.h>
 #include <ctre/phoenix/sensors/CANCoder.h>
 #include <wpi/array.h>
 #include <wpi/numbers>
+#include <wpi/fs.h>
+#include <optional>
 
-#define MAX_SPEED 4_mps
-#define AUTO_SPEED 1_mps
+#define DRIVE_MAX_SPEED 4_mps
+#define AUTO_MAX_SPEED 1_mps
+#define AUTO_MAX_ACCELERATION 0.4_mps_sq
+#define AUTO_TRAJECTORY_CONFIG (frc::TrajectoryConfig(AUTO_MAX_SPEED, AUTO_MAX_ACCELERATION))
 
 #define ROBOT_WIDTH 0.54_m
 #define ROBOT_LENGTH 0.67_m
@@ -36,7 +43,7 @@ public:
     ~SwerveModule();
 
     /**
-     * Sets the state of the swerve module.
+     * Sets the state of the swerve module (Velocity and angle).
      */
     void setState(frc::SwerveModuleState state);
 
@@ -91,7 +98,8 @@ private:
 // --- Drivetrain ---
 
 /**
- * Represents the drivetrain of the robot and handles all drive-related functionality.
+ * Represents the drivetrain of the robot and handles all drive-related
+ * functionality.
  */
 class Drive : public Mechanism {
 public:
@@ -103,29 +111,48 @@ public:
     void process() override;
         
     /**
-     * Returns the current pose.
+     * Returns the current pose (X, Y position and rotation).
      */
     frc::Pose2d getPose();
 
     /**
-     * Resets the rotation of the robot (field-centric).
+     * Resets the forward direction of the robot during field-centric control.
      */
-    void resetForward();
+    void zeroRotation();
 
     /**
-     * Calibrates the IMU (Done once when robot is not moving).
+     * Calibrates the IMU (Should be done only once at a time when the robot is
+     * not moving).
      */
     void calibrateIMU();
-
+    
     /**
-     * Manually set the velocities of the robot.
+     * Manually set the velocities of the robot relative to the robot or the
+     * field.
      */
     void manualDrive(double xVel, double yVel, double rotVel, bool fieldCentric = true);
 
+    // --- Commands ---
+
+    /**
+     * Commands are used primarily during the autonomous period in order to
+     * instruct the drivetrain to execute an action, such as rotating, driving,
+     * or following a trajectory. Commands are mutually exclusive, meaning that
+     * when the drive is instructed to execute a command, it will abort any
+     * other ongoing commands and immediately begin the new one.
+     */
+
+    /**
+     * Begins a command to rotate the robot towards the cargo using the forward-
+     * facing camera. Returns whether it has successfully identified a cargo.
+     */
+    bool cmdRotateToCargo();
+
     /**
      * Begins a command to rotate the robot to the high hub using limelight.
+     * Returns whether it has successfully identified the high hub.
      */
-    bool cmdRotateToTarget();
+    bool cmdRotateToHub();
 
     /**
      * Begins a command to rotate a specified angle.
@@ -133,14 +160,20 @@ public:
     void cmdRotate(frc::Rotation2d angle);
 
     /**
-     * Begins a command to drive a specified distance.
+     * Begins a command to drive a specified distance and rotate a specified
+     * angle.
      */
     void cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle = frc::Rotation2d());
 
     /**
-     * Begins a command to drive a specified trajectory.
+     * Begins a command to follow a specified pathweaver trajectory.
      */
-    void cmdTrajectory(frc::Trajectory trajectory);
+    void cmdFollowPathWeaverTrajectory(const char* pathweaverJson);
+
+    /**
+     * Begins a command to follow a specified trajectory.
+     */
+    void cmdFollowTrajectory(frc::Trajectory trajectory);
 
     /**
      * Returns whether the last command has finished.
@@ -203,19 +236,10 @@ private:
     // The odometry class that tracks the position of the robot on the field.
     frc::SwerveDriveOdometry<4> odometry { kinematics, getRotation() };
 
-    // The ADIS16470 IMU (3D gyro and accelerometer).
-
+    // The ADIS16470 IMU (3D gyro and accelerometer) in the SPI port on the
+    // roborio.
     frc::ADIS16470_IMU imu {};
-    
-    // The trajectory tracker used to create chassis speeds for a drive command (Input PID values for error correction).
-    frc::HolonomicDriveController cmdController { { 1, 0, 0 }, { 1, 0, 0 }, { 1, 0, 0, {} } };
 
-    // Whether a drive command is running.
-    bool cmdRunning = false;
-    
-    // The trajectory for a drive command to follow.
-    frc::Trajectory cmdTargetTrajectory;
-    
-    // A timer to time a drive command.
-    frc::Timer cmdTimer {};
+    // The swerve controller that handles executing drive trajectories.
+    std::optional<frc2::SwerveControllerCommand<4>> command = {};
 };
