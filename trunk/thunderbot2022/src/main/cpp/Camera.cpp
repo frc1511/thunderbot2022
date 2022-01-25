@@ -1,5 +1,5 @@
 #include "Camera.h"
-#if 0
+
 #define CAMERA_WIDTH 320
 #define CAMERA_HEIGHT 240
 #define CAMERA_FPS 30
@@ -86,7 +86,7 @@ Camera::FrameSector Camera::locateTarget(Frame& frame) {
     }
     
     double largestArea = 0;
-    std::vector<cv::Point>* targetContours;
+    std::vector<cv::Point>* targetContours = nullptr;
     
     // Find the largest mass.
     for (size_t i = 0; i < contourNum; ++i) {
@@ -118,4 +118,3 @@ Camera::FrameSector Camera::locateTarget(Frame& frame) {
         return CENTER;
     }
 }
-#endif
