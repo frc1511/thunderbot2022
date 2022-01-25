@@ -181,22 +181,9 @@ void Drive::sendFeedback() {
 void Drive::process() {
     // Update the position on the field.
     updateOdometry();
-    
-    // If a drive command is executing.
-    if (cmdRunning) {
-        // If the drive command has finished.
-        if (cmdTimer.HasElapsed(cmdTargetTrajectory.TotalTime())) {
-            cmdCancel();
-        }
-        // Execute the drive command.
-        else {
-            // Get the current time of the trajectory.
-            units::second_t curTime = cmdTimer.Get();
-            // Sample the state at the current time.
-            frc::Trajectory::State state = cmdTargetTrajectory.Sample(curTime);
-            // Set the swerve modules.
-            setModuleStates(cmdController.Calculate(getPose(), state, state.pose.Rotation()));
-        }
+
+    if (command && !command.value().IsFinished()) {
+        command.value().Execute();
     }
 }
 
@@ -211,7 +198,7 @@ frc::Rotation2d Drive::getRotation() {
     return frc::Rotation2d(units::degree_t(rotation));
 }
 
-void Drive::resetForward() {
+void Drive::zeroRotation() {
     resetIMU();
 }
 
@@ -231,7 +218,14 @@ void Drive::manualDrive(double xVel, double yVel, double rotVel, bool fieldCentr
     }
 }
 
-bool Drive::cmdRotateToTarget() {
+bool Drive::cmdRotateToCargo() {
+    
+    // TODO Implement.
+    
+    return true;
+}
+
+bool Drive::cmdRotateToHub() {
     // Make sure the limelight sees a target.
     if (!limelight->hasTarget()) return false;
     
@@ -245,62 +239,75 @@ bool Drive::cmdRotateToTarget() {
 }
 
 void Drive::cmdRotate(frc::Rotation2d angle) {
-    // Cancel a command if running.
-    cmdCancel();
-    cmdRunning = true;
+    // Create a trajectory to rotate the specified angle.
+    frc::Trajectory trajectory = frc::TrajectoryGenerator::GenerateTrajectory(
+        getPose(), {}, { 0_m, 0_m, angle }, AUTO_TRAJECTORY_CONFIG);
 
-    // Get the current pose of the robot.
-    frc::Pose2d pose = getPose();
-
-    // Add displacement to current pose.
-    std::vector<frc::Trajectory::State> states { { 0_s, 0_mps, 0_mps_sq, { pose.X(), pose.Y(), pose.Rotation() + angle }, {} } };
-    
-    cmdTargetTrajectory = frc::Trajectory(states);
-    
-    // Start the timer.
-    cmdTimer.Reset();
-    cmdTimer.Start();
+    // Start a follow trajectory command.
+    cmdFollowTrajectory(trajectory);
 }
 
 void Drive::cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle) {
-    // Cancel a command if running.
-    cmdCancel();
-    cmdRunning = true;
-    
-    // Get the current pose of the robot.
-    frc::Pose2d pose = getPose();
+    // Create a trajectory that drives the specified distance / turns the specified angle.
+    frc::Trajectory trajectory = frc::TrajectoryGenerator::GenerateTrajectory(
+        getPose(), {}, { x, y, angle }, AUTO_TRAJECTORY_CONFIG);
 
-    // Add displacement to current pose.
-    std::vector<frc::Trajectory::State> states { { 0_s, 0_mps, 0_mps_sq, { pose.X() + x, pose.Y() + y, pose.Rotation() + angle }, {} } };
-    
-    cmdTargetTrajectory = frc::Trajectory(states);
-    
-    // Start the timer.
-    cmdTimer.Reset();
-    cmdTimer.Start();
+    // Start a follow trajectory command.
+    cmdFollowTrajectory(trajectory);
 }
 
-void Drive::cmdTrajectory(frc::Trajectory trajectory) {
-    // Cancel a command if running.
-    cmdCancel();
-    cmdRunning = true;
-    
-    cmdTargetTrajectory = trajectory;
-    
-    // Start the timer.
-    cmdTimer.Reset();
-    cmdTimer.Start();
+void Drive::cmdFollowPathWeaverTrajectory(const char* pathweaverJson) {
+    fs::path directory = fs::path(frc::filesystem::GetDeployDirectory())/pathweaverJson;
+    // Load trajectory from Pathweaver json file.
+    cmdFollowTrajectory(frc::TrajectoryUtil::FromPathweaverJson(directory.string()));
+}
+
+void Drive::cmdFollowTrajectory(frc::Trajectory trajectory) {
+    // Create a controller that will follow the specified trajectory.
+    command = frc2::SwerveControllerCommand<4>(
+        // The trajectory for the controller follow.
+        trajectory,
+        
+        // A lambda function to get the current pose of the robot at any given
+        // time during the command's execution.
+        std::function<frc::Pose2d()>([this]() -> frc::Pose2d {
+            return this->getPose();
+        }),
+        
+        // The swerve drive kinematics.
+        kinematics,
+        
+        // PID loop for movement in the X direction.
+        frc2::PIDController(1, 0, 0),
+        
+        // PID loop for movement in the Y direction.
+        frc2::PIDController(1, 0, 0),
+        
+        // PID loop for rotational movement.
+        frc::ProfiledPIDController<units::radians>(1, 0, 0, {}),
+        
+        // A lambda function to set the swerve module states at any given time
+        // during the command's execution.
+        std::function<void(std::array<frc::SwerveModuleState, 4>)>([this](std::array<frc::SwerveModuleState, 4> states){
+            for(unsigned i = 0; i < this->swerveModules.size(); i++) {
+                this->swerveModules.at(i)->setState(states.at(i));
+            }
+        })
+    );
+
+    // Initialize the trajectory.
+    command.value().Initialize();
 }
 
 bool Drive::cmdIsFinished() {
-    return !cmdRunning;
+    return command ? command.value().IsFinished() : true;
 }
 
 void Drive::cmdCancel() {
-    if (!cmdRunning) return;
-    
-    cmdRunning = false;
-    cmdTimer.Stop();
+    if (command) {
+        command.value().Cancel();
+        command = {};
+    }
 }
 
 void Drive::setModuleStates(frc::ChassisSpeeds chassisSpeeds) {
@@ -308,7 +315,7 @@ void Drive::setModuleStates(frc::ChassisSpeeds chassisSpeeds) {
     wpi::array<frc::SwerveModuleState, 4> moduleStates = kinematics.ToSwerveModuleStates(chassisSpeeds);
     
     // Recalculate wheel speeds relative to the max speed.
-    kinematics.DesaturateWheelSpeeds(&moduleStates, MAX_SPEED);
+    kinematics.DesaturateWheelSpeeds(&moduleStates, DRIVE_MAX_SPEED);
     
     // Set the module states.
     for(unsigned i = 0; i < swerveModules.size(); i++) {
