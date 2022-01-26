@@ -2,6 +2,8 @@
 
 #include "Mechanism.h"
 #include "Feedback.h"
+#include "rev/CANSparkMax.h"
+#include "IOMap.h"
 
 class Shooter : public Mechanism {
 public:
@@ -12,7 +14,35 @@ public:
     void sendFeedback() override;
     void process() override;
 
+    //  this is for checking if the wheels are at good speed
+    bool readySetGo();
+    //  changes speed of the two shooter motors, takes rpm of the two shooter motors ff
+    void setShooterSpeed(double speed);
+    //  changes the position of the shooter hood, takes value between 0 and 1
+    void setHoodPosition(double position);
+    // changes the speed at which the hood moves
+    void setHoodSpeed(double speed);
+
+
+
 private:
+    //  what speed the wheels will go to
+    double speedGoTo;
+
+
+    rev::CANSparkMax shooterMotorLeft{CAN_SHOOTER_LEFT_FLYWHEEL_MOTOR, rev::CANSparkMax::MotorType::kBrushless};
+    rev::CANSparkMax shooterMotorRight{CAN_SHOOTER_RIGHT_FLYWHEEL_MOTOR, rev::CANSparkMax::MotorType::kBrushless};
+
+
+
+
+/** function for it its reaqdy to shoot (done)
+ * funtion to spin wheels
+ * change what the servo is trying ot got to
+ * way to manually change speed of shooter
+ * way to manually change potentiometer position
+ * hi jeff
+ */
     // Something here...
     /**very very very similar shooter to 2020/2021, if your stuck on code look there
      * and/or ask trevor/ishan/peter
