@@ -182,20 +182,12 @@ void Drive::process() {
     // Update the position on the field.
     updateOdometry();
 
-    if (command && !command.value().IsFinished()) {
-        command.value().Execute();
-    }
+    // Execute the current command.
+    executeCommand();
 }
 
-frc::Rotation2d Drive::getRotation() {
-    units::radian_t rotation = units::radian_t(fmod(imu.GetAngle().value(), 360));
-
-    // Convert -2π to 2π value into -π to π value.
-    if(units::math::abs(rotation).value() > wpi::numbers::pi) {
-        rotation = units::radian_t(rotation.value() - (2 * wpi::numbers::pi) * (std::signbit(rotation.value()) ? -1 : 1));
-    }
-    
-    return frc::Rotation2d(units::degree_t(rotation));
+frc::Pose2d Drive::getPose() {
+    return odometry.GetPose();
 }
 
 void Drive::zeroRotation() {
@@ -263,51 +255,22 @@ void Drive::cmdFollowPathWeaverTrajectory(const char* pathweaverJson) {
 }
 
 void Drive::cmdFollowTrajectory(frc::Trajectory trajectory) {
-    // Create a controller that will follow the specified trajectory.
-    command = frc2::SwerveControllerCommand<4>(
-        // The trajectory for the controller follow.
-        trajectory,
-        
-        // A lambda function to get the current pose of the robot at any given
-        // time during the command's execution.
-        std::function<frc::Pose2d()>([this]() -> frc::Pose2d {
-            return this->getPose();
-        }),
-        
-        // The swerve drive kinematics.
-        kinematics,
-        
-        // PID loop for movement in the X direction.
-        frc2::PIDController(1, 0, 0),
-        
-        // PID loop for movement in the Y direction.
-        frc2::PIDController(1, 0, 0),
-        
-        // PID loop for rotational movement.
-        frc::ProfiledPIDController<units::radians>(1, 0, 0, {}),
-        
-        // A lambda function to set the swerve module states at any given time
-        // during the command's execution.
-        std::function<void(std::array<frc::SwerveModuleState, 4>)>([this](std::array<frc::SwerveModuleState, 4> states){
-            for(unsigned i = 0; i < this->swerveModules.size(); i++) {
-                this->swerveModules.at(i)->setState(states.at(i));
-            }
-        })
-    );
-
-    // Initialize the trajectory.
-    command.value().Initialize();
+    cmd.trajectory = trajectory;
+    cmd.timer.Reset();
+    cmd.timer.Start();
+    cmd.running = true;
 }
 
 bool Drive::cmdIsFinished() {
-    return command ? command.value().IsFinished() : true;
+    if (cmd.timer.HasElapsed(cmd.trajectory.TotalTime())) {
+        cmd.running = false;
+    }
+    return cmd.running;
 }
 
 void Drive::cmdCancel() {
-    if (command) {
-        command.value().Cancel();
-        command = {};
-    }
+    cmd.timer.Stop();
+    cmd.running = false;
 }
 
 void Drive::setModuleStates(frc::ChassisSpeeds chassisSpeeds) {
@@ -337,10 +300,42 @@ void Drive::resetOdometry(frc::Pose2d pose) {
     odometry.ResetPosition(pose, getRotation());
 }
 
-frc::Pose2d Drive::getPose() {
-    return odometry.GetPose();
-}
-
 void Drive::resetIMU() {
     imu.Reset();
+}
+
+frc::Rotation2d Drive::getRotation() {
+    units::radian_t rotation = units::radian_t(fmod(imu.GetAngle().value(), 360));
+
+    // Convert -2π to 2π value into -π to π value.
+    if(units::math::abs(rotation).value() > wpi::numbers::pi) {
+        rotation = units::radian_t(rotation.value() - (2 * wpi::numbers::pi) * (std::signbit(rotation.value()) ? -1 : 1));
+    }
+    
+    return frc::Rotation2d(units::degree_t(rotation));
+}
+
+void Drive::executeCommand() {
+    // Only execute a command if the command is running.
+    if (cmd.running) {
+        // Check if the timer timer has passed the total time of the trajectory.
+        if (cmd.timer.HasElapsed(cmd.trajectory.TotalTime())) {
+            cmdCancel();
+        }
+        // Drive!!
+        else {
+            // Get the current time of the trajectory.
+            units::second_t currentTime = cmd.timer.Get();
+            // Sample the desired state of the trajectory at this point in time.
+            frc::Trajectory::State desiredState = cmd.trajectory.Sample(currentTime);
+            // Calculate chassis speeds required in order to reach the desired state.
+            frc::ChassisSpeeds targetChassisSpeeds = cmdController.Calculate(
+                getPose(), desiredState, cmd.trajectory.States().back().pose.Rotation());
+            // Finally drive!
+            setModuleStates(targetChassisSpeeds);
+        }
+    }
+    //hi ishan
+    //hi jeff
+    //hi trevor
 }
