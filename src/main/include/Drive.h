@@ -3,6 +3,7 @@
 #include "Mechanism.h"
 #include "IOMap.h"
 #include "Limelight.h"
+#include "Feedback.h"
 #include <frc/geometry/Transform2d.h>
 #include <frc/geometry/Rotation2d.h>
 #include <frc/geometry/Pose2d.h>
@@ -13,7 +14,7 @@
 #include <frc/trajectory/Trajectory.h>
 #include <frc/trajectory/TrajectoryUtil.h>
 #include <frc/trajectory/TrajectoryGenerator.h>
-#include <frc2/command/SwerveControllerCommand.h>
+#include <frc/controller/HolonomicDriveController.h>
 #include <frc/Filesystem.h>
 #include <frc/Timer.h>
 #include <frc/ADIS16470_IMU.h>
@@ -211,6 +212,11 @@ private:
      */
     frc::Rotation2d getRotation();
 
+    /**
+     * Executes the current command.
+     */
+    void executeCommand();
+
     // The limelight sensor.
     Limelight* limelight;
 
@@ -240,6 +246,13 @@ private:
     // roborio.
     frc::ADIS16470_IMU imu {};
 
-    // The swerve controller that handles executing drive trajectories.
-    std::optional<frc2::SwerveControllerCommand<4>> command = {};
+    struct SwerveCommand {
+        frc::Trajectory trajectory;
+        frc::Timer timer;
+        bool running = false;
+    };
+
+    SwerveCommand cmd = {};
+
+    frc::HolonomicDriveController cmdController { { 1, 0, 0 }, { 1, 0, 0 }, { 1, 0, 0, {} } };
 };
