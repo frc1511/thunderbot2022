@@ -22,7 +22,7 @@ void Shooter::process() {
 }
 
 bool Shooter::readySetGo()  {
-    //return (shooterMotorLeft.getVelocity()  >  speedGoTo) && (shooterMotorRight.getVelocity()  >  speedGoTo);
+    return (shooterMotorLeft.GetEncoder().GetVelocity()  >  speedGoTo) && (shooterMotorRight.GetEncoder().GetVelocity()  >  speedGoTo);
 }                   
 
 void Shooter::setShooterSpeed(double speed) {
@@ -33,6 +33,6 @@ void Shooter::setHoodPosition(double position)  {
 
 }
 
-void Shooter::setHoodSpeed(double speed)    {
-
+void Shooter::setHoodSpeed(double speed) {
+    
 }
