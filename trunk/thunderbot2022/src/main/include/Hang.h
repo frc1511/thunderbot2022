@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Mechanism.h"
 #include "IOMap.h"
 #include "rev/CANSparkMax.h"
@@ -10,6 +9,7 @@
 #include <frc/DigitalInput.h>
 #include "Feedback.h"
 #include <frc/Timer.h>
+#include <frc/Servo.h>
 
 /*
 PART 1
@@ -60,6 +60,10 @@ private:
     HangState targetStage;
     //pivots the extending arms forwards/backwards
     void pivot();
+    //engages the hard stop to keep the extending arms from flopping like trevor when he refuses to stand up
+    void engageHardStop();
+    //disengages the hard stops
+    void disengageHardStop();
     //retract function if sensors broke
     void brokenRetract();
     //extend function if sensors broke
@@ -87,6 +91,8 @@ private:
     int retractStep;
     //step it is in in the extend action
     int extendStep;
+    //step for disengaging the brake
+    int disengageBrakeStep;
     //step for the extendALittle function
     double hangMaxHeight;
     //height that hang should start slowing down
@@ -94,7 +100,9 @@ private:
     //height hang should slow down even more
     double hangSlowDownMoreHeight;
 
-//sensors
+//sensors that are not servos
+    //beam break to tell if the pawl is disengaged
+    frc::DigitalInput rachetBeamBreak {DIO_HANG_RATCHET_BEAM_BREAK};
     //encoder on winch to tell how far its gone
     frc::Encoder winchEncoder {CAN_HANG_ENCODER_A,  CAN_HANG_ENCODER_B};
     //flag sensor on the left arm to tell when its extended	
@@ -109,10 +117,16 @@ private:
     rev::CANSparkMax winchMotor{CAN_HANG_WINCH_MOTOR, rev::CANSparkMax::MotorType::kBrushless};
     frc::DoubleSolenoid hangPivot{frc::PneumaticsModuleType::CTREPCM, PCM1_HANG_PIVOT_EXTEND, PCM1_HANG_PIVOT_RETRACT};
     frc::DoubleSolenoid brake{frc::PneumaticsModuleType::CTREPCM, /*hi jeff*/PCM1_HANG_BRAKE_PISTON_EXTEND, PCM1_HANG_BRAKE_PISTON_RETRACT};
+    
+    //servos
+    frc::Servo leftServo{PWM_HANG_LEFT_SERVO_STOP};
+    frc::Servo rightServo{PWM_HANG_RIGHT_SERVO_STOP};
+    frc::Servo ratchetServo{PWM_HANG_RACHET_AND_PAWL};//DONT KNOW WHY BUT THE RATCHET AND PAWL FROM IOMAP DOESNT WORK
+
     //hi trevor
 
     //timer
-    frc::Timer pivotTimer;
+    frc::Timer hangTimer;
 
     public:
     Hang();
