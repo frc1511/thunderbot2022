@@ -2,7 +2,9 @@
 
 #include "Mechanism.h"
 #include "Feedback.h"
-#include "rev/CANSparkMax.h"
+#include <rev/CANSparkMax.h>
+#include <frc/Servo.h>
+#include <frc/AnalogPotentiometer.h>
 #include "IOMap.h"
 
 class Shooter : public Mechanism {
@@ -32,7 +34,9 @@ private:
 
     rev::CANSparkMax shooterMotorLeft{CAN_SHOOTER_LEFT_FLYWHEEL_MOTOR, rev::CANSparkMax::MotorType::kBrushless};
     rev::CANSparkMax shooterMotorRight{CAN_SHOOTER_RIGHT_FLYWHEEL_MOTOR, rev::CANSparkMax::MotorType::kBrushless};
-
+    
+    frc::Servo theServo{PWM_SHOOTER_HOOD_SERVO};
+    frc::AnalogPotentiometer hoodPotentiometer{ANALOG_SHOOTER_HOOD_POTENTIOMETER};  
 
 
 
