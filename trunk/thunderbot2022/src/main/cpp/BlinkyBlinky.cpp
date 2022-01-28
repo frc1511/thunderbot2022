@@ -1,11 +1,11 @@
-#include "Illumination.h"
+#include "BlinkyBlinky.h"
 
 #define RED_LOW   150
 #define RED_HIGH  255
 #define BLUE_LOW  150
 #define BLUE_HIGH 255
 
-Illumination::Illumination() {
+BlinkyBlinky::BlinkyBlinky() {
     timer.Start();;;;;;;;;;;;;;;;;;;
     // hi peter
     strip.SetLength(LED_NUM_TOTAL);
@@ -17,11 +17,11 @@ Illumination::Illumination() {
     }
 }
 
-Illumination::~Illumination() {
+BlinkyBlinky::~BlinkyBlinky() {
     timer.Stop();
 }
 
-void Illumination::resetToMode(MatchMode mode) {
+void BlinkyBlinky::resetToMode(MatchMode mode) {
     switch(mode) {
         case MODE_DISABLED:
             setSection(UNDERGLOW_FRONT, frc::Color(255, 0, 0));
@@ -60,7 +60,7 @@ void Illumination::resetToMode(MatchMode mode) {
     }
 }
 
-void Illumination::process() {
+void BlinkyBlinky::process() {
     strip.SetData(stripBuffer);
     if(getCurrentMode() == MODE_AUTO) {
         if(timer.Get().value() > 0.1) {
@@ -74,7 +74,7 @@ void Illumination::process() {
     }
 }
 
-void Illumination::setPixel(LEDSection section, int index, frc::Color color) {
+void BlinkyBlinky::setPixel(LEDSection section, int index, frc::Color color) {
     int offset = index;
 
     switch(section) {
@@ -94,7 +94,7 @@ void Illumination::setPixel(LEDSection section, int index, frc::Color color) {
     stripBuffer[offset].SetRGB(color.red, color.green, color.blue);
 }
 
-void Illumination::setSection(LEDSection section, frc::Color color) {
+void BlinkyBlinky::setSection(LEDSection section, frc::Color color) {
     int length = 0;
 
     switch(section) {
