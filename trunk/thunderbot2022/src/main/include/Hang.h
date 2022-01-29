@@ -1,4 +1,6 @@
 #pragma once
+#pragma twice
+
 #include "Mechanism.h"
 #include "IOMap.h"
 #include "rev/CANSparkMax.h"
@@ -50,14 +52,6 @@ PART 2
 class Hang : public Mechanism {
 
 private:
-    //manual enumerator for actions
-    enum Manual{EXTEND, RETRACT, EXTEND_A_LITTLE, PIVOT, REVERSE_PIVOT, ENGAGE_BRAKE, DISENGAGE_BRAKE};
-    //enumerator variable thing
-    Manual manual;
-    //bar that the robot is going to
-    enum HangState{TRAVERSAL, HIGH, MID, NOT_ON_BAR, STOP};
-    //enumerator variable thing
-    HangState targetStage;
     //pivots the extending arms forwards/backwards
     void pivot();
     //engages the hard stop to keep the extending arms from flopping like trevor when he refuses to stand up
@@ -115,8 +109,12 @@ private:
 
     //actuator stuff
     rev::CANSparkMax winchMotor{CAN_HANG_WINCH_MOTOR, rev::CANSparkMax::MotorType::kBrushless};
-    frc::DoubleSolenoid hangPivot{frc::PneumaticsModuleType::CTREPCM, PCM1_HANG_PIVOT_1_EXTEND, PCM1_HANG_PIVOT_1_RETRACT};
+    //TOP PISTON CONNECTING hangPivot2 to the arm
+    frc::DoubleSolenoid hangPivot1{frc::PneumaticsModuleType::CTREPCM, PCM1_HANG_PIVOT_1_EXTEND, PCM1_HANG_PIVOT_1_RETRACT};
     frc::DoubleSolenoid brake{frc::PneumaticsModuleType::CTREPCM, /*hi jeff*/PCM1_HANG_BRAKE_PISTON_EXTEND, PCM1_HANG_BRAKE_PISTON_RETRACT};
+    //connects the robot to hangPivot1
+    frc::DoubleSolenoid hangPivot2{frc::PneumaticsModuleType::CTREPCM, PCM1_HANG_PIVOT_2_EXTEND, PCM1_HANG_PIVOT_2_RETRACT};
+    
     //servos
     frc::Servo leftServo{PWM_HANG_LEFT_SERVO_STOP};
     frc::Servo rightServo{PWM_HANG_RIGHT_SERVO_STOP};
@@ -128,6 +126,16 @@ private:
     frc::Timer hangTimer;
 
     public:
+
+    //manual enumerator for actions
+    enum Manual{EXTEND, RETRACT, EXTEND_A_LITTLE, PIVOT, REVERSE_PIVOT, ENGAGE_BRAKE, DISENGAGE_BRAKE};
+    //enumerator variable thing
+    Manual manual;
+    //bar that the robot is going to
+    enum HangState{TRAVERSAL, HIGH, MID, NOT_ON_BAR, STOP};
+    //enumerator variable thing
+    HangState targetStage;
+
     Hang();
     ~Hang();
 
