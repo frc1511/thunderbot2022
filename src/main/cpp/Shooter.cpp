@@ -26,6 +26,8 @@
 #define HOOD_SPEED_FORWARD .5
 #define HOOD_SPEED_BACKWARD -.5
 
+#define SHOOTER_TOLERANCE 100
+
 // --- Preset values ---
 
 // The hood position and shooter rpm when the robot is right next to the hub.
@@ -97,9 +99,6 @@ void Shooter::sendFeedback() {
 }
 
 void Shooter::process() {
-    double targetHoodPosition = 0;
-    double targetRPM = 0;
-
     switch (mode) {
         case ODOMETRY:
             // TODO Align the hood to high hub and set shooter speed using
@@ -132,8 +131,6 @@ void Shooter::process() {
     // If manual speed.
     if (hoodSpeedManual != 0) {
         servoSpeed = hoodSpeedManual;
-        // Reset manual speed to 0 so it doesn't keep moving on its own.
-        hoodSpeedManual = 0;
     }
     // If hood position is within the tolerance level to the target position.
     else if (hoodPosition + HOOD_TOLERANCE >= targetHoodPosition && hoodPosition - HOOD_TOLERANCE <= targetHoodPosition) {
@@ -161,12 +158,19 @@ void Shooter::process() {
     hoodServo.SetSpeed(servoSpeed);
 }
 
-void Shooter::setShooterSpinup(bool shouldSpin) {
-    wantToShoot = shouldSpin;
+void Shooter::setShooterSpinup(bool shouldShoot) {
+    wantToShoot = shouldShoot;
+}
+
+bool Shooter::isShooterReady() {
+    return (shooterLeftEncoder.GetVelocity() > targetRPM - SHOOTER_TOLERANCE) &&
+           (shooterRightEncoder.GetVelocity() > targetRPM - SHOOTER_TOLERANCE) &&
+           (abs(hoodPotentiometer.Get() - targetHoodPosition) < HOOD_TOLERANCE);
 }
 
 void Shooter::setHoodManual(double speed) {
     hoodSpeedManual = speed;
+
 }
 
 void Shooter::setShooterMode(ShooterMode targetMode) {
