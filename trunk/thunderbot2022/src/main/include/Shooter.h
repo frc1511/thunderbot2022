@@ -20,7 +20,12 @@ public:
     /**
      * Sets whether the shooter should be spinning.
      */
-    void setShooterSpinup(bool shouldSpin);
+    void setShooterSpinup(bool shouldShoot);
+
+    /**
+     * Returns whether the hood position is at the desired position.
+     */
+    bool isShooterReady();
 
     /**
      * Sets the speed of the hood manually (from controls).
@@ -48,6 +53,12 @@ private:
     // The manual speed of the hood servo.
     double hoodSpeedManual = 0;
 
+    // The target RPM of the shooting motors.
+    double targetRPM = 0;
+
+    // The target position of the hood.
+    double targetHoodPosition;
+
     ShooterMode mode = ODOMETRY;
 
     rev::CANSparkMax shooterLeftMotor  {CAN_SHOOTER_LEFT_FLYWHEEL_MOTOR,  rev::CANSparkMax::MotorType::kBrushless};
@@ -62,6 +73,7 @@ private:
     frc::Servo hoodServo {PWM_SHOOTER_HOOD_SERVO};
     frc::AnalogPotentiometer hoodPotentiometer {ANALOG_SHOOTER_HOOD_POTENTIOMETER};
 
+//hi jeff :D
 // trevor's weird comments below
 
 /** function for it its reaqdy to shoot (done)
@@ -69,7 +81,6 @@ private:
  * change what the servo is trying ot got to
  * way to manually change speed of shooter
  * way to manually change potentiometer position
- * hi jeff
  */
     // Something here...
     /**very very very similar shooter to 2020/2021, if your stuck on code look there
