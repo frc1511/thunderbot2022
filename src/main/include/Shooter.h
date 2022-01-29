@@ -1,44 +1,68 @@
 #pragma once
 
+#include "IOMap.h"
 #include "Mechanism.h"
 #include "Feedback.h"
+#include "Limelight.h"
 #include <rev/CANSparkMax.h>
 #include <frc/Servo.h>
 #include <frc/AnalogPotentiometer.h>
-#include "IOMap.h"
 
 class Shooter : public Mechanism {
 public:
-    Shooter();
+    Shooter(Limelight* limelight);
     ~Shooter();
 
     void resetToMode(MatchMode mode) override;
     void sendFeedback() override;
     void process() override;
 
-    //  this is for checking if the wheels are at good speed
-    bool readySetGo();
-    //  changes speed of the two shooter motors, takes rpm of the two shooter motors ff
-    void setShooterSpeed(double speed);
-    //  changes the position of the shooter hood, takes value between 0 and 1
-    void setHoodPosition(double position);
-    // changes the speed at which the hood moves
-    void setHoodSpeed(double speed);
+    /**
+     * Sets whether the shooter should be spinning.
+     */
+    void setShooterSpinup(bool shouldSpin);
 
+    /**
+     * Sets the speed of the hood manually (from controls).
+     */
+    void setHoodManual(double speed);
 
+    enum ShooterMode {
+        ODOMETRY,
+        LAUNCH_PAD,
+        TARMAC_LINE,
+        MANUAL,
+    };
+
+    /**
+     * Set the mode of the shooter.
+     */
+    void setShooterMode(ShooterMode mode);
 
 private:
-    //  what speed the wheels will go to
-    double speedGoTo;
+    Limelight* limelight;
 
+    // Whether the shooter wheels should spin up to speed.
+    bool wantToShoot = false;
 
-    rev::CANSparkMax shooterMotorLeft{CAN_SHOOTER_LEFT_FLYWHEEL_MOTOR, rev::CANSparkMax::MotorType::kBrushless};
-    rev::CANSparkMax shooterMotorRight{CAN_SHOOTER_RIGHT_FLYWHEEL_MOTOR, rev::CANSparkMax::MotorType::kBrushless};
+    // The manual speed of the hood servo.
+    double hoodSpeedManual = 0;
+
+    ShooterMode mode = ODOMETRY;
+
+    rev::CANSparkMax shooterLeftMotor  {CAN_SHOOTER_LEFT_FLYWHEEL_MOTOR,  rev::CANSparkMax::MotorType::kBrushless};
+    rev::CANSparkMax shooterRightMotor {CAN_SHOOTER_RIGHT_FLYWHEEL_MOTOR, rev::CANSparkMax::MotorType::kBrushless};
+
+    rev::SparkMaxRelativeEncoder shooterLeftEncoder;
+    rev::SparkMaxRelativeEncoder shooterRightEncoder;
+
+    rev::SparkMaxPIDController shooterLeftPID;
+    rev::SparkMaxPIDController shooterRightPID;
     
-    frc::Servo theServo{PWM_SHOOTER_HOOD_SERVO};
-    frc::AnalogPotentiometer hoodPotentiometer{ANALOG_SHOOTER_HOOD_POTENTIOMETER};  
+    frc::Servo hoodServo {PWM_SHOOTER_HOOD_SERVO};
+    frc::AnalogPotentiometer hoodPotentiometer {ANALOG_SHOOTER_HOOD_POTENTIOMETER};
 
-
+// trevor's weird comments below
 
 /** function for it its reaqdy to shoot (done)
  * funtion to spin wheels
