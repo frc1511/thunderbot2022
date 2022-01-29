@@ -130,11 +130,11 @@ bool Autonomous::rotateToCargo() {
         case Camera::CENTER:
             // Stop the drive.
             drive->manualDrive(0, 0, 0);
-            break;
+            return true;
         case Camera::LEFT:
             // Begin rotating to the left.
             drive->manualDrive(0, 0, -VISION_ROTATE_SPEED);
-            return false;
+            break;
         case Camera::RIGHT:
             // Begin rotating to the right.
             drive->manualDrive(0, 0, +VISION_ROTATE_SPEED);
