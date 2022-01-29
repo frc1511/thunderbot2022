@@ -261,6 +261,22 @@ void Drive::setControlMode(ControlMode mode) {
     controlMode = mode;
 }
 
+void Drive::makeBrick() {
+    for (int i = 0; i < swerveModules.size(); i++) {
+        units::degree_t angle;
+        // If even index.
+        if (i % 2 == 0) {
+            angle = -45_deg;
+        }
+        // If odd index.
+        else {
+            angle = 45_deg;
+        }
+        // Turn the swerve module to point towards the center of the robot.
+        swerveModules[i]->setState({ 0_mps, angle });
+    }
+}
+
 bool Drive::cmdRotateToCargo() {
     
     // TODO Implement.

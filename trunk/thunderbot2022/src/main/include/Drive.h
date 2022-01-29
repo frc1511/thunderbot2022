@@ -143,6 +143,12 @@ public:
      */
     void setControlMode(ControlMode mode);
 
+    /**
+     * Rotates all the swerve modules towards the center of the robot in order
+     * to reduce pushing by other robots (aka making the robot a brick).
+     */
+    void makeBrick();
+
     // --- Commands ---
 
     /**
