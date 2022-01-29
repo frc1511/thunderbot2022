@@ -97,7 +97,7 @@ private:
 
     Intake intake {}; // not completly sure what this does but i know it's important
     Storage storage {}; // not completly sure what this does but i know it's important
-    Shooter shooter {};// not completly sure what this does but i know it's important
+    Shooter shooter { limelight };// not completly sure what this does but i know it's important
 
     int currentBallCount; //how many cells we currently have in the robot.
     int cellsShot; //keeps tally of how many cells we've shot. used in the currentBallCount calculation
