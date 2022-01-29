@@ -5,7 +5,9 @@
 #include "Robot.h"
 
 void Robot::RobotInit() {}
-void Robot::RobotPeriodic() {}
+void Robot::RobotPeriodic() {
+  blinkyBlinky.process();
+}
 
 void Robot::AutonomousInit() {
   resetMechanisms(Mechanism::MODE_AUTO);
@@ -49,6 +51,7 @@ void Robot::resetMechanisms(Mechanism::MatchMode mode) {
   hang.resetToMode(mode);
   controls.resetToMode(mode);
   autonomous.resetToMode(mode);
+  blinkyBlinky.resetToMode(mode);
 }
 
 #ifndef RUNNING_FRC_TESTS

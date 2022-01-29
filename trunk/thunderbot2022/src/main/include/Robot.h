@@ -12,6 +12,7 @@
 #include "Limelight.h"
 #include "Feedback.h"
 #include "Autonomous.h"
+#include "BlinkyBlinky.h"
 
 class Robot : public frc::TimedRobot {
 public:
@@ -39,4 +40,5 @@ private:
   Hang hang {};
   Controls controls { &drive, &gamEpiece, &hang };
   Autonomous autonomous { &drive, &gamEpiece };
+  BlinkyBlinky blinkyBlinky {};
 };
