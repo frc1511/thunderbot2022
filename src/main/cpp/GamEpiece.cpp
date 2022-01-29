@@ -12,7 +12,6 @@ GamEpiece::~GamEpiece() {
 void GamEpiece::resetToMode(MatchMode mode) {
     #if 0
     intake.resetToMode(mode);
-    storage.resetToMode(mode);
     shooter.resetToMode(mode);
 
     if (mode == MODE_TELEOP || mode == MODE_AUTO) {
@@ -99,7 +98,6 @@ void GamEpiece::process() {
 
 
     intake.process();
-    storage.process();
     shooter.process();
     #endif
 }
