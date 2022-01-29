@@ -16,6 +16,8 @@
 
 #define DRIVE_MAX_VOLTAGE 12
 #define TURNING_MAX_VOLTAGE 12
+#define DRIVE_MAX_AMPS 40
+#define TURNING_MAX_AMPS 30
 
 // --- PID values ---
 
@@ -33,15 +35,14 @@
 
 // --- Swerve module ---
 
-SwerveModule::SwerveModule(int driveCANID, int turningCANID, int canCoderCANID, double canCoderOffset)
+SwerveModule::SwerveModule(int driveCANID, int turningCANID, int canCoderCANID)
   : driveMotor(driveCANID, rev::CANSparkMax::MotorType::kBrushless),
     driveEncoder(driveMotor.GetEncoder()),
     drivePID(driveMotor.GetPIDController()),
     turningMotor(turningCANID, rev::CANSparkMax::MotorType::kBrushless),
     turningRelEncoder(turningMotor.GetEncoder()),
     turningPID(turningMotor.GetPIDController()),
-    turningAbsEncoder(canCoderCANID),
-    canCoderOffset(canCoderOffset) {
+    turningAbsEncoder(canCoderCANID) {
   
     // --- Drive motor config ---
     
@@ -50,7 +51,7 @@ SwerveModule::SwerveModule(int driveCANID, int turningCANID, int canCoderCANID, 
     driveMotor.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
     driveMotor.EnableVoltageCompensation(DRIVE_MAX_VOLTAGE);
     // Limit in amps (Always when using NEO Brushless to avoid damage).
-    driveMotor.SetSmartCurrentLimit(40);
+    driveMotor.SetSmartCurrentLimit(DRIVE_MAX_AMPS);
     driveMotor.SetInverted(false);
     // Ramping (0.5 seconds to accelerate from neutral to full throttle).
     driveMotor.SetClosedLoopRampRate(0.5);
@@ -73,7 +74,7 @@ SwerveModule::SwerveModule(int driveCANID, int turningCANID, int canCoderCANID, 
     turningMotor.RestoreFactoryDefaults();
     turningMotor.SetIdleMode(rev::CANSparkMax::IdleMode::kCoast);
     turningMotor.EnableVoltageCompensation(TURNING_MAX_VOLTAGE);
-    turningMotor.SetSmartCurrentLimit(30);
+    turningMotor.SetSmartCurrentLimit(TURNING_MAX_AMPS);
     turningMotor.SetInverted(true);
     turningPID.SetFeedbackDevice(turningRelEncoder);
     // PID values.
@@ -112,6 +113,10 @@ frc::SwerveModuleState SwerveModule::getState() {
     return { units::meters_per_second_t(getDriveVelocity()), frc::Rotation2d(getAbsoluteRotation()) };
 }
 
+void SwerveModule::configOffset() {
+    turningAbsEncoder.ConfigMagnetOffset(units::degree_t(getAbsoluteRotation()).value());
+}
+
 void SwerveModule::setDriveMotor(double speed) {
     driveMotor.Set(speed);
 }
@@ -147,7 +152,7 @@ double SwerveModule::getRelativeRotation() {
 }
 
 units::radian_t SwerveModule::getAbsoluteRotation() {
-    return units::radian_t(units::degree_t(turningAbsEncoder.GetAbsolutePosition())) - canCoderOffset;
+    return units::radian_t(units::degree_t(turningAbsEncoder.GetAbsolutePosition() - 90));
 }
 
 // --- Drivetrain ---
@@ -230,6 +235,12 @@ void Drive::zeroRotation() {
 
 void Drive::calibrateIMU() {
     imu.Calibrate();
+}
+
+void Drive::setupMagneticEncoders() {
+    for (SwerveModule* module : swerveModules) {
+        module->configOffset();
+    }
 }
 
 void Drive::manualDrive(double xVel, double yVel, double rotVel) {
