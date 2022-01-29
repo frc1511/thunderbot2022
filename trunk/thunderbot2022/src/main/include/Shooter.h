@@ -57,7 +57,7 @@ private:
     double targetRPM = 0;
 
     // The target position of the hood.
-    double targetHoodPosition;
+    double targetHoodPosition = 0;
 
     ShooterMode mode = ODOMETRY;
 
