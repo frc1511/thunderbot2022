@@ -40,7 +40,7 @@
  */
 class SwerveModule {
 public:
-    SwerveModule(int driveCANID, int turningCANID, int canCoderCANID, double canCoderOffset);
+    SwerveModule(int driveCANID, int turningCANID, int canCoderCANID);
     ~SwerveModule();
 
     /**
@@ -52,6 +52,13 @@ public:
      * Returns the current state of the swerve module.
      */
     frc::SwerveModuleState getState();
+
+    /**
+     * Applies the current rotation of the module as the offset of the
+     * CANCoder. Only called when the module was replaced and rotated
+     * towards the front of the robot.
+     */
+    void configOffset();
 
 private:
     /**
@@ -91,9 +98,6 @@ private:
 
     // The absolute encoder (CTRE CANCoder).
     ctre::phoenix::sensors::CANCoder turningAbsEncoder;
-
-    // The offset of the CANCoder.
-    const units::radian_t canCoderOffset;
 };
 
 // --- Drivetrain ---
@@ -126,6 +130,14 @@ public:
      * not moving).
      */
     void calibrateIMU();
+
+    /**
+     * Applies the current rotation of the swerve modules as the offset of the
+     * magnetic encoders. *** IMPORTANT *** Should only be called after
+     * replacing a swerve module and when all the swerve modules are rotated
+     * towards the front of the robot!
+     */
+    void setupMagneticEncoders();
     
     /**
      * Manually set the velocities of the robot (dependant on control type).
@@ -249,10 +261,10 @@ private:
 
     // The swerve modules on the robot.
     wpi::array<SwerveModule*, 4> swerveModules {
-      new SwerveModule(CAN_SWERVE_FL_DRIVE_MOTOR, CAN_SWERVE_FL_ROT_MOTOR, CAN_SWERVE_FL_ROT_CAN_CODER, +0),
-      new SwerveModule(CAN_SWERVE_BL_DRIVE_MOTOR, CAN_SWERVE_BL_ROT_MOTOR, CAN_SWERVE_BL_ROT_CAN_CODER, +0),
-      new SwerveModule(CAN_SWERVE_BR_DRIVE_MOTOR, CAN_SWERVE_BR_ROT_MOTOR, CAN_SWERVE_BR_ROT_CAN_CODER, +0),
-      new SwerveModule(CAN_SWERVE_FR_DRIVE_MOTOR, CAN_SWERVE_FR_ROT_MOTOR, CAN_SWERVE_FR_ROT_CAN_CODER, +0),
+      new SwerveModule(CAN_SWERVE_FL_DRIVE_MOTOR, CAN_SWERVE_FL_ROT_MOTOR, CAN_SWERVE_FL_ROT_CAN_CODER),
+      new SwerveModule(CAN_SWERVE_BL_DRIVE_MOTOR, CAN_SWERVE_BL_ROT_MOTOR, CAN_SWERVE_BL_ROT_CAN_CODER),
+      new SwerveModule(CAN_SWERVE_BR_DRIVE_MOTOR, CAN_SWERVE_BR_ROT_MOTOR, CAN_SWERVE_BR_ROT_CAN_CODER),
+      new SwerveModule(CAN_SWERVE_FR_DRIVE_MOTOR, CAN_SWERVE_FR_ROT_MOTOR, CAN_SWERVE_FR_ROT_CAN_CODER),
     };
 
     // The helper class that converts chassis speeds into swerve module states.
