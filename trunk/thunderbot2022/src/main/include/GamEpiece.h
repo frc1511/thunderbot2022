@@ -2,7 +2,6 @@
 
 #include "Mechanism.h"
 #include "Intake.h"
-#include "Storage.h"
 #include "Shooter.h"
 #include "Feedback.h"
 #include "Drive.h"
@@ -96,7 +95,6 @@ private:
     Limelight* limelight;
 
     Intake intake {}; // not completly sure what this does but i know it's important
-    Storage storage {}; // not completly sure what this does but i know it's important
     Shooter shooter { limelight };// not completly sure what this does but i know it's important
 
     int currentBallCount; //how many cells we currently have in the robot.
