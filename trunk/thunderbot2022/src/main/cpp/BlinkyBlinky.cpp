@@ -11,9 +11,26 @@ BlinkyBlinky::BlinkyBlinky() {
     strip.SetLength(LED_NUM_TOTAL);
     strip.SetData(stripBuffer);
     strip.Start();
-    double mrPalmer = LED_NUM_UNDERGLOW_TOTAL/(BLUE_HIGH - BLUE_LOW);
-    for(int i = 0; i < LED_NUM_UNDERGLOW_TOTAL; i++) {
-        colorRange [i].SetRGB(0, 0, BLUE_LOW + i * mrPalmer);
+
+    double mrPalmer;
+    switch (frc::DriverStation::GetAlliance()) {
+        case frc::DriverStation::kRed:
+            mrPalmer = LED_NUM_UNDERGLOW_TOTAL/(RED_HIGH - RED_LOW);
+
+            for(int i = 0; i < LED_NUM_UNDERGLOW_TOTAL; i++) {
+                colorRange[i].SetRGB(RED_LOW + i * mrPalmer, 0, 0);
+            }
+            break;
+        case frc::DriverStation::kBlue:
+            mrPalmer = LED_NUM_UNDERGLOW_TOTAL/(BLUE_HIGH - BLUE_LOW);
+            
+            for(int i = 0; i < LED_NUM_UNDERGLOW_TOTAL; i++) {
+                colorRange[i].SetRGB(0, 0, BLUE_LOW + i * mrPalmer);
+            }
+            //hi josh
+            break;
+        case frc::DriverStation::kInvalid:
+            break;
     }
 }
 
@@ -31,7 +48,7 @@ void BlinkyBlinky::resetToMode(MatchMode mode) {
             break;
         case MODE_AUTO:
             for(int i = 0; i < LED_NUM_UNDERGLOW_TOTAL; i++) {
-                setPixel(UNDERGLOW_FRONT, i, frc::Color(colorRange [i].r, colorRange [i].g, colorRange [i].b));
+                setPixel(UNDERGLOW_FRONT, i, frc::Color(colorRange[i].r, colorRange[i].g, colorRange[i].b));
             }
             break;
         case MODE_TELEOP:
@@ -68,7 +85,7 @@ void BlinkyBlinky::process() {
             underglowOffset += 1;
             for(int i = 0; i < LED_NUM_UNDERGLOW_TOTAL; i++) {
                 int colorIndex = (underglowOffset + i) % LED_NUM_UNDERGLOW_TOTAL;
-                setPixel(UNDERGLOW_FRONT, i, frc::Color(colorRange [colorIndex].r, colorRange [colorIndex].g, colorRange [colorIndex].b));
+                setPixel(UNDERGLOW_FRONT, i, frc::Color(colorRange[colorIndex].r, colorRange[colorIndex].g, colorRange[colorIndex].b));
             }
         }
     }
