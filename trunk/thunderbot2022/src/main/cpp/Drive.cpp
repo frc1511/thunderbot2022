@@ -273,7 +273,7 @@ void Drive::setControlMode(ControlMode mode) {
 }
 
 void Drive::makeBrick() {
-    for (int i = 0; i < swerveModules.size(); i++) {
+    for (unsigned i = 0; i < swerveModules.size(); i++) {
         units::degree_t angle;
         // If even index.
         if (i % 2 == 0) {

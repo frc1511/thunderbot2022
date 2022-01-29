@@ -115,7 +115,7 @@ void Intake::setIntakeSpeed(double speed)
     intakeSpeed = speed;
 } // positive to intake, negative to outtake
 
-int Intake::giveBallToShooter(){
+void Intake::giveBallToShooter(){
     //put code here? this could be in process or put all the code in the shooter part of the switch statement and switching between can be handed in game piece doesnt matter.
 }
 

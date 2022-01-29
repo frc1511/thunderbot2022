@@ -36,7 +36,7 @@ public:
     //tells if the intake sensor has been tripped
     bool intakeBeamTripped();
     // moves stage two to shoot the balls then moves a present ball to stage one if there is one
-    int giveBallToShooter();
+    void giveBallToShooter();
     //ball count!!!!
     void countOfBalls();
     // returns the ball count
