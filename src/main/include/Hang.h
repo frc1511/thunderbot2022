@@ -115,9 +115,8 @@ private:
 
     //actuator stuff
     rev::CANSparkMax winchMotor{CAN_HANG_WINCH_MOTOR, rev::CANSparkMax::MotorType::kBrushless};
-    frc::DoubleSolenoid hangPivot{frc::PneumaticsModuleType::CTREPCM, PCM1_HANG_PIVOT_EXTEND, PCM1_HANG_PIVOT_RETRACT};
+    frc::DoubleSolenoid hangPivot{frc::PneumaticsModuleType::CTREPCM, PCM1_HANG_PIVOT_1_EXTEND, PCM1_HANG_PIVOT_1_RETRACT};
     frc::DoubleSolenoid brake{frc::PneumaticsModuleType::CTREPCM, /*hi jeff*/PCM1_HANG_BRAKE_PISTON_EXTEND, PCM1_HANG_BRAKE_PISTON_RETRACT};
-    
     //servos
     frc::Servo leftServo{PWM_HANG_LEFT_SERVO_STOP};
     frc::Servo rightServo{PWM_HANG_RIGHT_SERVO_STOP};
