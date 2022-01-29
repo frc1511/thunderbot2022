@@ -175,7 +175,39 @@ void Drive::resetToMode(MatchMode mode) {
 }
 
 void Drive::sendFeedback() {
-    // TODO Send feedback...
+    Feedback::sendDouble("drive", "imu angle (degrees)", imu.GetAngle().value());
+
+    std::string modeString = "";
+    switch (controlMode) {
+        case FIELD_CENTRIC:
+            modeString = "field centric";
+            break;
+        case ROBOT_CENTRIC:
+            modeString = "robot centric";
+            break;
+    }
+    Feedback::sendString("drive", "control mode", modeString.c_str());
+    
+    frc::Pose2d pose = getPose();
+
+    Feedback::sendDouble("drive", "robot x position (meters)", pose.X().value());
+    Feedback::sendDouble("drive", "robot y position (meters)", pose.Y().value());
+    Feedback::sendDouble("drive", "robot rotation (degrees)", pose.Rotation().Degrees().value());
+
+    Feedback::sendDouble("drive", "wheel 0 rotation (degrees)", swerveModules[0]->getState().angle.Degrees().value());
+    Feedback::sendDouble("drive", "wheel 1 rotation (degrees)", swerveModules[1]->getState().angle.Degrees().value());
+    Feedback::sendDouble("drive", "wheel 2 rotation (degrees)", swerveModules[2]->getState().angle.Degrees().value());
+    Feedback::sendDouble("drive", "wheel 3 rotation (degrees)", swerveModules[3]->getState().angle.Degrees().value());
+    
+    //hi josh
+
+    Feedback::sendDouble("drive", "wheel 0 speed (mps)", swerveModules[0]->getState().speed.value());
+    Feedback::sendDouble("drive", "wheel 1 speed (mps)", swerveModules[1]->getState().speed.value());
+    Feedback::sendDouble("drive", "wheel 2 speed (mps)", swerveModules[2]->getState().speed.value());
+    Feedback::sendDouble("drive", "wheel 3 speed (mps)", swerveModules[3]->getState().speed.value());
+
+    Feedback::sendBoolean("drive", "running command", cmd.running);
+    Feedback::sendBoolean("drive", "running command time", cmd.timer.Get().value());
 }
 
 void Drive::process() {
@@ -200,16 +232,33 @@ void Drive::calibrateIMU() {
     imu.Calibrate();
 }
 
-void Drive::manualDrive(double xVel, double yVel, double rotVel, bool fieldCentric) {
+void Drive::manualDrive(double xVel, double yVel, double rotVel) {
     // Take control if drive command is running.
     cmdCancel();
     
-    // Generate chassis speeds depending on control mode.
-    if (fieldCentric) {
-        setModuleStates(frc::ChassisSpeeds::FromFieldRelativeSpeeds(units::meters_per_second_t(xVel), units::meters_per_second_t(yVel), units::radians_per_second_t(rotVel), getRotation()));
-    } else {
-        setModuleStates({ units::meters_per_second_t(xVel), units::meters_per_second_t(yVel), units::radians_per_second_t(rotVel) });
+    frc::ChassisSpeeds chassisSpeeds;
+
+    // Generate chassis speeds depending on the control mode.
+    switch (controlMode) {
+        case FIELD_CENTRIC:
+            chassisSpeeds = frc::ChassisSpeeds::FromFieldRelativeSpeeds(units::meters_per_second_t(xVel),
+                                                                        units::meters_per_second_t(yVel),
+                                                                        units::radians_per_second_t(rotVel),
+                                                                        getRotation());
+            break;
+        case ROBOT_CENTRIC:
+            chassisSpeeds = {units::meters_per_second_t(xVel),
+                             units::meters_per_second_t(yVel),
+                             units::radians_per_second_t(rotVel)};
+            break;
     }
+    
+    // Set the modules to turn based on the speeds of the entire chassis.
+    setModuleStates(chassisSpeeds);
+}
+
+void Drive::setControlMode(ControlMode mode) {
+    controlMode = mode;
 }
 
 bool Drive::cmdRotateToCargo() {

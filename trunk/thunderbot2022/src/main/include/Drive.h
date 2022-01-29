@@ -128,10 +128,20 @@ public:
     void calibrateIMU();
     
     /**
-     * Manually set the velocities of the robot relative to the robot or the
-     * field.
+     * Manually set the velocities of the robot (dependant on control type).
      */
-    void manualDrive(double xVel, double yVel, double rotVel, bool fieldCentric = true);
+    void manualDrive(double xVel, double yVel, double rotVel);
+
+    enum ControlMode {
+        ROBOT_CENTRIC,
+        FIELD_CENTRIC,
+    };
+
+    /**
+     * Sets the control mode of the robot (relative to the robot or relative to
+     * the field).
+     */
+    void setControlMode(ControlMode mode);
 
     // --- Commands ---
 
@@ -216,6 +226,9 @@ private:
      * Executes the current command.
      */
     void executeCommand();
+
+    // The control mode of the robot.
+    ControlMode controlMode = FIELD_CENTRIC;
 
     // The limelight sensor.
     Limelight* limelight;
