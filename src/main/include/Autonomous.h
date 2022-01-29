@@ -4,11 +4,12 @@
 #include "Drive.h"
 #include "GamEpiece.h"
 #include "Feedback.h"
+#include "Camera.h"
 #include <frc/Timer.h>
 
 class Autonomous : public Mechanism {
 public:
-    Autonomous(Drive* drive, GamEpiece* gamEpiece);
+    Autonomous(Drive* drive, GamEpiece* gamEpiece, Camera* camera);
     ~Autonomous();
 
     enum AutoMode {
@@ -72,6 +73,8 @@ private:
     void rightThreeBall();
     void fiveBall();
 
+    bool rotateToCargo();
+
     AutoMode currentMode = DO_NOTHING;
 
     frc::Timer timer {};
@@ -79,4 +82,7 @@ private:
 
     Drive* drive;
     GamEpiece* gamEpiece;
+
+    Camera* camera;
+    Camera::Frame frame {};
 };
