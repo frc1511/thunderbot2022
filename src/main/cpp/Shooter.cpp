@@ -92,10 +92,31 @@ void Shooter::resetToMode(MatchMode mode) {
 }
 
 void Shooter::sendFeedback() {
-    Feedback::sendDouble("shooter", "left velocity (RPM)", shooterLeftEncoder.GetVelocity());
-    Feedback::sendDouble("shooter", "right velocity (RPM)", shooterRightEncoder.GetVelocity());
+    Feedback::sendDouble("shooter", "left velocity (rpm)", shooterLeftEncoder.GetVelocity());
+    Feedback::sendDouble("shooter", "right velocity (rpm)", shooterRightEncoder.GetVelocity());
+    Feedback::sendDouble("shooter", "hood position", hoodPotentiometer.Get());
 
-    // TODO More feedback.
+    Feedback::sendBoolean("shooter", "want to shoot", wantToShoot);
+    Feedback::sendDouble("shooter", "hood speed manual", hoodSpeedManual);
+    Feedback::sendDouble("shooter", "target rpm", targetRPM);
+    Feedback::sendDouble("shooter", "target hood position", targetHoodPosition);
+
+    std::string modeString = "";
+    switch (mode) {
+        case ODOMETRY:
+            modeString = "odometry";
+            break;
+        case LAUNCH_PAD:
+            modeString = "launch pad";
+            break;
+        case TARMAC_LINE:
+            modeString = "tarmac line";
+            break;
+        case MANUAL:
+            modeString = "manual";
+            break;
+    }
+    Feedback::sendString("shooter", "mode", modeString.c_str());
 }
 
 void Shooter::process() {
