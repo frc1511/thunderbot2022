@@ -13,6 +13,7 @@
 #include "Feedback.h"
 #include "Autonomous.h"
 #include "BlinkyBlinky.h"
+#include "Camera.h"
 
 class Robot : public frc::TimedRobot {
 public:
@@ -39,6 +40,7 @@ private:
   GamEpiece gamEpiece { &limelight };
   Hang hang {};
   Controls controls { &drive, &gamEpiece, &hang };
-  Autonomous autonomous { &drive, &gamEpiece };
+  Camera camera {};
+  Autonomous autonomous { &drive, &gamEpiece, &camera };
   BlinkyBlinky blinkyBlinky {};
 };

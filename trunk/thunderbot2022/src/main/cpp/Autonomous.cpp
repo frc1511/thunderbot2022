@@ -1,7 +1,9 @@
 #include "Autonomous.h"
 
-Autonomous::Autonomous(Drive* drive, GamEpiece* gamEpiece) 
-  : drive(drive), gamEpiece(gamEpiece) {
+#define VISION_ROTATE_SPEED .1
+
+Autonomous::Autonomous(Drive* drive, GamEpiece* gamEpiece, Camera* camera) 
+  : drive(drive), gamEpiece(gamEpiece), camera(camera) {
     
 }
 
@@ -116,4 +118,28 @@ void Autonomous::rightThreeBall() {
 
 void Autonomous::fiveBall() {
 
+}
+
+bool Autonomous::rotateToCargo() {
+    camera->getFrame(&frame);
+
+    switch (camera->locateTarget(frame)) {
+        case Camera::UNKNOWN:
+            // Infinitely loop..............................
+            break;
+        case Camera::CENTER:
+            // Stop the drive.
+            drive->manualDrive(0, 0, 0);
+            break;
+        case Camera::LEFT:
+            // Begin rotating to the left.
+            drive->manualDrive(0, 0, -VISION_ROTATE_SPEED);
+            return false;
+        case Camera::RIGHT:
+            // Begin rotating to the right.
+            drive->manualDrive(0, 0, +VISION_ROTATE_SPEED);
+            break;
+    }
+
+    return false;
 }
