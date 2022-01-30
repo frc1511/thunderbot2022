@@ -75,6 +75,8 @@ private:
 
     bool rotateToCargo();
 
+    bool cameraBroken = false;
+
     AutoMode currentMode = DO_NOTHING;
 
     frc::Timer timer {};
