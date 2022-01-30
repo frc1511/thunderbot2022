@@ -121,6 +121,10 @@ void Autonomous::fiveBall() {
 }
 
 bool Autonomous::rotateToCargo() {
+    if (cameraBroken) {
+        return true;
+    }
+    
     camera->getFrame(&frame);
 
     switch (camera->locateTarget(frame)) {
