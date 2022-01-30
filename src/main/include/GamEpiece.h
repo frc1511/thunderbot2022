@@ -1,5 +1,7 @@
 #pragma once
 
+#pragma thrice
+
 #include "Mechanism.h"
 #include "Intake.h"
 #include "Shooter.h"
@@ -40,42 +42,48 @@ class GamEpiece : public Mechanism {
 public:
     GamEpiece(Limelight* limelight);
     ~GamEpiece();
-
+    
     void resetToMode(MatchMode mode) override;
     void sendFeedback() override;
     void process() override;
 
     enum PositionOnMap{
+        ODOMETRY, 
         LAUNCH_PAD,
-        TARMAC_LINE,
-        UP_TO_LIMELIGHT, //limelight decides settings
+        TARMAC_LINE,// limelight decides settings
         MAUNUAL // used manual setting that were given previously
     };
     PositionOnMap positionOnMap;
     // called by controls to get the shooting wheels up to speed
-    void startWarmingUpShooter(PositionOnMap positionOnMap); 
+    void startWarmingUpShooter(Shooter::ShooterMode shooterMode); 
 
     // called by controls to say they want to start actually shooting the balls
-    void startShootingTheBalls(PositionOnMap positionOnMap); 
+    void startShootingTheBalls(Shooter::ShooterMode shooterMode); 
 
     // called by controls to say they dont want to shoot 
     void stopShooting(); 
 
     enum IntakeDirection{
-        IINTAKE, //deploy intake mech, spin intake in, spin storage up, stop spin and retract mech when at 2 balls and comfortable in position
+        INTAKE, //deploy intake mech, spin intake in, spin storage up, stop spin and retract mech when at 2 balls and comfortable in position
         OUTTAKE, //retract intake mech, spin outtake out, spin storage wheels out
-        NOTTAKE //retract intake mech, stop intake spin, stop storage spin when ball is in the correct stage 1/2
+        NOTTAKE, //retract intake mech, stop intake spin, stop storage spin when ball is in the correct stage 1/2
+        MANUAL // NOT USED BY CONTROLS used for manual :D
     };
 
-    void setIntakeDirection(IntakeDirection intakeDirection);
+    void setIntakeDirection(IntakeDirection intDir);
+
+    // called by controls to set the speed of the intake manually (used only for manual operation, otherwise ignored)
+    void setManualIntakeSpeed(double intakeSpeed);
+    // called by controls to set the positioon of the intake manually (used only for manual operation, otherwise ignored)
+    void setManualIntakePosition(bool intakePosition);
 
 
-    // called by controls to slowly increase the position of the hood manually  (used only for manual operation, otherwise ignored)
-    void setManualHoodPosition(double position);
+    // called by controls to change the position of the hood manually  (used only for manual operation, otherwise ignored)
+    void setManualHoodSpeed(double hoodSpeed);
 
 
-    // called by controls to slowly increase the speed of the shooter manually  (used only for manual operation, otherwise ignored)
-    void setManualShooterSpeed(double speed);
+    // (unused) called by controls to slowly increase the speed of the shooter manually  (used only for manual operation, otherwise ignored)
+    // void setManualShooterSpeed(double shooterSpeed);
 
 
     // used by controls for a broken switch that will turn off the ball counter
@@ -102,17 +110,19 @@ private:
 
     bool ballCounterBroken; // used for if the sensor that counts the balls entering or leaving doesnt work
 
+    bool ballJustShot;
+
     frc::Timer brokenShotTimer; //used for timing the shot between balls if our ball counter is broken
 
     frc::DigitalInput intakeBeam {DIO_INTAKE_BANNER_ENTRANCE}; // first beam break on the intake
     frc::DigitalInput shooterBeam {DIO_SHOOTER_BANNER_LEFT_ROBOT}; // last beam break for shotoer
 
-    bool lastIntakeBeamValue;
+    bool beforeShotCount;
 
     
 
     enum ShooterState{
-        NOTSHOOTING, //default state; flywheels off, transition wheel off
+        NOT_SHOOTING, //default state; flywheels off, transition wheel off
         WARMUP_SHOOTER, // warmup shooter flywheels but wont shoot the balls
         WANT_TO_SHOOT, //warmup shooter flywheels, and will start to shoot when ready
         SHOOTING // when ball at top of storage, reengage stage two, wait for ball to be shot (shooterBeam triggered)
@@ -120,8 +130,6 @@ private:
     // object for ShooterState setting
     ShooterState shooterState;
 
-    // used by controls to set the state of the shooter between WANTTOSHOOT and SHOOTING
-    void setShooterState(ShooterState shootState); 
 
     
     IntakeDirection intakeDirection;

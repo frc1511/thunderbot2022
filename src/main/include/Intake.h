@@ -47,7 +47,8 @@ public:
 
 private:
     // Something here...
-    frc::DoubleSolenoid rightIntake{frc::PneumaticsModuleType::CTREPCM, INTAKE_RIGHT_PIVOT_EXTEND, INTAKE_RIGHT_PIVOT_RETRACT};
+    //retract piston is intake enabled now, needs to be changed in code
+    frc::DoubleSolenoid rightIntake{frc::PneumaticsModuleType::CTREPCM, INTAKE_RIGHT_PIVOT_EXTEND, INTAKE_RIGHT_PIVOT_RETRACT}; 
     frc::DoubleSolenoid leftIntake{frc::PneumaticsModuleType::CTREPCM, INTAKE_LEFT_PIVOT_EXTEND, INTAKE_LEFT_PIVOT_RETRACT};
     rev::CANSparkMax intakeMotorStageOne{CAN_INTAKE_MOTOR, rev::CANSparkMax::MotorType::kBrushless};
     rev::CANSparkMax intakeMotorStageTwo{CAN_INTAKE_MOTOR, rev::CANSparkMax::MotorType::kBrushless};

@@ -6,8 +6,8 @@ Intake::Intake()
 {
 }
 
-Intake::~Intake()
-{
+Intake::~Intake(){
+
 }
 
 void Intake::resetToMode(MatchMode mode)
