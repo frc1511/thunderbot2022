@@ -81,6 +81,7 @@ private:
  * change what the servo is trying ot got to
  * way to manually change speed of shooter
  * way to manually change potentiometer position
+ * hi jeff :D
  */
     // Something here...
     /**very very very similar shooter to 2020/2021, if your stuck on code look there

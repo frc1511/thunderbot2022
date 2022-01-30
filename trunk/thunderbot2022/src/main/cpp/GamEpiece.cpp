@@ -1,8 +1,13 @@
 #include "GamEpiece.h"
 
+const double kShooterStopped = 0;
+const double kLaunchPadSpeed = 4;
+const double kTarmacSpeed = 42;
+const double kLaunchPadAngle = .2;
+const double kTarmacAngle = .5;
+
 GamEpiece::GamEpiece(Limelight* limelight)
   : limelight(limelight) {
-    lastIntakeBeamValue = intakeBeam.Get();
 }
 
 GamEpiece::~GamEpiece() {
@@ -10,7 +15,6 @@ GamEpiece::~GamEpiece() {
 }
 
 void GamEpiece::resetToMode(MatchMode mode) {
-    #if 0
     intake.resetToMode(mode);
     shooter.resetToMode(mode);
 
@@ -20,102 +24,146 @@ void GamEpiece::resetToMode(MatchMode mode) {
             currentBallCount = ballCount;
         }
         intakeDirection = NOTTAKE;
-        shooterState = NOTSHOOTING;
-    }
-    #endif
-}
-
-void GamEpiece::sendFeedback() {
-    /*feedback->sendDouble("thunderdashboard", "ballcount", currentBallCount);
-
-    switch(intakeDirection){
-        case INTAKE:
-            feedback->sendString("gamEpiece", "intakeDirection", "INTAKE");
-            break;
-        case OUTTAKE:
-            feedback->sendString("gamEpiece", "intakeDirection", "OUTTAKE");
-            break;
-        case NOTTAKE:
-            feedback->sendString("gamEpiece", "intakeDirection", "NOTTAKE");
-            break;
+        shooterState = NOT_SHOOTING;
     }
 
-    switch(shooterState){
-        case NOTSHOOTING:
-            feedback->sendString("gamEpiece", "shooterState" , "NOTSHOOTING");
-            break;
-        case WANTTOSHOOT:
-            feedback->sendString("gamEpiece" , "shooterState" , "WANTTOSHOOT");
-            break;
-        case SHOOTING:
-            feedback->sendString("gamEpiece" , "shooterState" , "SHOOTING");
-            break;
-    }*/
 }
+
+
 
 void GamEpiece::process() {
-    #if 0
-    if (!ballCounterBroken) { // ball counter works
-        if(intakeBeam.Get() == true){ // there is a ball in front
-            lastIntakeBeamValue = true;
-        }
-        if (intakeBeam.Get() == false && lastIntakeBeamValue == true){ // there is not a ball in front but it left
-            // Do not change cell count away from UNKNOWN
-            if (currentBallCount != BALL_COUNT_UNKNOWN){
-                currentBallCount++;
-            }
-            lastIntakeBeamValue = false;
-        }
+    
+    currentBallCount = intake.returnBallCount();
+    if(currentBallCount == 0){
+        shooterState = NOT_SHOOTING;
     }
     switch(intakeDirection){
         case(INTAKE):
-            // depends on how intake person does stuf
+            intake.setIntakeDirection(Intake::INTAKE);
             break;
         case(OUTTAKE):
-            // depends on how intake person does stuf
+            intake.setIntakeDirection(Intake::OUTTAKE);
             break;
         case(NOTTAKE): 
-            // depends on how intake person does stuf
+            intake.setIntakeDirection(Intake::NOTTAKE);
+            break;
+        case(MANUAL):
+            intake.setIntakeDirection(Intake::MANUAL);
             break;
         
     }
+    
     switch(shooterState){
-        case(NOTSHOOTING):
-            // set something to make shooter not spin
+        case(NOT_SHOOTING):
+            shooter.setShooterSpinup(false);
             break;
-        case(WANT_TOSHOOT):
-            if(currentBallCount != 0){
-                // set something to make shooter spin
-                // idk move to SHOOTING when shooter tells me it is ready and there is a ball
+        case(WARMUP_SHOOTER):
+            shooter.setShooterSpinup(true);
+            break;
+        case(WANT_TO_SHOOT):
+            shooter.setShooterSpinup(true);
+            
+            if(shooter.isShooterReady()){
+                beforeShotCount = currentBallCount;
+                shooterState = SHOOTING;
+                // intake.startShooting? idk how it will be done
 
             }
             break;
         case(SHOOTING):
-            // start shooting the ball
-            // once the balls are done moving set it back to WANTTOSHOOT
+            if(beforeShotCount - currentBallCount == 1){
+                shooterState = WANT_TO_SHOOT;
+            }
+
             break;
     }
 
 
     intake.process();
     shooter.process();
-    #endif
-}
-#if 0
-void GamEpiece::setintakeDirection(intakeDirection intState){ // intState is a local variable which is a "copy of intakeDirection"
-    intakeDirection = intState;
 }
 
-void GamEpiece::setShooterState(ShooterState shootState){ // shootState is a local variable which is a "copy of ShooterState"
-    if (shooterState != SHOOTING){ // makes sure it is not currently shooting when controls tries to change it to something else
-        shooterState = shootState;
+void GamEpiece::startWarmingUpShooter(Shooter::ShooterMode shooterMode){
+    if(shooterState == NOT_SHOOTING){
+        shooterState = WARMUP_SHOOTER;
+    }
+    shooter.setShooterMode(shooterMode);
+
+}
+
+void GamEpiece::startShootingTheBalls(Shooter::ShooterMode shooterMode){
+    if(shooterState != SHOOTING){
+        shooterState = WANT_TO_SHOOT;
+    }
+    shooter.setShooterMode(shooterMode);
+}
+
+void GamEpiece::stopShooting(){
+    if(shooterState !=SHOOTING){
+        shooterState = NOT_SHOOTING;
     }
 }
+
+void GamEpiece::setIntakeDirection(IntakeDirection intDir){ // intState is a local variable which is a "copy of intakeDirection"
+    if(shooterState == NOT_SHOOTING){
+        intakeDirection = intDir;
+    }
+}
+
+void GamEpiece::setManualIntakeSpeed(double intakeSpeed){
+    intakeDirection = MANUAL;
+    intake.setIntakeSpeed(intakeSpeed);
+}
+
+void GamEpiece::setManualIntakePosition(bool intakePosition){
+    intakeDirection = MANUAL;
+    intake.setIntakePosition(intakePosition);
+}
+
+void GamEpiece::setManualHoodSpeed(double hoodSpeed){
+    shooter.setHoodManual(hoodSpeed);
+}
+
+/*void GamEpiece::setManualShooterSpeed(double shooterSpeed){
+    desiredShooterSpeed += shooterSpeed;
+}*/
 
 void GamEpiece::setBallCounterBroken(bool ballCounter){
-    ballCounterBroken = ballCounter;
-    if(ballCounter){
-        currentBallCount = BALL_COUNT_UNKNOWN;
-    }
+    intake.setBallCounterBroken(ballCounter);
 }
-#endif
+
+void GamEpiece::sendFeedback() {
+    Feedback::sendDouble("thunderdashboard", "ballcount", currentBallCount);
+    std::string intakeStateString = "";
+    std::string shooterStateString = "";
+    switch(intakeDirection){
+        case INTAKE:
+            intakeStateString = "INTAKE";
+            break;
+        case OUTTAKE:
+            intakeStateString = "OUTTAKE";
+            break;
+        case NOTTAKE:
+            intakeStateString = "NOTTAKE";
+            break;
+        case MANUAL:
+            intakeStateString = "MANUAL";
+    }
+
+    switch(shooterState){
+        case NOT_SHOOTING:
+            shooterStateString = "NOT SHOOTING";
+            break;
+        case WARMUP_SHOOTER:
+            shooterStateString = "WARMUP SHOOTER";
+            break;
+        case WANT_TO_SHOOT:
+            shooterStateString = "WANT TO SHOOT";
+            break;
+        case SHOOTING:
+            shooterStateString = "SHOOTING";
+            break;
+    }
+    Feedback::sendString("gamEpiece", "intakeDirection", intakeStateString.c_str());
+    Feedback::sendString("gamEpiece", "shooterState", shooterStateString.c_str());
+}
