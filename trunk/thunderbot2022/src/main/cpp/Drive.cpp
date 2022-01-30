@@ -383,7 +383,7 @@ void Drive::resetIMU() {
 }
 
 frc::Rotation2d Drive::getRotation() {
-    units::radian_t rotation = units::radian_t(fmod(imu.GetAngle().value(), 360));
+    units::radian_t rotation = units::degree_t(fmod(imu.GetAngle().value(), 360));
 
     // Convert -2π to 2π value into -π to π value.
     if(units::math::abs(rotation).value() > wpi::numbers::pi) {
@@ -397,7 +397,7 @@ void Drive::executeCommand() {
     // Only execute a command if the command is running.
     if (cmd.running) {
         // Check if the timer timer has passed the total time of the trajectory.
-        if (cmd.timer.HasElapsed(cmd.trajectory.TotalTime())) {
+        if (cmdIsFinished()) {
             cmdCancel();
         }
         // Drive!!
