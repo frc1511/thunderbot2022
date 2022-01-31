@@ -12,8 +12,8 @@
 #include "Limelight.h"
 #include "Feedback.h"
 #include "Autonomous.h"
-#include "AutoForTrevor.h"
-#include "ControlsForTrevor.h"
+//#include "AutoForTrevor.h"
+//#include "ControlsForTrevor.h"
 #include "BlinkyBlinky.h"
 #include "Camera.h"
 
@@ -43,8 +43,8 @@ private:
   Hang hang {};
   Controls controls { &drive, &gamEpiece, &hang };
 
-  ControlsForTrevor controlsForTrevor{};
-  AutoForTrevor autoForTrevor{};
+  //ControlsForTrevor controlsForTrevor{};
+  //AutoForTrevor autoForTrevor{};
 
   Camera camera {};
   Autonomous autonomous { &drive, &gamEpiece, &camera};
