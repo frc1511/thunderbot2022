@@ -54,10 +54,6 @@ class Hang : public Mechanism {
 private:
     //pivots the extending arms forwards/backwards
     void pivot();
-    //engages the hard stop to keep the extending arms from flopping like trevor when he refuses to stand up
-    void engageHardStop();
-    //disengages the hard stops
-    void disengageHardStop();
     //retract function if sensors broke
     void brokenRetract();
     //extend function if sensors broke
@@ -85,26 +81,20 @@ private:
     int retractStep;
     //step it is in in the extend action
     int extendStep;
-    //step for disengaging the brake
-    int disengageBrakeStep;
     //step for the extendALittle function
     double hangMaxHeight;
-    //height that hang should start slowing down
-    double hangSlowDownHeight;
-    //height hang should slow down even more
-    double hangSlowDownMoreHeight;
+    //broken retract doubles for height
+    double hangBrokenMaxHeight;
+    double hangBrokenSlowHeight;
+    double hangBrokenSlowerHeight;
+    //is the robot done/on traversal
+    bool autoDone;
 
 //sensors that are not servos
-    //beam break to tell if the pawl is disengaged
-    frc::DigitalInput rachetBeamBreak {DIO_HANG_RATCHET_BEAM_BREAK};
     //encoder on winch to tell how far its gone
-    frc::Encoder winchEncoder {CAN_HANG_ENCODER_A,  CAN_HANG_ENCODER_B};
-    //flag sensor on the left arm to tell when its extended	
-    frc::DigitalInput leftFlag {DIO_HANG_FLAG_SENSOR_LEFT};
-    //flag sensor on the right arm to tell when its extended
-    frc::DigitalInput rightFlag {DIO_HANG_FLAG_SENSOR_RIGHT};
-    //sensor on the bottom of the arm to tell when fully retracted, doesnt matter which
-    //could also be on the winch i dont know yet
+    frc::Encoder winchEncoder {CAN_HANG_ENCODER_A,  CAN_HANG_ENCODER_B};//change to something else
+    /*sensor on the bottom of the arm to tell when fully retracted, doesnt matter which
+    could also be on the winch i dont know yet*/
     frc::DigitalInput homeSensor {DIO_HANG_OPTICAL_HOME_SENSOR};
 
     //actuator stuff
@@ -116,9 +106,7 @@ private:
     frc::DoubleSolenoid hangPivot2{frc::PneumaticsModuleType::CTREPCM, PCM1_HANG_PIVOT_2_EXTEND, PCM1_HANG_PIVOT_2_RETRACT};
     
     //servos
-    frc::Servo leftServo{PWM_HANG_LEFT_SERVO_STOP};
-    frc::Servo rightServo{PWM_HANG_RIGHT_SERVO_STOP};
-    frc::Servo ratchetServo{PWM_HANG_RACHET_AND_PAWL};//DONT KNOW WHY BUT THE RATCHET AND PAWL FROM IOMAP DOESNT WORK
+    frc::Servo ratchetServo{PWM_HANG_RACHET_AND_PAWL};
 
     //hi trevor
 
@@ -128,11 +116,17 @@ private:
     public:
 
     //manual enumerator for actions
-    enum Manual{EXTEND, RETRACT, EXTEND_A_LITTLE, PIVOT, REVERSE_PIVOT, ENGAGE_BRAKE, DISENGAGE_BRAKE};
+    enum Manual{EXTEND, 
+                RETRACT, 
+                EXTEND_A_LITTLE, 
+                PIVOT, 
+                REVERSE_PIVOT, 
+                ENGAGE_BRAKE, 
+                DISENGAGE_BRAKE};
     //enumerator variable thing
     Manual manual;
     //bar that the robot is going to
-    enum HangState{TRAVERSAL, HIGH, MID, NOT_ON_BAR, STOP};
+    enum HangState{HIGH_TRAVERSAL, MID, NOT_ON_BAR, STOP};
     //enumerator variable thing
     HangState targetStage;
 
@@ -145,10 +139,13 @@ private:
     void sendFeedback() override;
     void process() override;
 
-    //hi ishan
-
+//mutually exclusive
     //command to change the target bar
-    void targetBar(HangState stage);
+    void commandAuto();
+    //command to do manual actions
     void commandManual(Manual manualCommands);
     //make command enum
 };
+
+/** code errors
+ * **/
