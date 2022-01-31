@@ -42,6 +42,16 @@ public:
         CENTER_THREE_BALL,
         RIGHT_THREE_BALL,
 
+        /*
+         * 1. pick up ball behind the robot.
+         * 2. align with high hub
+         * 3. Shoot both balls
+         * 4. drive to left ball
+         * 5. collect the ball
+         * 6. shoot the ball
+        */
+        ALTERNATE_THREE_BALL,
+
         /**
          * (Start in center spot).
          *
@@ -55,7 +65,7 @@ public:
          * 8. Align with high hub.
          * 9. Shoot both balls.
          */
-        FIVE_BALL,
+        FOUR_BALL,
     };
 
     void resetToMode(MatchMode mode) override;
@@ -71,7 +81,8 @@ private:
     void leftThreeBall();
     void centerThreeBall();
     void rightThreeBall();
-    void fiveBall();
+    void fourBall();
+    void alternateThreeBall();
 
     bool rotateToCargo();
 

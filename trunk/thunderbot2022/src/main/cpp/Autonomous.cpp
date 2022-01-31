@@ -46,7 +46,8 @@ void Autonomous::sendFeedback() {
     handleDashboardString(LEFT_THREE_BALL, "(Positioned left) Score ball in robot, ball behind robot, ball at alliance station wall", buffer);
     handleDashboardString(CENTER_THREE_BALL, "(Positioned center) Score ball in robot, ball behind robot, ball at alliance station wall", buffer);
     handleDashboardString(RIGHT_THREE_BALL, "(Positioned right) Score ball in robot, ball behind robot, ball at alliance station wall", buffer);
-    handleDashboardString(FIVE_BALL, "(Positioned center) Score ball in robot, ball behind robot, ball at alliance station wall, and 2 balls at cargo line", buffer);
+    handleDashboardString(ALTERNATE_THREE_BALL, "(Positioned center) score ball in robot and behind robot, drive to left alliance partner ball and shoot", buffer);
+    handleDashboardString(FOUR_BALL, "(Positioned center) Score ball in robot, ball behind robot, ball at alliance station wall, and 2 balls at cargo line", buffer);
 
     Feedback::sendString("thunderdashboard", "auto_list", buffer);
 }
@@ -77,8 +78,11 @@ void Autonomous::process() {
         case RIGHT_THREE_BALL:
             rightThreeBall();
             break;
-        case FIVE_BALL:
-            fiveBall();
+        case ALTERNATE_THREE_BALL:
+            rightThreeBall();
+            break;
+        case FOUR_BALL:
+            fourBall();
             break;
     }
 }
@@ -86,38 +90,237 @@ void Autonomous::process() {
 void Autonomous::doNothing() {
     // If it does nothing is it doing something or nothing?
     // Good function.
+    // Very good function.
 }
 
 void Autonomous::oneBall() {
-
+    gamEpiece->startShootingTheBalls(Shooter::TARMAC_LINE);
 }
 
 void Autonomous::leftTwoBall() {
-
+    rotateToCargo();
+    step++;
+    if(step == 1)
+    {
+        gamEpiece->setIntakeDirection(GamEpiece::INTAKE);
+        step++;
+    }
+    else if(step == 2)
+    {
+        frc::Trajectory leftTwoBallAutoTrajectory = frc::TrajectoryGenerator::GenerateTrajectory(
+            drive->getPose(), {}, { 5_ft, 6_ft, 45_deg }, AUTO_TRAJECTORY_CONFIG);
+            drive->cmdFollowTrajectory(leftTwoBallAutoTrajectory);
+        step++;
+    }
+    else if(step == 3 && drive->cmdIsFinished() == true)
+    {
+        gamEpiece->startShootingTheBalls(Shooter::TARMAC_LINE);
+    }
 }
 
 void Autonomous::centerTwoBall() {
-
+    rotateToCargo();
+    step++;
+    if(step == 1)
+    {
+        gamEpiece->setIntakeDirection(GamEpiece::INTAKE);
+        step++;
+    }
+    else if(step == 2)
+    {
+        frc::Trajectory centerTwoBallAutoTrajectory = frc::TrajectoryGenerator::GenerateTrajectory(
+            drive->getPose(), {}, { 5_ft, 6_ft, 45_deg }, AUTO_TRAJECTORY_CONFIG);
+            drive->cmdFollowTrajectory(centerTwoBallAutoTrajectory);
+        step++;
+    }
+    else if(step == 3 && drive->cmdIsFinished() == true)
+    {
+        gamEpiece->startShootingTheBalls(Shooter::TARMAC_LINE);
+    }
 }
 
 void Autonomous::rightTwoBall() {
-
+    rotateToCargo();
+    step++;
+    if(step == 1)
+    {
+        gamEpiece->setIntakeDirection(GamEpiece::INTAKE);
+        step++;
+    }
+    else if(step == 2)
+    {
+        frc::Trajectory rightTwoBallAutoTrajectory = frc::TrajectoryGenerator::GenerateTrajectory(
+            drive->getPose(), {}, { 5_ft, 6_ft, 45_deg }, AUTO_TRAJECTORY_CONFIG);
+            drive->cmdFollowTrajectory(rightTwoBallAutoTrajectory);
+        step++;
+    }
+    else if(step == 3 && drive->cmdIsFinished() == true)
+    {
+        gamEpiece->startShootingTheBalls(Shooter::TARMAC_LINE);
+        step++;
+    }
 }
 
 void Autonomous::leftThreeBall() {
-    // hi jeff :D
+    leftTwoBall();
+    if(step == 4)
+    {
+        rotateToCargo();
+        step++;
+    }
+    else if(step == 5)
+    {
+        gamEpiece->setIntakeDirection(GamEpiece::INTAKE);
+        step++;
+    }
+    else if(step == 6)
+    {
+        frc::Trajectory leftThreeBallAutoToWallTrajectory = frc::TrajectoryGenerator::GenerateTrajectory(
+            drive->getPose(), {}, { 5_ft, 6_ft, 45_deg }, AUTO_TRAJECTORY_CONFIG);
+            drive->cmdFollowTrajectory(leftThreeBallAutoToWallTrajectory);
+        step++;
+    }
+    else if(step == 7 && drive->cmdIsFinished() == true)
+    {
+        frc::Trajectory leftThreeBallAutoFromWallTrajectory = frc::TrajectoryGenerator::GenerateTrajectory(
+            drive->getPose(), {}, { 5_ft, 6_ft, 45_deg }, AUTO_TRAJECTORY_CONFIG);
+            drive->cmdFollowTrajectory(leftThreeBallAutoFromWallTrajectory);
+        step++;
+    }
+    else if(step == 8)
+    {
+        gamEpiece->startShootingTheBalls(Shooter::TARMAC_LINE);
+        step++;
+    }
 }
 
 void Autonomous::centerThreeBall() {
-
+    centerTwoBall();
+    if(step == 4)
+    {
+        rotateToCargo();
+        step++;
+    }
+    else if(step == 5)
+    {
+        gamEpiece->setIntakeDirection(GamEpiece::INTAKE);
+        step++;
+    }
+    else if(step == 6)
+    {
+        frc::Trajectory centerThreeBallAutoToWallTrajectory = frc::TrajectoryGenerator::GenerateTrajectory(
+            drive->getPose(), {}, { 5_ft, 6_ft, 45_deg }, AUTO_TRAJECTORY_CONFIG);
+            drive->cmdFollowTrajectory(centerThreeBallAutoToWallTrajectory);
+        step++;
+    }
+    else if(step == 7 && drive->cmdIsFinished() == true)
+    {
+        frc::Trajectory centerThreeBallAutoFromWallTrajectory = frc::TrajectoryGenerator::GenerateTrajectory(
+            drive->getPose(), {}, { 5_ft, 6_ft, 45_deg }, AUTO_TRAJECTORY_CONFIG);
+            drive->cmdFollowTrajectory(centerThreeBallAutoFromWallTrajectory);
+        step++;
+    }
+    else if(step == 8)
+    {
+        gamEpiece->startShootingTheBalls(Shooter::TARMAC_LINE);
+        step++;
+    }
 }
 
 void Autonomous::rightThreeBall() {
-
+    rightTwoBall();
+    if(step == 4)
+    {
+        rotateToCargo();
+        step++;
+    }
+    else if(step == 5)
+    {
+        gamEpiece->setIntakeDirection(GamEpiece::INTAKE);
+        step++;
+    }
+    else if(step == 6)
+    {
+        frc::Trajectory rightThreeBallAutoToWallTrajectory = frc::TrajectoryGenerator::GenerateTrajectory(
+            drive->getPose(), {}, { 5_ft, 6_ft, 45_deg }, AUTO_TRAJECTORY_CONFIG);
+            drive->cmdFollowTrajectory(rightThreeBallAutoToWallTrajectory);
+        step++;
+    }
+    else if(step == 7 && drive->cmdIsFinished() == true)
+    {
+        frc::Trajectory rightThreeBallAutoFromWallTrajectory = frc::TrajectoryGenerator::GenerateTrajectory(
+            drive->getPose(), {}, { 5_ft, 6_ft, 45_deg }, AUTO_TRAJECTORY_CONFIG);
+            drive->cmdFollowTrajectory(rightThreeBallAutoFromWallTrajectory);
+        step++;
+    }
+    else if(step == 8)
+    {
+        gamEpiece->startShootingTheBalls(Shooter::TARMAC_LINE);
+        step++;
+    }
 }
 
-void Autonomous::fiveBall() {
+void Autonomous::alternateThreeBall() {
+    centerTwoBall();
+    if(step == 4)
+    {
+        frc::Trajectory altThreeBallAutoRotateTrajectory = frc::TrajectoryGenerator::GenerateTrajectory(
+            drive->getPose(), {}, { 0_ft, 0_ft, 45_deg }, AUTO_TRAJECTORY_CONFIG);
+            drive->cmdFollowTrajectory(altThreeBallAutoRotateTrajectory);
+        step++;
+    }
+    else if(step == 5 && drive->cmdIsFinished() == true)
+    {
+        gamEpiece->setIntakeDirection(GamEpiece::INTAKE);
+        step++;
+    }
+    else if(step == 6)
+    {
+        frc::Trajectory altThreeBallAutoToLeftTrajectory = frc::TrajectoryGenerator::GenerateTrajectory(
+            drive->getPose(), {}, { 0_ft, 0_ft, 45_deg }, AUTO_TRAJECTORY_CONFIG);
+            drive->cmdFollowTrajectory(altThreeBallAutoToLeftTrajectory);
+        step++;
+    }
+    else if(step == 7 && drive ->cmdIsFinished() == true)
+    {
+        frc::Trajectory altThreeBallAutoToWallTrajectory = frc::TrajectoryGenerator::GenerateTrajectory(
+            drive->getPose(), {}, { 0_ft, 0_ft, 45_deg }, AUTO_TRAJECTORY_CONFIG);
+            drive->cmdFollowTrajectory(altThreeBallAutoToWallTrajectory);
+        step++;
+    }
+    else if(step == 7 && drive ->cmdIsFinished() == true)
+    {
+        frc::Trajectory altThreeBallAutoFromWallTrajectory = frc::TrajectoryGenerator::GenerateTrajectory(
+            drive->getPose(), {}, { 0_ft, 0_ft, 45_deg }, AUTO_TRAJECTORY_CONFIG);
+            drive->cmdFollowTrajectory(altThreeBallAutoFromWallTrajectory);
+        step++;
+    }
+    else if(step == 8)
+    {
+        gamEpiece->startShootingTheBalls(Shooter::TARMAC_LINE);
+    }
+}
 
+void Autonomous::fourBall() {
+    leftTwoBall();
+    if(step == 4)
+    {
+        frc::Trajectory fourBallAutoToWallTrajectory = frc::TrajectoryGenerator::GenerateTrajectory(
+            drive->getPose(), {}, { 0_ft, 0_ft, 45_deg }, AUTO_TRAJECTORY_CONFIG);
+            drive->cmdFollowTrajectory(fourBallAutoToWallTrajectory);
+        step++;
+    }
+    else if(step == 5 && drive -> cmdIsFinished() == true)
+    {
+        frc::Trajectory fourBallAutoFromWallTrajectory = frc::TrajectoryGenerator::GenerateTrajectory(
+            drive->getPose(), {}, { 0_ft, 0_ft, 45_deg }, AUTO_TRAJECTORY_CONFIG);
+            drive->cmdFollowTrajectory(fourBallAutoFromWallTrajectory);
+        step++;
+    }
+    else if(step == 6 && drive->cmdIsFinished() == true)
+    {
+        gamEpiece->startShootingTheBalls(Shooter::TARMAC_LINE);
+    }
 }
 
 bool Autonomous::rotateToCargo() {
@@ -134,11 +337,11 @@ bool Autonomous::rotateToCargo() {
         case Camera::CENTER:
             // Stop the drive.
             drive->manualDrive(0, 0, 0);
-            return true;
+            break;
         case Camera::LEFT:
             // Begin rotating to the left.
             drive->manualDrive(0, 0, -VISION_ROTATE_SPEED);
-            break;
+            return false;
         case Camera::RIGHT:
             // Begin rotating to the right.
             drive->manualDrive(0, 0, +VISION_ROTATE_SPEED);
