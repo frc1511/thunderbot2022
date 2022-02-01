@@ -114,7 +114,7 @@ private:
 
     frc::Timer brokenShotTimer; //used for timing the shot between balls if our ball counter is broken
 
-    frc::DigitalInput intakeBeam {DIO_INTAKE_BANNER_ENTRANCE}; // first beam break on the intake
+
     frc::DigitalInput shooterBeam {DIO_SHOOTER_BANNER_LEFT_ROBOT}; // last beam break for shotoer
 
     bool beforeShotCount;
