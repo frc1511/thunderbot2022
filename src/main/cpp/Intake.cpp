@@ -47,10 +47,10 @@ void Intake::process()
     if(ballCount < 0 || ballCount > 2){
         ballCount = -1;
     }
-
+    // the desired actions of the intake motors
     switch (targetDirection)
     {
-    case INTAKE:
+    case INTAKE:    //takes in balls and adjusts motor activation through the sensors
         leftIntake.Set(frc::DoubleSolenoid::Value::kForward);
         rightIntake.Set(frc::DoubleSolenoid::Value::kForward);
         if (stageTwoFlag.Get() == false)
@@ -70,19 +70,19 @@ void Intake::process()
         }
 
         break;
-    case OUTTAKE:
+    case OUTTAKE:   // reverses stage 1 and stage 2 motors
         leftIntake.Set(frc::DoubleSolenoid::Value::kForward);
         rightIntake.Set(frc::DoubleSolenoid::Value::kForward);
         intakeMotorStageOne.Set(-kSpeedStageOne); // IDK what to put for reverse...so negatives
         intakeMotorStageTwo.Set(-kSpeedStageTwo);
         break;
-    case NOTTAKE:
+    case NOTTAKE:   // motors are off
         leftIntake.Set(frc::DoubleSolenoid::Value::kReverse); // IDK if I should use kReverse? I assume it is this though. yes
         rightIntake.Set(frc::DoubleSolenoid::Value::kReverse);
         intakeMotorStageOne.Set(0);
         intakeMotorStageTwo.Set(0);
         break;
-    case MANUAL:
+    case MANUAL:    // switches to manual control of the motors
         if(intakePosition){
             leftIntake.Set(frc::DoubleSolenoid::Value::kForward);
             rightIntake.Set(frc::DoubleSolenoid::Value::kForward);
@@ -99,7 +99,7 @@ void Intake::process()
         break;
     }
 }
-
+// connects to gamEpiece
 void Intake::setIntakeDirection(IntakeDirection intakeDirection)
 {
     targetDirection = intakeDirection;
@@ -118,17 +118,17 @@ void Intake::setIntakeSpeed(double speed)
 void Intake::giveBallToShooter(){
     //put code here? this could be in process or put all the code in the shooter part of the switch statement and switching between can be handed in game piece doesnt matter.
 }
-
+// returns the ball count
 int Intake::returnBallCount(){
     return ballCount;
 }
-
+// adds a ball to the counter when the lower storage sensor is tripped
 void Intake::countOfBalls(){
     if (stageOneFlag.Get() == true && ballCount != -1){
         ballCount++;
     }
 }
-
+// for if the sensor breaks
 void Intake::setBallCounterBroken(bool ballCounter){
     ballCounterBroken = ballCounter;
     if(ballCounter){

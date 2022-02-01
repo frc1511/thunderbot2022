@@ -61,9 +61,11 @@ private:
 
     ShooterMode mode = ODOMETRY;
 
+    // right and left shooter motors
     rev::CANSparkMax shooterLeftMotor  {CAN_SHOOTER_LEFT_FLYWHEEL_MOTOR,  rev::CANSparkMax::MotorType::kBrushless};
     rev::CANSparkMax shooterRightMotor {CAN_SHOOTER_RIGHT_FLYWHEEL_MOTOR, rev::CANSparkMax::MotorType::kBrushless};
 
+    // right and left shooter encoders
     rev::SparkMaxRelativeEncoder shooterLeftEncoder;
     rev::SparkMaxRelativeEncoder shooterRightEncoder;
 

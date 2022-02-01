@@ -145,6 +145,7 @@ void Shooter::process() {
     shooterLeftPID.SetReference(targetRPM, rev::CANSparkMax::ControlType::kVelocity);
     shooterRightPID.SetReference(targetRPM, rev::CANSparkMax::ControlType::kVelocity);
 
+    // gets the position of the hood potentiometer
     double hoodPosition = hoodPotentiometer.Get();
     
     double servoSpeed = HOOD_SPEED_STOPPED;
@@ -182,13 +183,13 @@ void Shooter::process() {
 void Shooter::setShooterSpinup(bool shouldShoot) {
     wantToShoot = shouldShoot;
 }
-
+// sees if the shooter is ready
 bool Shooter::isShooterReady() {
     return (shooterLeftEncoder.GetVelocity() > targetRPM - SHOOTER_TOLERANCE) &&
            (shooterRightEncoder.GetVelocity() > targetRPM - SHOOTER_TOLERANCE) &&
            (abs(hoodPotentiometer.Get() - targetHoodPosition) < HOOD_TOLERANCE);
 }
-
+// allows manual control of the hood speed
 void Shooter::setHoodManual(double speed) {
     hoodSpeedManual = speed;
 
