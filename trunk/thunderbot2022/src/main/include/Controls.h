@@ -5,6 +5,7 @@
 #include "GamEpiece.h"
 #include "Hang.h"
 #include "Limelight.h"
+#include <frc/Joystick.h>
 
 class Controls : public Mechanism {
 public:
@@ -18,5 +19,7 @@ private:
     GamEpiece* gamEpiece;
     Hang* hang;
 
+    frc::Joystick controllerDriver{0};
+    frc::Joystick controllerAux{1};
     // Something here...
 };

@@ -17,6 +17,7 @@ public:
     Intake();
     ~Intake();
     void resetToMode(MatchMode mode) override;
+    void sendFeedback() override;
     void process() override;
 
     enum IntakeDirection
@@ -44,6 +45,8 @@ public:
 
     void setBallCounterBroken(bool ballBroken);
 
+    bool finishedShooting();
+
 
 private:
     // Something here...
@@ -52,12 +55,14 @@ private:
     frc::DoubleSolenoid leftIntake{frc::PneumaticsModuleType::CTREPCM, INTAKE_LEFT_PIVOT_EXTEND, INTAKE_LEFT_PIVOT_RETRACT};
     rev::CANSparkMax intakeMotorStageOne{CAN_INTAKE_MOTOR, rev::CANSparkMax::MotorType::kBrushless};
     rev::CANSparkMax intakeMotorStageTwo{CAN_INTAKE_MOTOR, rev::CANSparkMax::MotorType::kBrushless};
-    bool intakePosition;
-    double intakeSpeed;
-    int ballCount;
+    bool intakePosition; // used for manual and debug
+    double intakeSpeed; // manual? i think and too lazy to check
+    int ballCount; // self explanitory
     bool ballCounterBroken; // true= ball counter does not work fine    false=ball counter works fine
-    bool stageOneLast;
-    bool shooterBeamLast;
+    bool stageOneLast; // used for ball count so you only count a ball once
+    bool shooterBeamLast; // used for ball count so you only count a ball once
+    bool moveBallUp; // move ball up
+
     IntakeDirection targetDirection;
     frc::DigitalInput stageOneFlag {DIO_STORAGE_BANNER_STAGE_ONE}; //true is present, false is not present
     frc::DigitalInput stageTwoFlag {DIO_STORAGE_BANNER_STAGE_TWO}; //true is present, false is not present

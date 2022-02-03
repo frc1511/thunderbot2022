@@ -15,7 +15,7 @@
 #define HOOD_MIN_POS .48
 #define HOOD_MAX_POS (HOOD_MIN_POS + .486)
 
-// The maximum rpm of the shooter wheels.
+// The maximum RPM of the shooter wheels.
 #define SHOOTER_MAX_RPM 5700
 
 // The tolerance of the hood position.
@@ -30,19 +30,19 @@
 
 // --- Preset values ---
 
-// The hood position and shooter rpm when the robot is right next to the hub.
+// The hood position and shooter RPM when the robot is right next to the hub.
 #define HUB_HOOD_POS 0
 #define HUB_SHOOTER_RPM 4000
 
-// The hood position and shooter rpm when the robot is at the far wall.
+// The hood position and shooter RPM when the robot is at the far wall.
 #define WALL_HOOD_POS 0
 #define WALL_SHOOTER_RPM 4000
 
-// The hood position and shooter rpm when the robot is at the launch pad.
+// The hood position and shooter RPM when the robot is at the launch pad.
 #define LAUNCH_PAD_HOOD_POS 0
 #define LAUNCH_PAD_SHOOTER_RPM 3500
 
-// The hood position and shooter rpm when the robot is at the tarmac line.
+// The hood position and shooter RPM when the robot is at the tarmac line.
 #define TARMAC_LINE_HOOD_POS 0
 #define TARMAC_LINE_SHOOTER_RPM 3250
 
@@ -92,31 +92,31 @@ void Shooter::resetToMode(MatchMode mode) {
 }
 
 void Shooter::sendFeedback() {
-    Feedback::sendDouble("shooter", "left velocity (rpm)", shooterLeftEncoder.GetVelocity());
-    Feedback::sendDouble("shooter", "right velocity (rpm)", shooterRightEncoder.GetVelocity());
-    Feedback::sendDouble("shooter", "hood position", hoodPotentiometer.Get());
-
-    Feedback::sendBoolean("shooter", "want to shoot", wantToShoot);
-    Feedback::sendDouble("shooter", "hood speed manual", hoodSpeedManual);
-    Feedback::sendDouble("shooter", "target rpm", targetRPM);
-    Feedback::sendDouble("shooter", "target hood position", targetHoodPosition);
-
     std::string modeString = "";
     switch (mode) {
         case ODOMETRY:
-            modeString = "odometry";
+            modeString = "Odometry";
             break;
         case LAUNCH_PAD:
-            modeString = "launch pad";
+            modeString = "Launch Pad";
             break;
         case TARMAC_LINE:
-            modeString = "tarmac line";
+            modeString = "Tarmac Line";
             break;
         case MANUAL:
-            modeString = "manual";
+            modeString = "Manual";
             break;
     }
-    Feedback::sendString("shooter", "mode", modeString.c_str());
+
+    Feedback::sendString("shooter", "Mode", modeString.c_str());
+    Feedback::sendDouble("shooter", "Left velocity (RPM)", shooterLeftEncoder.GetVelocity());
+    Feedback::sendDouble("shooter", "Right velocity (RPM)", shooterRightEncoder.GetVelocity());
+    Feedback::sendDouble("shooter", "Hood position", hoodPotentiometer.Get());
+
+    Feedback::sendBoolean("shooter", "Want to shoot", wantToShoot);
+    Feedback::sendDouble("shooter", "Hood speed manual", hoodSpeedManual);
+    Feedback::sendDouble("shooter", "Target RPM", targetRPM);
+    Feedback::sendDouble("shooter", "Target hood position", targetHoodPosition);
 }
 
 void Shooter::process() {
@@ -147,23 +147,23 @@ void Shooter::process() {
 
     // gets the position of the hood potentiometer
     double hoodPosition = hoodPotentiometer.Get();
-    
+    // 🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲
     double servoSpeed = HOOD_SPEED_STOPPED;
 
-    // If manual speed.
+    // If servo is given a speed to go to
     if (hoodSpeedManual != 0) {
         servoSpeed = hoodSpeedManual;
     }
     // If hood position is within the tolerance level to the target position.
-    else if (hoodPosition + HOOD_TOLERANCE >= targetHoodPosition && hoodPosition - HOOD_TOLERANCE <= targetHoodPosition) {
+    else if (abs(hoodPosition - targetHoodPosition) <= HOOD_TOLERANCE) {
         servoSpeed = HOOD_SPEED_STOPPED;
     }
     // Below the target position.
-    else if (hoodPosition - HOOD_TOLERANCE < targetHoodPosition) {
+    else if (hoodPosition < targetHoodPosition) {
         servoSpeed = HOOD_SPEED_FORWARD;
     }
     // Above the target position.
-    else if (hoodPosition + HOOD_TOLERANCE > targetHoodPosition) {
+    else if (hoodPosition > targetHoodPosition) {
         servoSpeed = HOOD_SPEED_BACKWARD;
     }
 

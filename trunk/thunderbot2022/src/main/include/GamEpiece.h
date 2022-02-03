@@ -47,18 +47,14 @@ public:
     void sendFeedback() override;
     void process() override;
 
-    enum PositionOnMap{
-        ODOMETRY, 
-        LAUNCH_PAD,
-        TARMAC_LINE,// limelight decides settings
-        MAUNUAL // used manual setting that were given previously
-    };
-    PositionOnMap positionOnMap;
+    
     // called by controls to get the shooting wheels up to speed
     void startWarmingUpShooter(Shooter::ShooterMode shooterMode); 
 
     // called by controls to say they want to start actually shooting the balls
     void startShootingTheBalls(Shooter::ShooterMode shooterMode); 
+
+    
 
     // called by controls to say they dont want to shoot 
     void stopShooting(); 
