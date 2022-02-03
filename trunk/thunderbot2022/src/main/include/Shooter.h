@@ -23,7 +23,7 @@ public:
     void setShooterSpinup(bool shouldShoot);
 
     /**
-     * Returns whether the hood position is at the desired position.
+     * Returns whether the hood position is at the desired position AND shooter is up to speed.
      */
     bool isShooterReady();
 
@@ -33,10 +33,11 @@ public:
     void setHoodManual(double speed);
 
     enum ShooterMode {
-        ODOMETRY,
-        LAUNCH_PAD,
-        TARMAC_LINE,
-        MANUAL,
+        ODOMETRY,      // Use camera to decide shot speed and angle
+        LAUNCH_PAD,    // shooting with back of robot contacting launch pad
+        TARMAC_LINE,   // shooting with front edge of robot on line at outer edge of tarmac 
+        MANUAL,        // will be controlled manually using manual function for the hood and
+                       // the shooter is fixed for shooting from tarmac
     };
 
     /**
