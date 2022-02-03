@@ -32,7 +32,6 @@ void GamEpiece::resetToMode(MatchMode mode) {
 
 
 void GamEpiece::process() {
-    
     currentBallCount = intake.returnBallCount();
     if(currentBallCount == 0){
         shooterState = NOT_SHOOTING;
@@ -50,7 +49,6 @@ void GamEpiece::process() {
         case(MANUAL):
             intake.setIntakeDirection(Intake::MANUAL);
             break;
-        
     }
     
     switch(shooterState){
@@ -64,21 +62,17 @@ void GamEpiece::process() {
             shooter.setShooterSpinup(true);
             
             if(shooter.isShooterReady()){
-                beforeShotCount = currentBallCount;
                 shooterState = SHOOTING;
-                // intake.startShooting? idk how it will be done
+                intake.giveBallToShooter();
 
             }
             break;
         case(SHOOTING):
-            if(beforeShotCount - currentBallCount == 1){
+            if(intake.finishedShooting()){
                 shooterState = WANT_TO_SHOOT;
             }
-
             break;
     }
-
-
     intake.process();
     shooter.process();
 }
@@ -88,7 +82,6 @@ void GamEpiece::startWarmingUpShooter(Shooter::ShooterMode shooterMode){
         shooterState = WARMUP_SHOOTER;
     }
     shooter.setShooterMode(shooterMode);
-
 }
 
 void GamEpiece::startShootingTheBalls(Shooter::ShooterMode shooterMode){
