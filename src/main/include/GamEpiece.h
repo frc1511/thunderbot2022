@@ -48,52 +48,54 @@ public:
     void process() override;
 
     
-    // called by controls to get the shooting wheels up to speed
-    void startWarmingUpShooter(Shooter::ShooterMode shooterMode); 
+    // Enables or disables shooter warm up for the specified location
+    void setShooterWarmUpEnabled(Shooter::ShooterMode shooterMode, bool enabled); 
 
-    // called by controls to say they want to start actually shooting the balls
-    void startShootingTheBalls(Shooter::ShooterMode shooterMode); 
+    // Begins shooting a ball using the specified location/aiming mode.  If warm-up is enabled,
+    // the shooterMode here is ignored and the one from the warmup is used; 
+    // the shot cannot be cancelled/aborted once it has begun.
+    // This will only shoot one ball and if this is called when a shot is in progress already,
+    // the new shot request is ignored.
+    void shootABall(Shooter::ShooterMode shooterMode);
 
-    
+    // Indicates if a shot is in progress; true means one is
+    bool isShotInProgress();
 
-    // called by controls to say they dont want to shoot 
-    void stopShooting(); 
+    // Used to control the hood motor manually.  Only used when a shot or warm up is in progress
+    // Values are -1 -> 1 with negative numbers turning to retract the hood and positive extending it.
+    //  (used only for manual operation, otherwise ignored)
+    void setManualHoodSpeed(double hoodSpeed);
+
+
+
+
 
     enum IntakeDirection{
         INTAKE, //deploy intake mech, spin intake in, spin storage up, stop spin and retract mech when at 2 balls and comfortable in position
-        OUTTAKE, //retract intake mech, spin outtake out, spin storage wheels out
+        OUTTAKE, // intake pivot remains where it is, spin outtake out, spin storage wheels out
         NOTTAKE, //retract intake mech, stop intake spin, stop storage spin when ball is in the correct stage 1/2
         MANUAL // NOT USED BY CONTROLS used for manual :D
     };
 
     void setIntakeDirection(IntakeDirection intDir);
 
-    // called by controls to set the speed of the intake manually (used only for manual operation, otherwise ignored)
+    // called to set the speed of the intake and storage manually (used only for manual operation, otherwise ignored)
+    // -1 to 1, negative numbers spin to eject balls, positive ones intake balls
     void setManualIntakeSpeed(double intakeSpeed);
-    // called by controls to set the positioon of the intake manually (used only for manual operation, otherwise ignored)
+    // called to set the positioon of the intake manually (used only for manual operation, otherwise ignored)
+    // true is deployed and false is retracted/stored
     void setManualIntakePosition(bool intakePosition);
 
 
-    // called by controls to change the position of the hood manually  (used only for manual operation, otherwise ignored)
-    void setManualHoodSpeed(double hoodSpeed);
+    // Trevor doc me
+    int getCurrentBallCount();
 
 
-    // (unused) called by controls to slowly increase the speed of the shooter manually  (used only for manual operation, otherwise ignored)
-    // void setManualShooterSpeed(double shooterSpeed);
 
-
-    // used by controls for a broken switch that will turn off the ball counter
-    void setBallCounterBroken(bool ballBroken);
+    // disables ball sensor usage
+    void setBallSensorsBroken(bool broken);
     static const int BALL_COUNT_UNKNOWN = -1;
-    // do the motors actuators etc list
-    //add priming chang shooter enumand funcrion to be more make sense
-    // can add manual mode to find field position from controls and the query thing
-    // hood position control stuff
 
-    
-    // rework stuff for contrils
-    // hood pos manual
-    // stuff
 
 private:
     Limelight* limelight;

@@ -29,17 +29,14 @@ public:
         SHOOTING
     };
 
+/// Fixme:  What does SHOOTING here mean? 
     void setIntakeDirection(IntakeDirection intakeDirection);
     //ture is down, false is up, only used for manual
     void setIntakePosition(bool position); 
-    // positive to intake, negative to outtake, intake must be down to work correctly, only used for manual
+    // positive to intake, negative to outtake, only used for manual
     void setIntakeSpeed(double speed);
-    //tells if the intake sensor has been tripped
-    bool intakeBeamTripped();
     // moves stage two to shoot the balls then moves a present ball to stage one if there is one
     void giveBallToShooter();
-    //ball count!!!!
-    void countOfBalls();
     // returns the ball count
     int returnBallCount();
 
@@ -49,6 +46,9 @@ public:
 
 
 private:
+    //ball count!!!!
+    void countOfBalls();
+
     // Something here...
     //retract piston is intake enabled now, needs to be changed in code
     frc::DoubleSolenoid rightIntake{frc::PneumaticsModuleType::CTREPCM, INTAKE_RIGHT_PIVOT_EXTEND, INTAKE_RIGHT_PIVOT_RETRACT}; 
