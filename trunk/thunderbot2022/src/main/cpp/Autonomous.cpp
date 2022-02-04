@@ -1,5 +1,7 @@
 #include "Autonomous.h"
 
+#define AUTO_TRAJECTORY_CONFIG drive->getTrajectoryConfig()
+
 #define VISION_ROTATE_SPEED .1
 
 Autonomous::Autonomous(Drive* drive, GamEpiece* gamEpiece, Camera* camera) 

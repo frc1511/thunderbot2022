@@ -15,22 +15,36 @@
 #include <frc/trajectory/TrajectoryUtil.h>
 #include <frc/trajectory/TrajectoryGenerator.h>
 #include <frc/controller/HolonomicDriveController.h>
+#include <ctre/phoenix/sensors/CANCoder.h>
+#include <rev/CANSparkMax.h>
+#include <frc/ADIS16470_IMU.h>
 #include <frc/Filesystem.h>
 #include <frc/Timer.h>
-#include <frc/ADIS16470_IMU.h>
-#include <rev/CANSparkMax.h>
-#include <ctre/phoenix/sensors/CANCoder.h>
 #include <wpi/array.h>
 #include <wpi/numbers>
 #include <wpi/fs.h>
-#include <optional>
+#include <string>
+#include <vector>
+#include <fstream>
+#include <iostream>
 
-#define DRIVE_MAX_SPEED 4_mps
-#define AUTO_MAX_SPEED 1_mps
-#define AUTO_MAX_ACCELERATION 0.4_mps_sq
-#define AUTO_TRAJECTORY_CONFIG (frc::TrajectoryConfig(AUTO_MAX_SPEED, AUTO_MAX_ACCELERATION))
+// The maximum speed of the chassis during manual drive.
+#define DRIVE_MANUAL_MAX_SPEED 4_mps
+// The maximum angular speed of the chassis during manual drive.
+#define DRIVE_MANUAL_MAX_ANGULAR_SPEED 3.14_rad_per_s
 
+// The maximum speed of the chassis during a drive command.
+#define DRIVE_CMD_MAX_SPEED 1_mps
+// The maximum acceleration of the chassis during a drive command.
+#define DRIVE_CMD_MAX_ACCELERATION 0.4_mps_sq
+// The maximum angular speed of the chassis during a drive command.
+#define DRIVE_CMD_MAX_ANGULAR_SPEED 3.14_rad_per_s
+// The maximum angular acceleration of the chassis during a drive command.
+#define DRIVE_CMD_MAX_ANGULAR_ACCELERATION (3.14_rad_per_s / 1_s)
+
+// The width of the robot.
 #define ROBOT_WIDTH 0.54_m
+// The length of the robot.
 #define ROBOT_LENGTH 0.67_m
 
 // --- Swerve module ---
@@ -49,27 +63,9 @@ public:
     void setState(frc::SwerveModuleState state);
 
     /**
-     * Returns the current state of the swerve module.
+     * Set the velocity of the drive motor (meters per second).
      */
-    frc::SwerveModuleState getState();
-
-    /**
-     * Applies the current rotation of the module as the offset of the
-     * CANCoder. Only called when the module was replaced and rotated
-     * towards the front of the robot.
-     */
-    void configOffset();
-
-private:
-    /**
-     * Sets the speed of the drive motor (-1 to 1).
-     */
-    void setDriveMotor(double speed);
-
-    /**
-     * Returns the current velocity (RPM) of the drive motor.
-     */
-    double getDriveVelocity();
+    void setDriveMotor(units::meters_per_second_t velocity);
 
     /**
      * Sets the angle of the swerve module.
@@ -77,14 +73,40 @@ private:
     void setTurningMotor(units::radian_t angle);
 
     /**
-     * Returns the relative rotation of the module (NEO 550 internal encoder).
+     * Returns the current state of the swerve module (Velocity and angle).
+     */
+    frc::SwerveModuleState getState();
+
+    /**
+     * Applies an offset to the CANCoder.
+     */
+    void setOffset(units::radian_t offset);
+
+    enum IdleMode {
+        BRAKE,
+        COAST,
+    };
+
+    /**
+     * Sets the idle mode of the module.
+     */
+    void setIdleMode(IdleMode mode);
+
+private:
+    /**
+     * Returns the current velocity of the drive motor (meters per second).
+     */
+    units::meters_per_second_t getDriveVelocity();
+
+    /**
+     * Returns the relative rotation of the module (Rotations of the NEO 550).
      */
     double getRelativeRotation();
 
     /**
-     * Returns the absolute rotation of the module (CANCoder).
+     * Returns the absolute rotation of the module (CANCoder encoder value).
      */
-    units::radian_t getAbsoluteRotation();
+    frc::Rotation2d getAbsoluteRotation();
 
     // The drive motor (NEO Brushless motor).
     rev::CANSparkMax driveMotor;
@@ -98,6 +120,9 @@ private:
 
     // The absolute encoder (CTRE CANCoder).
     ctre::phoenix::sensors::CANCoder turningAbsEncoder;
+
+    // The offset of the CANCoders.
+    units::radian_t canCoderOffset = 0_rad;
 };
 
 // --- Drivetrain ---
@@ -116,7 +141,8 @@ public:
     void process() override;
         
     /**
-     * Returns the current pose (X, Y position and rotation).
+     * Returns the current pose of the odometry (X, Y position and rotation
+     * tracked by odometry).
      */
     frc::Pose2d getPose();
 
@@ -126,8 +152,8 @@ public:
     void zeroRotation();
 
     /**
-     * Calibrates the IMU (Should be done only once at a time when the robot is
-     * not moving).
+     * Calibrates the IMU for 4 seconds (Should only be done once at the
+     * beginning of the match when the robot is not moving).
      */
     void calibrateIMU();
 
@@ -137,12 +163,13 @@ public:
      * replacing a swerve module and when all the swerve modules are rotated
      * towards the front of the robot!
      */
-    void setupMagneticEncoders();
+    void configMagneticEncoders();
     
     /**
-     * Manually set the velocities of the robot (dependant on control type).
+     * Manually control the robot using percentages of the max drive velocities.
+     * (The direction of the velocities is dependant on the control type).
      */
-    void manualDrive(double xVel, double yVel, double rotVel);
+    void manualDrive(double xPct, double yPct, double rotPct);
 
     enum ControlMode {
         ROBOT_CENTRIC,
@@ -157,9 +184,14 @@ public:
 
     /**
      * Rotates all the swerve modules towards the center of the robot in order
-     * to reduce pushing by other robots (aka making the robot a brick).
+     * to reduce pushing by other robots (aka making the robot into a brick).
      */
     void makeBrick();
+
+    /**
+     * Returns the configuration for all trajectories.
+     */
+    frc::TrajectoryConfig getTrajectoryConfig();
 
     // --- Commands ---
 
@@ -193,16 +225,16 @@ public:
      * angle.
      */
     void cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle = frc::Rotation2d());
-
-    /**
-     * Begins a command to follow a specified pathweaver trajectory.
-     */
-    void cmdFollowPathWeaverTrajectory(const char* pathweaverJson);
-
+    
     /**
      * Begins a command to follow a specified trajectory.
      */
     void cmdFollowTrajectory(frc::Trajectory trajectory);
+
+    /**
+     * Begins a command to follow a pathweaver trajecectory from a json file.
+     */
+    void cmdFollowPathweaverTrajectory(std::string jsonPath);
 
     /**
      * Returns whether the last command has finished.
@@ -216,7 +248,8 @@ public:
 
 private:
     /**
-     * Generates and sends states to the swerve modules from chassis speeds.
+     * Generates and sends states to the swerve modules using specified chassis
+     * speeds.
      */
     void setModuleStates(frc::ChassisSpeeds chassisSpeeds);
 
@@ -236,7 +269,7 @@ private:
     void resetIMU();
     
     /**
-     * Returns the rotation of the robot.
+     * Returns the rotation of the robot on the field.
      */
     frc::Rotation2d getRotation();
 
@@ -245,10 +278,30 @@ private:
      */
     void executeCommand();
 
+    /**
+     * Reads the magnetic encoder offsets file.
+     */
+    bool readOffsetsFile();
+
+    /**
+     * Writes the current magnetic encoder offsets into the file.
+     */
+    void writeOffsetsFile();
+
+    /**
+     * Applies the current magnetic encoder offsets to the swerve modules.
+     */
+    void applyOffsets();
+
+    /**
+     * Sets the idle mode of the drive motors.
+     */
+    void setIdleMode(SwerveModule::IdleMode mode);
+
     // The control mode of the robot.
     ControlMode controlMode = FIELD_CENTRIC;
 
-    // The limelight sensor.
+    // The limelight vision sensor.
     Limelight* limelight;
 
     // The locations of the swerve modules on the robot.
@@ -267,23 +320,50 @@ private:
       new SwerveModule(CAN_SWERVE_FR_DRIVE_MOTOR, CAN_SWERVE_FR_ROT_MOTOR, CAN_SWERVE_FR_ROT_CAN_CODER),
     };
 
-    // The helper class that converts chassis speeds into swerve module states.
+    // The magnetic encoder offsets of the swerve modules.
+    wpi::array<units::radian_t, 4> offsets { 0_rad, 0_rad, 0_rad, 0_rad };
+
+    /**
+     * The helper class that can be used to convert chassis speeds into swerve
+     * module states.
+     */
     frc::SwerveDriveKinematics<4> kinematics { locations };
 
-    // The odometry class that tracks the position of the robot on the field.
+    /**
+     * The class that will handle tracking the position of the robot on the
+     * field during the match.
+     */
     frc::SwerveDriveOdometry<4> odometry { kinematics, getRotation() };
 
-    // The ADIS16470 IMU (3D gyro and accelerometer) in the SPI port on the
-    // roborio.
+    /**
+     * Our super accurate IMU (3d gyro and accelerometer) in the SPI port on the
+     * roborio.
+     */
     frc::ADIS16470_IMU imu {};
 
+    /**
+     * Represents a command for the drivetrain to execute over a period of time.
+     */
     struct SwerveCommand {
         frc::Trajectory trajectory;
         frc::Timer timer;
         bool running = false;
     };
 
-    SwerveCommand cmd = {};
+    // The current command.
+    SwerveCommand cmd {};
 
-    frc::HolonomicDriveController cmdController { { 1, 0, 0 }, { 1, 0, 0 }, { 1, 0, 0, {} } };
+    /**
+     * The class that will handle generating chassis speeds for the robot using
+     * trajectory states. Implements a PID-style error correction system to
+     * accurately drive to a position.
+     */
+    frc::HolonomicDriveController cmdController {
+        // PID Values for movement in the X direction.
+        { 1, 0, 0 },
+        // PID Values for movement in the Y direction.
+        { 1, 0, 0 },
+        // PID Values for rotational movement, and rotational constraints profile.
+        { 1, 0, 0, frc::TrapezoidProfile<units::radians>::Constraints(DRIVE_CMD_MAX_ANGULAR_SPEED, DRIVE_CMD_MAX_ANGULAR_ACCELERATION) }
+    };
 };
