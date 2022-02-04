@@ -96,7 +96,7 @@ void Autonomous::doNothing() {
 }
 
 void Autonomous::oneBall() {
-    gamEpiece->startShootingTheBalls(Shooter::TARMAC_LINE);
+    gamEpiece->shootABall(Shooter::TARMAC_LINE);
 }
 
 void Autonomous::leftTwoBall() {
@@ -116,7 +116,7 @@ void Autonomous::leftTwoBall() {
     }
     else if(step == 3 && drive->cmdIsFinished() == true)
     {
-        gamEpiece->startShootingTheBalls(Shooter::TARMAC_LINE);
+        gamEpiece->shootABall(Shooter::TARMAC_LINE);
     }
 }
 
@@ -137,7 +137,7 @@ void Autonomous::centerTwoBall() {
     }
     else if(step == 3 && drive->cmdIsFinished() == true)
     {
-        gamEpiece->startShootingTheBalls(Shooter::TARMAC_LINE);
+        gamEpiece->shootABall(Shooter::TARMAC_LINE);
     }
 }
 
@@ -158,7 +158,7 @@ void Autonomous::rightTwoBall() {
     }
     else if(step == 3 && drive->cmdIsFinished() == true)
     {
-        gamEpiece->startShootingTheBalls(Shooter::TARMAC_LINE);
+        gamEpiece->shootABall(Shooter::TARMAC_LINE);
         step++;
     }
 }
@@ -191,7 +191,7 @@ void Autonomous::leftThreeBall() {
     }
     else if(step == 8)
     {
-        gamEpiece->startShootingTheBalls(Shooter::TARMAC_LINE);
+        gamEpiece->shootABall(Shooter::TARMAC_LINE);
         step++;
     }
 }
@@ -224,7 +224,7 @@ void Autonomous::centerThreeBall() {
     }
     else if(step == 8)
     {
-        gamEpiece->startShootingTheBalls(Shooter::TARMAC_LINE);
+        gamEpiece->shootABall(Shooter::TARMAC_LINE);
         step++;
     }
 }
@@ -257,7 +257,7 @@ void Autonomous::rightThreeBall() {
     }
     else if(step == 8)
     {
-        gamEpiece->startShootingTheBalls(Shooter::TARMAC_LINE);
+        gamEpiece->shootABall(Shooter::TARMAC_LINE);
         step++;
     }
 }
@@ -299,7 +299,7 @@ void Autonomous::alternateThreeBall() {
     }
     else if(step == 8)
     {
-        gamEpiece->startShootingTheBalls(Shooter::TARMAC_LINE);
+        gamEpiece->shootABall(Shooter::TARMAC_LINE);
     }
 }
 
@@ -321,7 +321,7 @@ void Autonomous::fourBall() {
     }
     else if(step == 6 && drive->cmdIsFinished() == true)
     {
-        gamEpiece->startShootingTheBalls(Shooter::TARMAC_LINE);
+        gamEpiece->shootABall(Shooter::TARMAC_LINE);
     }
 }
 
