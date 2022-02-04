@@ -77,25 +77,27 @@ void GamEpiece::process() {
     shooter.process();
 }
 
-void GamEpiece::startWarmingUpShooter(Shooter::ShooterMode shooterMode){
+void GamEpiece::setShooterWarmUpEnabled(Shooter::ShooterMode shooterMode, bool enabled){
     if(shooterState == NOT_SHOOTING){
         shooterState = WARMUP_SHOOTER;
     }
     shooter.setShooterMode(shooterMode);
 }
 
-void GamEpiece::startShootingTheBalls(Shooter::ShooterMode shooterMode){
+void GamEpiece::shootABall(Shooter::ShooterMode shooterMode){
     if(shooterState != SHOOTING){
         shooterState = WANT_TO_SHOOT;
     }
     shooter.setShooterMode(shooterMode);
 }
 
+/*
 void GamEpiece::stopShooting(){
     if(shooterState !=SHOOTING){
         shooterState = NOT_SHOOTING;
     }
 }
+*/
 
 void GamEpiece::setIntakeDirection(IntakeDirection intDir){ // intState is a local variable which is a "copy of intakeDirection"
     if(shooterState == NOT_SHOOTING){
@@ -121,7 +123,7 @@ void GamEpiece::setManualHoodSpeed(double hoodSpeed){
     desiredShooterSpeed += shooterSpeed;
 }*/
 
-void GamEpiece::setBallCounterBroken(bool ballCounter){
+void GamEpiece::setBallSensorsBroken(bool ballCounter){
     intake.setBallCounterBroken(ballCounter);
 }
 
