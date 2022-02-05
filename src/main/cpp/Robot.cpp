@@ -14,7 +14,9 @@ void Robot::AutonomousInit() {
 }
 
 void Robot::AutonomousPeriodic() {
-
+  camera.process();
+  drive.process();
+  autonomous.process();
 }
 
 void Robot::TeleopInit() {
@@ -42,6 +44,7 @@ void Robot::TestInit() {
 
 void Robot::TestPeriodic() {
   // Why would we use test?
+  blinkyBlinky.process();
 }
 
 void Robot::resetMechanisms(Mechanism::MatchMode mode) {
@@ -52,6 +55,7 @@ void Robot::resetMechanisms(Mechanism::MatchMode mode) {
   controls.resetToMode(mode);
   autonomous.resetToMode(mode);
   blinkyBlinky.resetToMode(mode);
+  camera.resetToMode(mode);
 }
 
 #ifndef RUNNING_FRC_TESTS

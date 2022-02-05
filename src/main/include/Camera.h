@@ -1,6 +1,7 @@
 #pragma once
 
-#include <Mechanism.h>
+#include "IOMap.h"
+#include "Mechanism.h"
 #include <cameraserver/CameraServer.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/core/types.hpp>
@@ -10,9 +11,10 @@
 #include <frc/DriverStation.h>
 #include <units/math.h>
 #include <vector>
+#include <optional>
 
 /**
- * Represents a USB Camera and handles vision processing.
+ * Represents a USB Camera and handles vision processing for the cargo.
  */
 class Camera : public Mechanism {
 public:
@@ -21,22 +23,21 @@ public:
 
     void process() override;
 
-    struct Frame {
-        // Matrix used by OpenCV to encode images into.
-        cv::Mat matrix {};
-    };
+    /**
+     * Returns whether a valid target was found.
+     */
+    bool hasTarget();
 
     /**
-     * Gets the current frame of the camera.
+     * Returns the X location of the target in the frame (-1 to 1).
      */
-    void getFrame(Frame* frame);
+    double getTargetXPosition();
 
     /**
-     * Sends a frame to the driver station.
+     * Returns the Y location of the target in the frame (-1 to 1).
      */
-    void sendFrame(Frame& frame);
-    
-    // The region of the frame.
+    double getTargetYPosition();
+
     enum FrameSector {
         UNKNOWN = 0,
         LEFT,
@@ -45,17 +46,58 @@ public:
     };
     
     /**
-     * Attempts to locate a cargo in front of the robot and returns the sector the cargo is in.
+     * Returns the sector of the frame that the target was located in.
      */
-    FrameSector locateTarget(Frame& frame);
+    FrameSector getTargetSector();
+    
+    /**
+     * Returns the area of the target (Percentage of the frame 0-1).
+     */
+    double getTargetArea();
+
+    /**
+     * Sets whether the camera vision processing is broken.
+     */
+    void setVisionBroken(bool broken);
+    
+    /**
+     * Gets whether the camera vision processing is broken.
+     */
+    bool getVisionBroken();
     
 private:
-    // The USB Camera.
-    cs::UsbCamera camera;
+    // The intake camera.
+    cs::UsbCamera intakeCamera;
     
     // CvSink that is used to capture matricies from the camera.
     cs::CvSink cvSink;
     
     // The image stream used to send images back to dashboard.
     cs::CvSource outputStream;
+
+    // The input image matrix.
+    cv::Mat inputMatrix;
+
+    // The output image matrix.
+    cv::Mat outputMatrix;
+
+    struct TargetData {
+        // Whether the target was found.
+        bool found = false;
+
+        // X position of the target in the frame.
+        double xPos = -1;
+
+        // Y position of the target in the frame.
+        double yPos = -1;
+
+        // The area of the target in the frame.
+        double area = -1;
+    };
+    
+    // The data regarding the target.
+    TargetData targetData {};
+
+    // Vision processing broken switch.
+    bool visionBroken = false;
 };
