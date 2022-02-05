@@ -1,5 +1,7 @@
 #pragma once
 
+#include "IOMap.h"
+
 /*
 ██╗ ██████╗     ███╗   ███╗ █████╗ ██████╗ 
 ██║██╔═══██╗    ████╗ ████║██╔══██╗██╔══██╗
@@ -8,6 +10,8 @@
 ██║╚██████╔╝    ██║ ╚═╝ ██║██║  ██║██║     
 ╚═╝ ╚═════╝     ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝     v2022
 */
+
+// #define HOMER // Comment out if not homer
 
 //PWM
 #define PWM_STRING_SERVO 0
@@ -29,6 +33,25 @@
 #define CAN_SHOOTER_LEFT_FLYWHEEL_MOTOR 7
 #define CAN_SHOOTER_RIGHT_FLYWHEEL_MOTOR 8
 
+#ifdef HOMER
+
+#define CAN_SWERVE_FL_DRIVE_MOTOR 6
+#define CAN_SWERVE_BL_DRIVE_MOTOR 8
+#define CAN_SWERVE_BR_DRIVE_MOTOR 7
+#define CAN_SWERVE_FR_DRIVE_MOTOR 5
+
+#define CAN_SWERVE_FL_ROT_MOTOR 2
+#define CAN_SWERVE_BL_ROT_MOTOR 4
+#define CAN_SWERVE_BR_ROT_MOTOR 3
+#define CAN_SWERVE_FR_ROT_MOTOR 1
+
+#define CAN_SWERVE_FL_ROT_CAN_CODER 11
+#define CAN_SWERVE_BL_ROT_CAN_CODER 12
+#define CAN_SWERVE_BR_ROT_CAN_CODER 13
+#define CAN_SWERVE_FR_ROT_CAN_CODER 10
+
+#else
+
 #define CAN_SWERVE_FL_DRIVE_MOTOR 9
 #define CAN_SWERVE_BL_DRIVE_MOTOR 10
 #define CAN_SWERVE_BR_DRIVE_MOTOR 11
@@ -43,6 +66,8 @@
 #define CAN_SWERVE_BL_ROT_CAN_CODER 18
 #define CAN_SWERVE_BR_ROT_CAN_CODER 19
 #define CAN_SWERVE_FR_ROT_CAN_CODER 20
+
+#endif
 
 //DIO
 #define DIO_HANG_OPTICAL_HOME_SENSOR 0

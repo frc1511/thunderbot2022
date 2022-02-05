@@ -5,6 +5,7 @@
 #pragma once
 
 #include <frc/TimedRobot.h>
+#include "IOMap.h"
 #include "Controls.h"
 #include "Drive.h"
 #include "GamEpiece.h"
@@ -40,13 +41,19 @@ private:
   Camera camera {};
   Limelight limelight {};
   Drive drive { &camera, &limelight };
+
+#ifdef HOMER
+  Controls controls { &drive };
+#else
   GamEpiece gamEpiece { &limelight };
   Hang hang {};
-  Controls controls { &drive, &gamEpiece, &hang };
-
+  
   //ControlsForTrevor controlsForTrevor{};
   //AutoForTrevor autoForTrevor{};
   Autonomous autonomous { &drive, &gamEpiece };
 
   BlinkyBlinky blinkyBlinky {};
+  Controls controls { &drive, &gamEpiece, &hang };
+#endif
+
 };
