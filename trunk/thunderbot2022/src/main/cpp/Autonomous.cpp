@@ -4,8 +4,8 @@
 
 #define VISION_ROTATE_SPEED .1
 
-Autonomous::Autonomous(Drive* drive, GamEpiece* gamEpiece, Camera* camera) 
-  : drive(drive), gamEpiece(gamEpiece), camera(camera) {
+Autonomous::Autonomous(Drive* drive, GamEpiece* gamEpiece) 
+  : drive(drive), gamEpiece(gamEpiece) {
     
 }
 
@@ -100,7 +100,7 @@ void Autonomous::oneBall() {
 }
 
 void Autonomous::leftTwoBall() {
-    rotateToCargo();
+    // rotateToCargo();
     step++;
     if(step == 1)
     {
@@ -121,7 +121,7 @@ void Autonomous::leftTwoBall() {
 }
 
 void Autonomous::centerTwoBall() {
-    rotateToCargo();
+    // rotateToCargo();
     step++;
     if(step == 1)
     {
@@ -142,7 +142,7 @@ void Autonomous::centerTwoBall() {
 }
 
 void Autonomous::rightTwoBall() {
-    rotateToCargo();
+    // rotateToCargo();
     step++;
     if(step == 1)
     {
@@ -167,7 +167,7 @@ void Autonomous::leftThreeBall() {
     leftTwoBall();
     if(step == 4)
     {
-        rotateToCargo();
+        // rotateToCargo();
         step++;
     }
     else if(step == 5)
@@ -200,7 +200,7 @@ void Autonomous::centerThreeBall() {
     centerTwoBall();
     if(step == 4)
     {
-        rotateToCargo();
+        // rotateToCargo();
         step++;
     }
     else if(step == 5)
@@ -233,7 +233,7 @@ void Autonomous::rightThreeBall() {
     rightTwoBall();
     if(step == 4)
     {
-        rotateToCargo();
+        // rotateToCargo();
         step++;
     }
     else if(step == 5)
@@ -323,32 +323,4 @@ void Autonomous::fourBall() {
     {
         gamEpiece->shootABall(Shooter::TARMAC_LINE);
     }
-}
-
-bool Autonomous::rotateToCargo() {
-    if (cameraBroken) {
-        return true;
-    }
-    
-    camera->getFrame(&frame);
-
-    switch (camera->locateTarget(frame)) {
-        case Camera::UNKNOWN:
-            // Infinitely loop..............................
-            break;
-        case Camera::CENTER:
-            // Stop the drive.
-            drive->manualDrive(0, 0, 0);
-            break;
-        case Camera::LEFT:
-            // Begin rotating to the left.
-            drive->manualDrive(0, 0, -VISION_ROTATE_SPEED);
-            return false;
-        case Camera::RIGHT:
-            // Begin rotating to the right.
-            drive->manualDrive(0, 0, +VISION_ROTATE_SPEED);
-            break;
-    }
-
-    return false;
 }

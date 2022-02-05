@@ -9,7 +9,7 @@
 
 class Autonomous : public Mechanism {
 public:
-    Autonomous(Drive* drive, GamEpiece* gamEpiece, Camera* camera);
+    Autonomous(Drive* drive, GamEpiece* gamEpiece);
     ~Autonomous();
 
     enum AutoMode {
@@ -84,8 +84,6 @@ private:
     void fourBall();
     void alternateThreeBall();
 
-    bool rotateToCargo();
-
     bool cameraBroken = false;
 
     AutoMode currentMode = DO_NOTHING;
@@ -95,7 +93,4 @@ private:
 
     Drive* drive;
     GamEpiece* gamEpiece;
-
-    Camera* camera;
-    Camera::Frame frame {};
 };

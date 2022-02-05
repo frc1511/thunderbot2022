@@ -37,17 +37,16 @@ public:
   void resetMechanisms(Mechanism::MatchMode);
   
 private:
+  Camera camera {};
   Limelight limelight {};
-  Drive drive { &limelight };
+  Drive drive { &camera, &limelight };
   GamEpiece gamEpiece { &limelight };
   Hang hang {};
   Controls controls { &drive, &gamEpiece, &hang };
 
   //ControlsForTrevor controlsForTrevor{};
   //AutoForTrevor autoForTrevor{};
-
-  Camera camera {};
-  Autonomous autonomous { &drive, &gamEpiece, &camera};
+  Autonomous autonomous { &drive, &gamEpiece };
 
   BlinkyBlinky blinkyBlinky {};
 };

@@ -45,6 +45,24 @@
 // The number of seconds for the drive motors to ramp from idle to full trottle.
 #define DRIVE_RAMP_TIME 0.5
 
+// The tolerance of the X axis of the desired position.
+#define DRIVE_POSITION_TOLERANCE_X 0.01_m
+
+// The tolerance of the Y axis of the desired position.
+#define DRIVE_POSITION_TOLERANCE_Y 0.01_m
+
+// The tolerance of the angle of the desired position.
+#define DRIVE_POSITION_TOLERANCE_ANGLE 2_deg
+
+// The maximum speed during alignment using vision.
+#define DRIVE_VISION_MAX_SPEED 1_mps
+
+// The maximum angular speed during alignment using vision.
+#define DRIVE_VISION_MAX_ANGULAR_SPEED 1.57_rad_per_s
+
+// The allowable tolerance of the vision alignment.
+#define VISION_TOLERANCE 0.05
+
 // --- PID values ---
 
 #define DRIVE_P_VALUE 0.00001
@@ -200,7 +218,7 @@ void SwerveModule::setOffset(units::radian_t offset) {
 }
 
 void SwerveModule::setIdleMode(IdleMode mode) {
-    rev::CANSparkMax::IdleMode idleMode;
+    rev::CANSparkMax::IdleMode idleMode {};
     
     switch (mode) {
         case BRAKE:
@@ -242,8 +260,8 @@ frc::Rotation2d SwerveModule::getAbsoluteRotation() {
 
 // --- Drivetrain ---
 
-Drive::Drive(Limelight* limelight)
-  : limelight(limelight) {
+Drive::Drive(Camera* camera, Limelight* limelight)
+  : camera(camera), limelight(limelight) {
 
     // Configure the calibration time of the IMU to 4 seconds.
     imu.ConfigCalTime(frc::ADIS16470_IMU::CalibrationTime::_4s);
@@ -270,6 +288,11 @@ Drive::~Drive() {
 void Drive::resetToMode(MatchMode mode) {
     // Cancel the current command.
     cmdCancel();
+
+    driveMode = STOPPED;
+    controlMode = FIELD_CENTRIC;
+    cmd = {};
+    manualData = {};
     
     if (mode == MODE_DISABLED) {
         // Set the drive motors to coast when disabled so they can try to push
@@ -314,20 +337,49 @@ void Drive::sendFeedback() {
     Feedback::sendDouble("drive", "wheel 1 speed (mps)", swerveModules.at(1)->getState().speed.value());
     Feedback::sendDouble("drive", "wheel 2 speed (mps)", swerveModules.at(2)->getState().speed.value());
     Feedback::sendDouble("drive", "wheel 3 speed (mps)", swerveModules.at(3)->getState().speed.value());
-
-    Feedback::sendBoolean("drive", "command is running", cmd.running);
-    Feedback::sendBoolean("drive", "command total time", cmd.timer.Get().value());
 }
 
 void Drive::process() {
     // hi nevin
     // hi jeff :D
     
-    // Continue tracking the position and rotation on the field.
+    // Continue tracking the position and rotation of the robot on the field.
     updateOdometry();
 
-    // Execute the current drive command.
-    executeCommand();
+    switch (driveMode) {
+        case STOPPED:
+            // Stop all the swerve modules.
+            setModuleStates({ 0_mps, 0_mps, 0_rad_per_s });
+            break;
+        case MANUAL:
+            // Execute the manual instructions.
+            exeManual();
+            break;
+        case COMMAND:
+            if (cmdIsFinished()) {
+                cmd.type = SwerveCommand::NONE;
+            }
+
+            switch (cmd.type) {
+                case SwerveCommand::NONE:
+                    // Stop the command.
+                    driveMode = STOPPED;
+                    break;
+                case SwerveCommand::TRAJECTORY:
+                    // Execute the follow trajectory command.
+                    exeFollowTrajectory();
+                    break;
+                case SwerveCommand::POSITION:
+                    // Execute the position command.
+                    exePosition();
+                    break;
+                case SwerveCommand::ALIGN_TO_CARGO:
+                    // Execute the align with cargo command.
+                    exeAlignWithCargo();
+                    break;
+            }
+            break;
+    }
 }
 
 frc::Pose2d Drive::getPose() {
@@ -366,25 +418,11 @@ void Drive::manualDrive(double xPct, double yPct, double rotPct) {
     // Take control if drive command is running.
     cmdCancel();
 
-    // Calculate the velocities.
-    units::meters_per_second_t xVel    = xPct   * DRIVE_MANUAL_MAX_SPEED;
-    units::meters_per_second_t yVel    = yPct   * DRIVE_MANUAL_MAX_SPEED;
-    units::radians_per_second_t rotVel = rotPct * DRIVE_MANUAL_MAX_ANGULAR_SPEED;
-    
-    frc::ChassisSpeeds chassisVelocities;
-
-    // Generate chassis speeds depending on the control mode.
-    switch (controlMode) {
-        case FIELD_CENTRIC:
-            chassisVelocities = frc::ChassisSpeeds::FromFieldRelativeSpeeds(xVel, yVel, rotVel, getRotation());
-            break;
-        case ROBOT_CENTRIC:
-            chassisVelocities = { xVel, yVel, rotVel };
-            break;
+    if (xPct == 0 && yPct == 0 && rotPct == 0) {
+        driveMode = STOPPED;
     }
-    
-    // Set the modules to drive based on the velocities.
-    setModuleStates(chassisVelocities);
+
+    manualData = { xPct, yPct, rotPct };
 }
 
 void Drive::setControlMode(ControlMode mode) {
@@ -402,8 +440,8 @@ void Drive::makeBrick() {
         else {
             angle = 45_deg;
         }
-        // Stop the drive motor.
-        swerveModules.at(i)->setDriveMotor(0_mps);
+        // Stop the robot.
+        driveMode = STOPPED;
         // Turn the swerve module to point towards the center of the robot.
         swerveModules.at(i)->setTurningMotor(angle);
     }
@@ -422,9 +460,14 @@ frc::TrajectoryConfig Drive::getTrajectoryConfig() {
 }
 
 bool Drive::cmdRotateToCargo() {
-    
-    // TODO Implement.
-    
+    // Make sure it is in auto and that the camera sees a target.
+    if (getCurrentMode() != MODE_AUTO || !camera->hasTarget()) {
+        return false;
+    }
+
+    driveMode = COMMAND;
+    cmd.type = SwerveCommand::ALIGN_TO_CARGO;
+
     return true;
 }
 
@@ -445,22 +488,21 @@ bool Drive::cmdRotateToHub() {
 }
 
 void Drive::cmdRotate(frc::Rotation2d angle) {
-    // Create a trajectory to rotate the specified angle.
-    frc::Trajectory trajectory = frc::TrajectoryGenerator::GenerateTrajectory(
-        getPose(), {}, { 0_m, 0_m, angle }, getTrajectoryConfig());
-
-    // Start a follow trajectory command.
-    cmdFollowTrajectory(trajectory);
+    cmdDrive(0_m, 0_m, angle);
 }
 
-void Drive::cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle) {
-    // Create a trajectory that drives the specified distance and turns the
-    // specified angle.
-    frc::Trajectory trajectory = frc::TrajectoryGenerator::GenerateTrajectory(
-        getPose(), {}, { x, y, angle }, getTrajectoryConfig());
+void Drive::cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle, units::meters_per_second_t speed) {
+    driveMode = COMMAND;
+    cmd.type = SwerveCommand::POSITION;
 
-    // Start a follow trajectory command.
-    cmdFollowTrajectory(trajectory);
+    // The current pose.
+    frc::Pose2d currentPose = getPose();
+
+    // The target pose.
+    frc::Pose2d targetPose(currentPose.X() + x, currentPose.Y() + y, currentPose.Rotation() + angle);
+
+    cmd.positionData.pose = targetPose;
+    cmd.positionData.speed = speed;
 }
 
 void Drive::cmdFollowPathweaverTrajectory(std::string jsonPath) {
@@ -474,27 +516,52 @@ void Drive::cmdFollowPathweaverTrajectory(std::string jsonPath) {
 }
 
 void Drive::cmdFollowTrajectory(frc::Trajectory trajectory) {
-    cmd.trajectory = trajectory;
-    cmd.timer.Reset();
-    cmd.timer.Start();
-    cmd.running = true;
+    driveMode = COMMAND;
+    cmd.type = SwerveCommand::TRAJECTORY;
+    
+    cmd.trajectoryData.trajectory = trajectory;
+    
+    cmd.trajectoryData.timer.Reset();
+    cmd.trajectoryData.timer.Start();
 }
 
 bool Drive::cmdIsFinished() {
-    // If a command is currently running but the total time of the trajectory
-    // has elapsed.
-    if (cmd.running && cmd.timer.HasElapsed(cmd.trajectory.TotalTime())) {
-        // Stop the command.
-        cmdCancel();
-        // Stop all the swerve modules.
-        setModuleStates({0_mps, 0_mps, 0_rad_per_s});
+    // If no command is running, then it has finished.
+    if (driveMode != COMMAND) {
+        return true;
     }
-    return !cmd.running;
+
+    switch (cmd.type) {
+        // If no command is running, then it has finished.
+        case SwerveCommand::NONE:
+            return true;
+        case SwerveCommand::TRAJECTORY:
+            // If a command is currently running but the total time of the
+            // trajectory has elapsed.
+            if (cmd.trajectoryData.timer.HasElapsed(cmd.trajectoryData.trajectory.TotalTime())) {
+                return true;
+            }
+            return false;
+        case SwerveCommand::POSITION:
+            if (units::math::abs(getPose().X() - cmd.positionData.pose.X()) < DRIVE_POSITION_TOLERANCE_X &&
+                units::math::abs(getPose().Y() - cmd.positionData.pose.Y()) < DRIVE_POSITION_TOLERANCE_Y &&
+                units::math::abs(getPose().Rotation().Degrees() - cmd.positionData.pose.Rotation().Degrees()) < DRIVE_POSITION_TOLERANCE_ANGLE) {
+                return true;
+            }
+            return false;
+        case SwerveCommand::ALIGN_TO_CARGO:
+            if (camera->getTargetSector() == Camera::CENTER) {
+                cmdCancel();
+                return true;
+            }
+            return false;
+    }
+
+    return true;
 }
 
 void Drive::cmdCancel() {
-    cmd.timer.Stop();
-    cmd.running = false;
+    cmd.type = SwerveCommand::NONE;
 }
 
 void Drive::setModuleStates(frc::ChassisSpeeds chassisSpeeds) {
@@ -541,22 +608,39 @@ frc::Rotation2d Drive::getRotation() {
     return frc::Rotation2d(rotation);
 }
 
-void Drive::executeCommand() {
-    // Only execute a command if the command is running.
-    if (cmdIsFinished()) {
-        return;
-    }
+void Drive::exeManual() {
+    // Calculate the velocities.
+    units::meters_per_second_t xVel    = manualData.xPct   * DRIVE_MANUAL_MAX_SPEED;
+    units::meters_per_second_t yVel    = manualData.yPct   * DRIVE_MANUAL_MAX_SPEED;
+    units::radians_per_second_t rotVel = manualData.rotPct * DRIVE_MANUAL_MAX_ANGULAR_SPEED;
+    
+    frc::ChassisSpeeds chassisVelocities;
 
+    // Generate chassis speeds depending on the control mode.
+    switch (controlMode) {
+        case FIELD_CENTRIC:
+            chassisVelocities = frc::ChassisSpeeds::FromFieldRelativeSpeeds(xVel, yVel, rotVel, getRotation());
+            break;
+        case ROBOT_CENTRIC:
+            chassisVelocities = { xVel, yVel, rotVel };
+            break;
+    }
+    
+    // Set the modules to drive based on the velocities.
+    setModuleStates(chassisVelocities);
+}
+
+void Drive::exeFollowTrajectory() {
     // Get the current time of the trajectory.
-    units::second_t currentTime(cmd.timer.Get());
+    units::second_t currentTime(cmd.trajectoryData.timer.Get());
     
     // Sample the desired state of the trajectory at this point in time.
-    frc::Trajectory::State desiredState = cmd.trajectory.Sample(currentTime);
+    frc::Trajectory::State desiredState = cmd.trajectoryData.trajectory.Sample(currentTime);
     
     // Calculate chassis velocities that are required in order to reach the
     // desired state.
     frc::ChassisSpeeds targetChassisSpeeds = cmdController.Calculate(
-        getPose(), desiredState, cmd.trajectory.States().back().pose.Rotation());
+        getPose(), desiredState, cmd.trajectoryData.trajectory.States().back().pose.Rotation());
 
     // Finally drive!
     setModuleStates(targetChassisSpeeds);
@@ -564,6 +648,37 @@ void Drive::executeCommand() {
     //hi ishan
     //hi jeff
     //hi trevor
+    //hi nevin
+    //hi josh
+}
+
+void Drive::exePosition() {
+    // Generate chassis speeds to go to a position.
+    frc::ChassisSpeeds targetChassisSpeeds = cmdController.Calculate(
+        getPose(), cmd.positionData.pose, cmd.positionData.speed, cmd.positionData.pose.Rotation());
+
+    // Drive!
+    setModuleStates(targetChassisSpeeds);
+}
+
+void Drive::exeAlignWithCargo() {
+    switch (camera->getTargetSector()) {
+        case Camera::UNKNOWN:
+            // Not found.
+            cmdCancel();
+            break;
+        case Camera::CENTER:
+            // Found in the center.
+            break;
+        case Camera::LEFT:
+            // Begin rotating the the left.
+            setModuleStates({ 0_mps, 0_mps, -DRIVE_VISION_MAX_ANGULAR_SPEED });
+            break;
+        case Camera::RIGHT:
+            // Begin rotating to the right.
+            setModuleStates({ 0_mps, 0_mps, +DRIVE_VISION_MAX_ANGULAR_SPEED });
+            break;
+    }
 }
 
 bool Drive::readOffsetsFile() {

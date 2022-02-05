@@ -4,6 +4,7 @@
 #include "IOMap.h"
 #include "Limelight.h"
 #include "Feedback.h"
+#include "Camera.h"
 #include <frc/geometry/Transform2d.h>
 #include <frc/geometry/Rotation2d.h>
 #include <frc/geometry/Pose2d.h>
@@ -133,7 +134,7 @@ private:
  */
 class Drive : public Mechanism {
 public:
-    Drive(Limelight* limelight);
+    Drive(Camera* camera, Limelight* limelight);
     ~Drive();
 
     void resetToMode(MatchMode mode) override;
@@ -210,8 +211,8 @@ public:
     bool cmdRotateToCargo();
 
     /**
-     * Begins a command to rotate the robot to the high hub using limelight.
-     * Returns whether it has successfully identified the high hub.
+     * Begins a command to rotate the robot to the high hub using limelight or
+     * odometry. Returns whether it has successfully identified the high hub.
      */
     bool cmdRotateToHub();
 
@@ -224,7 +225,8 @@ public:
      * Begins a command to drive a specified distance and rotate a specified
      * angle.
      */
-    void cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle = frc::Rotation2d());
+    void cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle = frc::Rotation2d(),
+                  units::meters_per_second_t speed = DRIVE_CMD_MAX_SPEED);
     
     /**
      * Begins a command to follow a specified trajectory.
@@ -274,9 +276,24 @@ private:
     frc::Rotation2d getRotation();
 
     /**
-     * Executes the current command.
+     * Executes manual drive instructions.
      */
-    void executeCommand();
+    void exeManual();
+
+    /**
+     * Executes the current follow trajectory command.
+     */
+    void exeFollowTrajectory();
+
+    /**
+     * Executes the current position command.
+     */
+    void exePosition();
+
+    /**
+     * Executes the current align with cargo command.
+     */
+    void exeAlignWithCargo();
 
     /**
      * Reads the magnetic encoder offsets file.
@@ -298,8 +315,8 @@ private:
      */
     void setIdleMode(SwerveModule::IdleMode mode);
 
-    // The control mode of the robot.
-    ControlMode controlMode = FIELD_CENTRIC;
+    // The forward-facing camera.
+    Camera* camera;
 
     // The limelight vision sensor.
     Limelight* limelight;
@@ -341,17 +358,72 @@ private:
      */
     frc::ADIS16470_IMU imu {};
 
+    enum DriveMode {
+        STOPPED,
+        MANUAL,
+        COMMAND,
+    };
+
+    // The drive mode of the robot.
+    DriveMode driveMode = STOPPED;
+
+    // The control mode of the robot.
+    ControlMode controlMode = FIELD_CENTRIC;
+
     /**
      * Represents a command for the drivetrain to execute over a period of time.
      */
     struct SwerveCommand {
-        frc::Trajectory trajectory;
-        frc::Timer timer;
-        bool running = false;
+        enum CommandType {
+            NONE,
+            TRAJECTORY,     // Folow a trajectory.
+            POSITION,       // Drive to a position.
+            ALIGN_TO_CARGO, // Align the robot with the cargo in front of the robot.
+        };
+
+        // The type of command to be executing.
+        CommandType type = NONE;
+
+        struct TrajectoryData {
+            // The trajectory to follow.
+            frc::Trajectory trajectory;
+            // The timer of the trajectory.
+            frc::Timer timer;
+        };
+
+        struct PositionData {
+            frc::Pose2d pose;
+            units::meters_per_second_t speed;
+        };
+
+        struct AlignmentData {
+
+        };
+        
+        // Data regarding the current trajectory command.
+        TrajectoryData trajectoryData {};
+
+        // Data regarding the current position command.
+        PositionData positionData {};
+        
+        // Data regarding the current alignment command.
+        AlignmentData alignmentData {};
     };
 
     // The current command.
     SwerveCommand cmd {};
+
+    /**
+     * Represents the data from controls during manual drive.
+     */
+    struct ManualData {
+        double xPct = 0;
+        double yPct = 0;
+        double rotPct = 0;
+    };
+
+    // The data for manual drive.
+    ManualData manualData {};
 
     /**
      * The class that will handle generating chassis speeds for the robot using
