@@ -6,7 +6,9 @@
 
 void Robot::RobotInit() {}
 void Robot::RobotPeriodic() {
+#ifndef HOMER
   blinkyBlinky.process();
+#endif
 }
 
 void Robot::AutonomousInit() {
@@ -16,7 +18,9 @@ void Robot::AutonomousInit() {
 void Robot::AutonomousPeriodic() {
   camera.process();
   drive.process();
+#ifndef HOMER
   autonomous.process();
+#endif
 }
 
 void Robot::TeleopInit() {
@@ -26,8 +30,10 @@ void Robot::TeleopInit() {
 void Robot::TeleopPeriodic() {
   controls.process();
   drive.process();
+#ifndef HOMER
   //gamEpiece.process();
   hang.process();
+#endif
 }
 
 void Robot::DisabledInit() {
@@ -44,18 +50,22 @@ void Robot::TestInit() {
 
 void Robot::TestPeriodic() {
   // Why would we use test?
+  #ifndef HOMER
   blinkyBlinky.process();
+  #endif
 }
 
 void Robot::resetMechanisms(Mechanism::MatchMode mode) {
   limelight.resetToMode(mode);
   drive.resetToMode(mode);
+  camera.resetToMode(mode);
+  #ifndef HOMER
   //gamEpiece.resetToMode(mode);
   hang.resetToMode(mode);
   controls.resetToMode(mode);
   autonomous.resetToMode(mode);
   blinkyBlinky.resetToMode(mode);
-  camera.resetToMode(mode);
+  #endif
 }
 
 #ifndef RUNNING_FRC_TESTS
