@@ -425,17 +425,17 @@ private:
     // The data for manual drive.
     ManualData manualData {};
 
+    frc2::PIDController cmdXController { 6, 0, 6/100 };
+    frc2::PIDController cmdYController { 6, 0, 6/100 };
+    frc::ProfiledPIDController<units::radians> cmdThetaController {
+        2.5, 0, 0,
+        frc::TrapezoidProfile<units::radians>::Constraints(DRIVE_CMD_MAX_ANGULAR_SPEED, DRIVE_CMD_MAX_ANGULAR_ACCELERATION)
+    };
+
     /**
      * The class that will handle generating chassis speeds for the robot using
      * trajectory states. Implements a PID-style error correction system to
      * accurately drive to a position.
      */
-    frc::HolonomicDriveController cmdController {
-        // PID Values for movement in the X direction.
-        { 1, 0, 0 },
-        // PID Values for movement in the Y direction.
-        { 1, 0, 0 },
-        // PID Values for rotational movement, and rotational constraints profile.
-        { 1, 0, 0, frc::TrapezoidProfile<units::radians>::Constraints(DRIVE_CMD_MAX_ANGULAR_SPEED, DRIVE_CMD_MAX_ANGULAR_ACCELERATION) }
-    };
+    frc::HolonomicDriveController cmdController { cmdXController, cmdYController, cmdThetaController };
 };

@@ -50,22 +50,22 @@ void Robot::TestInit() {
 
 void Robot::TestPeriodic() {
   // Why would we use test?
-  #ifndef HOMER
+#ifndef HOMER
   blinkyBlinky.process();
-  #endif
+#endif
 }
 
 void Robot::resetMechanisms(Mechanism::MatchMode mode) {
   limelight.resetToMode(mode);
   drive.resetToMode(mode);
   camera.resetToMode(mode);
-  #ifndef HOMER
+#ifndef HOMER
   //gamEpiece.resetToMode(mode);
   hang.resetToMode(mode);
   controls.resetToMode(mode);
   autonomous.resetToMode(mode);
   blinkyBlinky.resetToMode(mode);
-  #endif
+#endif
 }
 
 #ifndef RUNNING_FRC_TESTS
