@@ -3,7 +3,9 @@
 const double kSpeedStageOne = .7;
 const double kSpeedStageTwo = .7;
 const double kSpeedStageTwoSlow = .3;
-Intake::Intake(){
+Intake::Intake() : intakeMotorStageOne(ThunderSparkMax::create(ThunderSparkMax::MotorID::StorageStage1)),
+                   intakeMotorStageTwo(ThunderSparkMax::create(ThunderSparkMax::MotorID::StorageStage2))
+{
 }
 
 Intake::~Intake(){
@@ -46,16 +48,16 @@ void Intake::process(){
         rightIntake.Set(frc::DoubleSolenoid::Value::kReverse);
         intakePosition = true; // used for feedback
         if (stageTwoFlag.Get() == false){
-            intakeMotorStageOne.Set(kSpeedStageOne);
-            intakeMotorStageTwo.Set(kSpeedStageTwo);
+            intakeMotorStageOne->Set(kSpeedStageOne);
+            intakeMotorStageTwo->Set(kSpeedStageTwo);
         }
         else if (stageTwoFlag.Get() == true && stageOneFlag.Get() == false){
-            intakeMotorStageOne.Set(kSpeedStageOne);
-            intakeMotorStageTwo.Set(0);
+            intakeMotorStageOne->Set(kSpeedStageOne);
+            intakeMotorStageTwo->Set(0);
         }
         else if (stageTwoFlag.Get() == true && stageOneFlag.Get() == true){
-            intakeMotorStageTwo.Set(0);
-            intakeMotorStageOne.Set(0);
+            intakeMotorStageTwo->Set(0);
+            intakeMotorStageOne->Set(0);
         }
 
         break;
@@ -63,15 +65,15 @@ void Intake::process(){
         leftIntake.Set(frc::DoubleSolenoid::Value::kReverse);
         rightIntake.Set(frc::DoubleSolenoid::Value::kReverse);
         intakePosition = true; // used for feedback
-        intakeMotorStageOne.Set(-kSpeedStageOne); // IDK what to put for reverse...so negatives
-        intakeMotorStageTwo.Set(-kSpeedStageTwo);
+        intakeMotorStageOne->Set(-kSpeedStageOne); // IDK what to put for reverse...so negatives
+        intakeMotorStageTwo->Set(-kSpeedStageTwo);
         break;
     case NOTTAKE:   // motors are off
         leftIntake.Set(frc::DoubleSolenoid::Value::kForward); // IDK if I should use kReverse? I assume it is this though. yes
         rightIntake.Set(frc::DoubleSolenoid::Value::kForward);
         intakePosition = false; // used for feedback
-        intakeMotorStageOne.Set(0);
-        intakeMotorStageTwo.Set(0);
+        intakeMotorStageOne->Set(0);
+        intakeMotorStageTwo->Set(0);
         break;
     case MANUAL:    // switches to manual control of the motors
         if(intakePosition){
@@ -82,15 +84,15 @@ void Intake::process(){
             leftIntake.Set(frc::DoubleSolenoid::Value::kForward);
             rightIntake.Set(frc::DoubleSolenoid::Value::kForward);
         }
-        intakeMotorStageOne.Set(intakeSpeed);
-        intakeMotorStageTwo.Set(intakeSpeed);
+        intakeMotorStageOne->Set(intakeSpeed);
+        intakeMotorStageTwo->Set(intakeSpeed);
         break;
     case SHOOTING:
             // exists so that it doesnt control stage 2 to do bad things
 
         if(shooterBallCount.Get() == false && shooterBeamLast == true){ // there is not a ball in front but there was; means a ball left the robot
             if(stageOneFlag.Get()){ // checks for a ball in stage one and starts to move it up if there is one
-                intakeMotorStageOne.Set(intakeSpeed);
+                intakeMotorStageOne->Set(intakeSpeed);
                 moveBallUp = true;
             }
             else{ // if there isnt a ball in stage one you are done
@@ -131,7 +133,7 @@ void Intake::setIntakeSpeed(double speed){
 
 void Intake::giveBallToShooter(){
     // leave pistons where they were when you start to shoot and moves stage two to feed the ball
-    intakeMotorStageTwo.Set(intakeSpeed);
+    intakeMotorStageTwo->Set(intakeSpeed);
     targetDirection = SHOOTING;
 }
 // returns the ball count

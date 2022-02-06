@@ -21,7 +21,7 @@ const double kEncoderMax = 560;
 const double kEncoderSlowHeight = kEncoderMax*.4;
 const double kEncoderSlowerHeight = kEncoderSlowerHeight*.5;
 
-Hang::Hang() {}
+Hang::Hang() : winchMotor(ThunderSparkMax::create(ThunderSparkMax::MotorID::Hang)) {}
 Hang::~Hang() {}
 
 void Hang::resetToMode(MatchMode mode){
@@ -29,7 +29,7 @@ void Hang::resetToMode(MatchMode mode){
         step = 0;
         targetStage = NOT_ON_BAR;
         manual = ENGAGE_BRAKE;
-        winchMotor.Set(0);
+        winchMotor->Set(0);
         brake.Set(frc::DoubleSolenoid::Value::kForward);
         hangPivot1.Set(frc::DoubleSolenoid::Value::kReverse);
         hangPivot2.Set(frc::DoubleSolenoid::Value::kReverse);
@@ -61,7 +61,7 @@ void Hang::sendFeedback(){
     }
     Feedback::sendString("Hang", "stage of robot motion", stateString.c_str());
     Feedback::sendDouble("Hang", "encoder value", winchEncoder.Get());
-    Feedback::sendDouble("Hang", "winch motor speed", winchMotor.Get());
+    Feedback::sendDouble("Hang", "winch motor speed", winchMotor->Get());
     Feedback::sendDouble("Hang", "Max extending arm height", hangMaxHeight);
     Feedback::sendDouble("Hang", "current step", step);
 }
@@ -73,10 +73,10 @@ void Hang::process(){
             step = 1000;
             retractStep = 100;
             extendStep = 100;
-            winchMotor.Set(0);
+            winchMotor->Set(0);
             break;
         case NOT_ON_BAR:
-            winchMotor.Set(0);
+            winchMotor->Set(0);
             break;
         case MID:
             if (step == 1)
@@ -103,7 +103,7 @@ void Hang::process(){
             }
             else
             {
-                winchMotor.Set(0);
+                winchMotor->Set(0);
             }
             break;
         case HIGH_TRAVERSAL:
@@ -156,7 +156,7 @@ void Hang::process(){
             }
             else
             {
-                winchMotor.Set(0);
+                winchMotor->Set(0);
             }
             break;
     }
@@ -247,7 +247,7 @@ void Hang::retract()
         check that the homing sensor == 1
         engage brake
         */
-    winchMotor.Set(kHangWinchSpeed);
+    winchMotor->Set(kHangWinchSpeed);
 
     if (brake.Get() == frc::DoubleSolenoid::Value::kReverse)
     {
@@ -258,25 +258,25 @@ void Hang::retract()
         if (winchEncoder.Get() == kEncoderSlowHeight)
         {
             retractStep++;
-            winchMotor.Set(kHangWinchSlowSpeed);
+            winchMotor->Set(kHangWinchSlowSpeed);
         }
     }
     else if (retractStep == 2)
     {
         if (winchEncoder.Get() == kEncoderSlowerHeight)
         {
-            winchMotor.Set(kHangWinchSlowerSpeed);
+            winchMotor->Set(kHangWinchSlowerSpeed);
             retractStep++;
         }
     }
     else if (homeSensor.Get() == 1)
     {
-        winchMotor.Set(0);
+        winchMotor->Set(0);
         step++;
         winchEncoder.Reset();
     }
     else{
-        winchMotor.Set(0);
+        winchMotor->Set(0);
     }
 }
 
@@ -297,7 +297,7 @@ void Hang::engageBrake()
 
 void Hang::disengageBrake()
 {
-    winchMotor.Set(-.05);
+    winchMotor->Set(-.05);
     ratchetServo.Set(0);
 }
 
@@ -315,18 +315,18 @@ void Hang::brokenExtend()
 
 void Hang::brokenRetract(){
 
-    winchMotor.Set(kHangWinchSpeed);
+    winchMotor->Set(kHangWinchSpeed);
     brokenStep++;
 
     if (brokenStep == 1){
         if (winchEncoder.Get() == hangBrokenSlowHeight){
-            winchMotor.Set(kHangWinchSlowSpeed);
+            winchMotor->Set(kHangWinchSlowSpeed);
             brokenStep++;
         }
     }
     else if (brokenStep == 2){
         if (winchEncoder.Get() == hangBrokenSlowerHeight){
-            winchMotor.Set(kHangWinchSlowerSpeed);
+            winchMotor->Set(kHangWinchSlowerSpeed);
             brokenStep++;
         }
     }
@@ -334,7 +334,7 @@ void Hang::brokenRetract(){
     {
         if (winchEncoder.Get() <= kEncoderMin)
         {
-            winchMotor.Set(0);
+            winchMotor->Set(0);
         }
     }
 }

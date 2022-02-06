@@ -3,7 +3,7 @@
 
 #include "Mechanism.h"
 #include "IOMap.h"
-#include "rev/CANSparkMax.h"
+#include "ThunderSparkMax.h"
 #include <frc/DoubleSolenoid.h>
 //hi jeff
 #include <frc/Encoder.h>
@@ -98,7 +98,7 @@ private:
     frc::DigitalInput homeSensor {DIO_HANG_OPTICAL_HOME_SENSOR};
 
     //actuator stuff
-    rev::CANSparkMax winchMotor{CAN_HANG_WINCH_MOTOR, rev::CANSparkMax::MotorType::kBrushless};
+    ThunderSparkMax *winchMotor;
     //TOP PISTON CONNECTING hangPivot2 to the arm
     frc::DoubleSolenoid hangPivot1{frc::PneumaticsModuleType::CTREPCM, PCM1_HANG_PIVOT_1_EXTEND, PCM1_HANG_PIVOT_1_RETRACT};
     frc::DoubleSolenoid brake{frc::PneumaticsModuleType::CTREPCM, /*hi jeff*/PCM1_HANG_BRAKE_PISTON_EXTEND, PCM1_HANG_BRAKE_PISTON_RETRACT};

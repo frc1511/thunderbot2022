@@ -4,7 +4,7 @@
 #include "Mechanism.h"
 #include "Feedback.h"
 #include "Limelight.h"
-#include <rev/CANSparkMax.h>
+#include "ThunderSparkMax.h"
 #include <frc/Servo.h>
 #include <frc/AnalogPotentiometer.h>
 
@@ -63,15 +63,12 @@ private:
     ShooterMode mode = ODOMETRY;
 
     // right and left shooter motors
-    rev::CANSparkMax shooterLeftMotor  {CAN_SHOOTER_LEFT_FLYWHEEL_MOTOR,  rev::CANSparkMax::MotorType::kBrushless};
-    rev::CANSparkMax shooterRightMotor {CAN_SHOOTER_RIGHT_FLYWHEEL_MOTOR, rev::CANSparkMax::MotorType::kBrushless};
+    ThunderSparkMax *shooterLeftMotor;
+    ThunderSparkMax *shooterRightMotor;
 
-    // right and left shooter encoders
-    rev::SparkMaxRelativeEncoder shooterLeftEncoder;
-    rev::SparkMaxRelativeEncoder shooterRightEncoder;
-
-    rev::SparkMaxPIDController shooterLeftPID;
-    rev::SparkMaxPIDController shooterRightPID;
+    // right and left shooter PID controllers
+    ThunderSparkMaxCANPIDController *shooterLeftPID;
+    ThunderSparkMaxCANPIDController *shooterRightPID;
     
     frc::Servo hoodServo {PWM_SHOOTER_HOOD_SERVO};
     frc::AnalogPotentiometer hoodPotentiometer {ANALOG_SHOOTER_HOOD_POTENTIOMETER};

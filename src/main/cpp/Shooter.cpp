@@ -48,38 +48,38 @@
 
 Shooter::Shooter(Limelight* limelight)
   : limelight(limelight),
-    shooterLeftEncoder(shooterLeftMotor.GetEncoder()),
-    shooterRightEncoder(shooterRightMotor.GetEncoder()),
-    shooterLeftPID(shooterLeftMotor.GetPIDController()),
-    shooterRightPID(shooterRightMotor.GetPIDController()) {
+    shooterLeftMotor(ThunderSparkMax::create(ThunderSparkMax::MotorID::ShooterLeft)),
+    shooterRightMotor(ThunderSparkMax::create(ThunderSparkMax::MotorID::ShooterRight)),
+    shooterLeftPID(shooterLeftMotor->GetPIDController()),
+    shooterRightPID(shooterRightMotor->GetPIDController())
+{
 
     // --- Shooting motor config ---
-
-    shooterLeftMotor.RestoreFactoryDefaults();
-    shooterRightMotor.RestoreFactoryDefaults();
+    shooterLeftMotor->RestoreFactoryDefaults();
+    shooterRightMotor->RestoreFactoryDefaults();
     // Make the motors coast.
-    shooterLeftMotor.SetIdleMode(rev::CANSparkMax::IdleMode::kCoast);
-    shooterRightMotor.SetIdleMode(rev::CANSparkMax::IdleMode::kCoast);
+    shooterLeftMotor->SetIdleMode(ThunderSparkMax::IdleMode::COAST);
+    shooterRightMotor->SetIdleMode(ThunderSparkMax::IdleMode::COAST);
     // Make sure the motors don't draw more than 12V.
-    shooterLeftMotor.EnableVoltageCompensation(SHOOTER_MAX_VOLTAGE);
-    shooterRightMotor.EnableVoltageCompensation(SHOOTER_MAX_VOLTAGE);
+    shooterLeftMotor->EnableVoltageCompensation(SHOOTER_MAX_VOLTAGE);
+    shooterRightMotor->EnableVoltageCompensation(SHOOTER_MAX_VOLTAGE);
     // Make sure the motors don't draw more than 40A.
-    shooterLeftMotor.SetSmartCurrentLimit(SHOOTER_MAX_AMPS);
-    shooterRightMotor.SetSmartCurrentLimit(SHOOTER_MAX_AMPS);
+    shooterLeftMotor->SetSmartCurrentLimit(SHOOTER_MAX_AMPS);
+    shooterRightMotor->SetSmartCurrentLimit(SHOOTER_MAX_AMPS);
     // Inverted?
-    shooterLeftMotor.SetInverted(false);
-    shooterRightMotor.SetInverted(false);
+    shooterLeftMotor->SetInverted(false);
+    shooterRightMotor->SetInverted(false);
     // PID values.
-    shooterLeftPID.SetP(SHOOTER_P_VALUE, 0);
-    shooterRightPID.SetP(SHOOTER_P_VALUE, 0);
-    shooterLeftPID.SetI(SHOOTER_I_VALUE, 0);
-    shooterRightPID.SetI(SHOOTER_I_VALUE, 0);
-    shooterLeftPID.SetD(SHOOTER_D_VALUE, 0);
-    shooterRightPID.SetD(SHOOTER_D_VALUE, 0);
-    shooterLeftPID.SetIZone(SHOOTER_I_ZONE_VALUE, 0);
-    shooterRightPID.SetIZone(SHOOTER_I_ZONE_VALUE, 0);
-    shooterLeftPID.SetFF(SHOOTER_FF_VALUE, 0);
-    shooterRightPID.SetFF(SHOOTER_FF_VALUE, 0);
+    shooterLeftPID->SetP(SHOOTER_P_VALUE, 0);
+    shooterRightPID->SetP(SHOOTER_P_VALUE, 0);
+    shooterLeftPID->SetI(SHOOTER_I_VALUE, 0);
+    shooterRightPID->SetI(SHOOTER_I_VALUE, 0);
+    shooterLeftPID->SetD(SHOOTER_D_VALUE, 0);
+    shooterRightPID->SetD(SHOOTER_D_VALUE, 0);
+    shooterLeftPID->SetIZone(SHOOTER_I_ZONE_VALUE, 0);
+    shooterRightPID->SetIZone(SHOOTER_I_ZONE_VALUE, 0);
+    shooterLeftPID->SetFF(SHOOTER_FF_VALUE, 0);
+    shooterRightPID->SetFF(SHOOTER_FF_VALUE, 0);
 }
 
 Shooter::~Shooter() {
@@ -87,8 +87,8 @@ Shooter::~Shooter() {
 }
 
 void Shooter::resetToMode(MatchMode mode) {
-    shooterLeftMotor.Set(0);
-    shooterRightMotor.Set(0);
+    shooterLeftMotor->Set(0);
+    shooterRightMotor->Set(0);
 }
 
 void Shooter::sendFeedback() {
@@ -109,8 +109,8 @@ void Shooter::sendFeedback() {
     }
 
     Feedback::sendString("shooter", "Mode", modeString.c_str());
-    Feedback::sendDouble("shooter", "Left velocity (RPM)", shooterLeftEncoder.GetVelocity());
-    Feedback::sendDouble("shooter", "Right velocity (RPM)", shooterRightEncoder.GetVelocity());
+    Feedback::sendDouble("shooter", "Left velocity (RPM)", shooterLeftMotor->GetVelocity());
+    Feedback::sendDouble("shooter", "Right velocity (RPM)", shooterRightMotor->GetVelocity());
     Feedback::sendDouble("shooter", "Hood position", hoodPotentiometer.Get());
 
     Feedback::sendBoolean("shooter", "Want to shoot", wantToShoot);
@@ -142,8 +142,8 @@ void Shooter::process() {
         targetRPM = 0;
     }
     
-    shooterLeftPID.SetReference(targetRPM, rev::CANSparkMax::ControlType::kVelocity);
-    shooterRightPID.SetReference(targetRPM, rev::CANSparkMax::ControlType::kVelocity);
+    shooterLeftPID->SetReference(targetRPM, rev::CANSparkMax::ControlType::kVelocity);
+    shooterRightPID->SetReference(targetRPM, rev::CANSparkMax::ControlType::kVelocity);
 
     // gets the position of the hood potentiometer
     double hoodPosition = hoodPotentiometer.Get();
@@ -185,8 +185,8 @@ void Shooter::setShooterSpinup(bool shouldShoot) {
 }
 // sees if the shooter is ready
 bool Shooter::isShooterReady() {
-    return (shooterLeftEncoder.GetVelocity() > targetRPM - SHOOTER_TOLERANCE) &&
-           (shooterRightEncoder.GetVelocity() > targetRPM - SHOOTER_TOLERANCE) &&
+    return (shooterLeftMotor->GetVelocity() > targetRPM - SHOOTER_TOLERANCE) &&
+           (shooterRightMotor->GetVelocity() > targetRPM - SHOOTER_TOLERANCE) &&
            (abs(hoodPotentiometer.Get() - targetHoodPosition) < HOOD_TOLERANCE);
 }
 // allows manual control of the hood speed
