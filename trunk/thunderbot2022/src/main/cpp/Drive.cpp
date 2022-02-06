@@ -46,10 +46,10 @@
 #define DRIVE_RAMP_TIME 0.5
 
 // The tolerance of the X axis of the desired position.
-#define DRIVE_POSITION_TOLERANCE_X 0.01_m
+#define DRIVE_POSITION_TOLERANCE_X 1_in
 
 // The tolerance of the Y axis of the desired position.
-#define DRIVE_POSITION_TOLERANCE_Y 0.01_m
+#define DRIVE_POSITION_TOLERANCE_Y 1_in
 
 // The tolerance of the angle of the desired position.
 #define DRIVE_POSITION_TOLERANCE_ANGLE 2_deg
@@ -263,6 +263,9 @@ frc::Rotation2d SwerveModule::getAbsoluteRotation() {
 Drive::Drive(Camera* camera, Limelight* limelight)
   : camera(camera), limelight(limelight) {
 
+    // thetaController.EnableContinuousInput(-180_deg, 180_deg);
+    cmdController.SetEnabled(true);
+
     // Configure the calibration time of the IMU to 4 seconds.
     imu.ConfigCalTime(frc::ADIS16470_IMU::CalibrationTime::_4s);
     // Set the default axis for the IMU's gyro to take (Z for up and down).
@@ -290,7 +293,6 @@ void Drive::resetToMode(MatchMode mode) {
     cmdCancel();
 
     driveMode = STOPPED;
-    controlMode = FIELD_CENTRIC;
     cmd = {};
     manualData = {};
     
@@ -309,16 +311,46 @@ void Drive::resetToMode(MatchMode mode) {
 void Drive::sendFeedback() {
     Feedback::sendDouble("drive", "imu angle (degrees)", imu.GetAngle().value());
 
-    std::string modeString = "";
-    switch (controlMode) {
-        case FIELD_CENTRIC:
-            modeString = "field centric";
+    const char* buffer = "";
+
+    switch (driveMode) {
+        case STOPPED:
+            buffer = "stopped";
             break;
-        case ROBOT_CENTRIC:
-            modeString = "robot centric";
+        case MANUAL:
+            buffer = "manual";
+            break;
+        case COMMAND:
+            buffer = "command";
             break;
     }
-    Feedback::sendString("drive", "control mode", modeString.c_str());
+    Feedback::sendString("drive", "drive mode", buffer);
+
+    switch (controlMode) {
+        case FIELD_CENTRIC:
+            buffer = "field centric";
+            break;
+        case ROBOT_CENTRIC:
+            buffer = "robot centric";
+            break;
+    }
+    Feedback::sendString("drive", "control mode", buffer);
+
+    switch (cmd.type) {
+        case SwerveCommand::NONE:
+            buffer = "none";
+            break;
+        case SwerveCommand::TRAJECTORY:
+            buffer = "trajectory";
+            break;
+        case SwerveCommand::POSITION:
+            buffer = "position";
+            break;
+        case SwerveCommand::ALIGN_TO_CARGO:
+            buffer = "align with cargo";
+            break;
+    }
+    Feedback::sendString("drive", "command type", buffer);
     
     frc::Pose2d pose = getPose();
 
@@ -415,8 +447,7 @@ void Drive::configMagneticEncoders() {
 }
 
 void Drive::manualDrive(double xPct, double yPct, double rotPct) {
-    // Take control if drive command is running.
-    cmdCancel();
+    driveMode = MANUAL;
 
     if (xPct == 0 && yPct == 0 && rotPct == 0) {
         driveMode = STOPPED;
@@ -506,7 +537,7 @@ void Drive::cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle, 
 }
 
 void Drive::cmdFollowPathweaverTrajectory(std::string jsonPath) {
-    fs::path directory = fs::path(frc::filesystem::GetDeployDirectory()) / jsonPath;
+    fs::path directory = fs::path(frc::filesystem::GetDeployDirectory()) / "Pathweaver" / jsonPath;
     
     // Load the trajectory from the Pathweaver json file.
     frc::Trajectory trajectory(frc::TrajectoryUtil::FromPathweaverJson(directory.string()));
@@ -543,15 +574,14 @@ bool Drive::cmdIsFinished() {
             }
             return false;
         case SwerveCommand::POSITION:
-            if (units::math::abs(getPose().X() - cmd.positionData.pose.X()) < DRIVE_POSITION_TOLERANCE_X &&
-                units::math::abs(getPose().Y() - cmd.positionData.pose.Y()) < DRIVE_POSITION_TOLERANCE_Y &&
-                units::math::abs(getPose().Rotation().Degrees() - cmd.positionData.pose.Rotation().Degrees()) < DRIVE_POSITION_TOLERANCE_ANGLE) {
+            // Check if the robot is within tolerance of the desired position.
+            if (cmdController.AtReference()) {
                 return true;
             }
             return false;
         case SwerveCommand::ALIGN_TO_CARGO:
+            // Check if the cargo is in the center of the frame.
             if (camera->getTargetSector() == Camera::CENTER) {
-                cmdCancel();
                 return true;
             }
             return false;
