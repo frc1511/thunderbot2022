@@ -3,8 +3,8 @@
 #include "Mechanism.h"
 #include "Feedback.h"
 #include "IOMap.h"
+#include "ThunderSparkMax.h"
 #include <frc/DoubleSolenoid.h>
-#include "rev/CANSparkMax.h"
 #include <frc/DigitalInput.h>
 
 /** has two sensors and two motors
@@ -53,8 +53,8 @@ private:
     //retract piston is intake enabled now, needs to be changed in code
     frc::DoubleSolenoid rightIntake{frc::PneumaticsModuleType::CTREPCM, INTAKE_RIGHT_PIVOT_EXTEND, INTAKE_RIGHT_PIVOT_RETRACT}; 
     frc::DoubleSolenoid leftIntake{frc::PneumaticsModuleType::CTREPCM, INTAKE_LEFT_PIVOT_EXTEND, INTAKE_LEFT_PIVOT_RETRACT};
-    rev::CANSparkMax intakeMotorStageOne{CAN_INTAKE_MOTOR, rev::CANSparkMax::MotorType::kBrushless};
-    rev::CANSparkMax intakeMotorStageTwo{CAN_INTAKE_MOTOR, rev::CANSparkMax::MotorType::kBrushless};
+    ThunderSparkMax *intakeMotorStageOne;
+    ThunderSparkMax *intakeMotorStageTwo;
     bool intakePosition; // used for manual and debug
     double intakeSpeed; // manual? i think and too lazy to check
     int ballCount; // self explanitory
