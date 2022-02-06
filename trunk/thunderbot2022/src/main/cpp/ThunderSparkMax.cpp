@@ -1,4 +1,3 @@
-#if 0
 #include "ThunderSparkMax.h"
 #include "IOMap.h"
 
@@ -21,8 +20,15 @@ class ThunderSparkMaxImpl : public ThunderSparkMax {
         virtual void SetInverted(bool inverted);
         virtual void Follow(ThunderSparkMax *leader, bool invertOutput = false);
 
-        virtual ThunderSparkMaxCANPIDController* getSparkPID();
+        virtual ThunderSparkMaxCANPIDController* GetPIDController();
         virtual double GetOutputCurrent();
+
+        virtual void SetSmartCurrentLimit(unsigned int limitAmps);
+        virtual void EnableVoltageCompensation(double nominalVoltage);
+
+        virtual void RestoreFactoryDefaults();
+        virtual void BurnFlash();
+
 
     protected:
         const char *implName;
@@ -38,6 +44,9 @@ class ThunderSparkMaxImpl : public ThunderSparkMax {
         bool printedRampWarning;
         bool printedCurrentWarning;
         bool printedVelocityWarning;
+        bool printedVcompWarning;
+        bool printedCurrentLimitWarning;
+        bool printedFlashWarning;
 
         static ThunderSparkMaxCANPIDController fakePIDController;
 };
@@ -53,7 +62,10 @@ ThunderSparkMaxImpl::ThunderSparkMaxImpl(const char *implName, int id) :
         printedFollowWarning(false),
         printedRampWarning(false),
         printedCurrentWarning(false),
-        printedVelocityWarning(false)
+        printedVelocityWarning(false),
+        printedVcompWarning(false),
+        printedCurrentLimitWarning(false),
+        printedFlashWarning(false)
 {
     
 }
@@ -112,7 +124,7 @@ void ThunderSparkMaxImpl::Follow(ThunderSparkMax *leader, bool invertOutput)
     printWarning(&printedFollowWarning, "Follower Mode");
 }
 
-ThunderSparkMaxCANPIDController* ThunderSparkMaxImpl::getSparkPID() {
+ThunderSparkMaxCANPIDController* ThunderSparkMaxImpl::GetPIDController() {
     printWarning(&printedPIDWarning, "Native PID");
     return &fakePIDController;
 }
@@ -121,6 +133,26 @@ double ThunderSparkMaxImpl::GetOutputCurrent()
 {
     printWarning(&printedCurrentWarning, "Current");
     return 0;
+}
+
+void ThunderSparkMaxImpl::SetSmartCurrentLimit(unsigned int limitAmps)
+{
+    printWarning(&printedCurrentLimitWarning, "CurrentLimit");
+}
+
+void ThunderSparkMaxImpl::EnableVoltageCompensation(double nominalVoltage)
+{
+    printWarning(&printedVcompWarning, "VoltageCompensation");
+}
+
+void ThunderSparkMaxImpl::BurnFlash()
+{
+    printWarning(&printedFlashWarning, "RestoreFactoryDefaults/BurnFlash");
+}
+
+void ThunderSparkMaxImpl::RestoreFactoryDefaults()
+{
+    printWarning(&printedFlashWarning, "RestoreFactoryDefaults/BurnFlash");
 }
 
 void ThunderSparkMaxImpl::printWarning(bool *hasPrinted, const char *description)
@@ -135,19 +167,20 @@ void ThunderSparkMaxImpl::printWarning(bool *hasPrinted, const char *description
 class ThunderSparkMaxCANPIDControllerImpl : public ThunderSparkMaxCANPIDController
 {
 public:
-    ThunderSparkMaxCANPIDControllerImpl(rev::CANPIDController *pid);
+    ThunderSparkMaxCANPIDControllerImpl(rev::SparkMaxPIDController *pid);
 
-    virtual rev::CANError SetOutputRange(double min, double max, int slotID = 0);
-    virtual rev::CANError SetFF(double gain, int slotID = 0);
-    virtual rev::CANError SetP(double gain, int slotID = 0);
-    virtual rev::CANError SetI(double gain, int slotID = 0);
-    virtual rev::CANError SetD(double gain, int slotID = 0);
-    virtual rev::CANError SetIZone(double IZone, int slotID = 0);
-    virtual rev::CANError SetReference(double value, rev::ControlType ctrl, int pidSlot = 0,
+    virtual rev::REVLibError SetOutputRange(double min, double max, int slotID = 0);
+    virtual rev::REVLibError SetFF(double gain, int slotID = 0);
+    virtual rev::REVLibError SetP(double gain, int slotID = 0);
+    virtual rev::REVLibError SetI(double gain, int slotID = 0);
+    virtual rev::REVLibError SetD(double gain, int slotID = 0);
+    virtual rev::REVLibError SetIZone(double IZone, int slotID = 0);
+    virtual rev::REVLibError SetReference(double value, rev::CANSparkMax::ControlType ctrl, int pidSlot = 0,
             double arbFeedforward = 0, 
-            rev::CANPIDController::ArbFFUnits arbFFUnits = rev::CANPIDController::ArbFFUnits::kVoltage);
+            rev::SparkMaxPIDController::ArbFFUnits arbFFUnits = rev::SparkMaxPIDController::ArbFFUnits::kVoltage);
+
 private:
-    rev::CANPIDController *pid;
+    rev::SparkMaxPIDController *pid;
 };
 
 
@@ -198,15 +231,20 @@ class ThunderSMCANImpl : public ThunderSparkMaxImpl {
         virtual void Follow(ThunderSparkMax *leader, bool invertOutput = false);
 
         virtual rev::CANSparkMax *getSparkMax() { return &spark; }
-        virtual ThunderSparkMaxCANPIDController *getSparkPID() { return &pid; }
+        virtual ThunderSparkMaxCANPIDController *GetPIDController() { return &pid; }
         virtual double GetVelocity() { return enc.GetVelocity(); }
 
         virtual double GetOutputCurrent() { return spark.GetOutputCurrent();}
+        virtual void SetSmartCurrentLimit(unsigned int limitAmps) { spark.SetSmartCurrentLimit(limitAmps); }
+        virtual void EnableVoltageCompensation(double nominalVoltage) { spark.EnableVoltageCompensation(nominalVoltage); }
+
+        virtual void BurnFlash() { spark.BurnFlash(); }
+        virtual void RestoreFactoryDefaults() { spark.RestoreFactoryDefaults(); }
 
     private:
         rev::CANSparkMax spark;
-        rev::CANEncoder enc;
-        rev::CANPIDController smpid;
+        rev::SparkMaxRelativeEncoder enc;
+        rev::SparkMaxPIDController smpid;
         ThunderSparkMaxCANPIDControllerImpl pid;
 };
 
@@ -220,12 +258,20 @@ class ThunderSMPWMImpl : public ThunderSparkMaxImpl {
 };
 
 
+class ThunderSMFakeImpl : public ThunderSparkMaxImpl {
+    public:
+        ThunderSMFakeImpl();
+        virtual void Set(double speed);
+};
+
+
 struct MotorConfig {
     enum ControllerType {
         Jaguar,
         Talon,
         PWMSparkMax,
-        CANSparkMax
+        CANSparkMax,
+        Fake
     } controllerType;
 
     int channelOrId;
@@ -238,80 +284,80 @@ ThunderSparkMaxCANPIDController::ThunderSparkMaxCANPIDController()
 {
 }
 
-rev::CANError ThunderSparkMaxCANPIDController::SetOutputRange(double min, double max, int slotID)
+rev::REVLibError ThunderSparkMaxCANPIDController::SetOutputRange(double min, double max, int slotID)
 {
-    return rev::CANError::kOk;
+    return rev::REVLibError::kOk;
 }
 
-rev::CANError ThunderSparkMaxCANPIDController::SetFF(double gain, int slotID)
+rev::REVLibError ThunderSparkMaxCANPIDController::SetFF(double gain, int slotID)
 {
-    return rev::CANError::kOk;
+    return rev::REVLibError::kOk;
 }
 
-rev::CANError ThunderSparkMaxCANPIDController::SetP(double gain, int slotID)
+rev::REVLibError ThunderSparkMaxCANPIDController::SetP(double gain, int slotID)
 {
-    return rev::CANError::kOk;
+    return rev::REVLibError::kOk;
 }
 
-rev::CANError ThunderSparkMaxCANPIDController::SetI(double gain, int slotID)
+rev::REVLibError ThunderSparkMaxCANPIDController::SetI(double gain, int slotID)
 {
-    return rev::CANError::kOk;
+    return rev::REVLibError::kOk;
 }
 
-rev::CANError ThunderSparkMaxCANPIDController::SetD(double gain, int slotID)
+rev::REVLibError ThunderSparkMaxCANPIDController::SetD(double gain, int slotID)
 {
-    return rev::CANError::kOk;
+    return rev::REVLibError::kOk;
 }
 
-rev::CANError ThunderSparkMaxCANPIDController::SetIZone(double IZone, int slotID)
+rev::REVLibError ThunderSparkMaxCANPIDController::SetIZone(double IZone, int slotID)
 {
-    return rev::CANError::kOk;
+    return rev::REVLibError::kOk;
 }
 
-rev::CANError ThunderSparkMaxCANPIDController::SetReference(double value, rev::ControlType ctrl, int pidSlot,
+rev::REVLibError ThunderSparkMaxCANPIDController::SetReference(double value, rev::CANSparkMax::ControlType ctrl, int pidSlot,
         double arbFeedforward, 
-        rev::CANPIDController::ArbFFUnits arbFFUnits)
+        rev::SparkMaxPIDController::ArbFFUnits arbFFUnits)
 {
-    return rev::CANError::kOk;
+    return rev::REVLibError::kOk;
 }
 
-ThunderSparkMaxCANPIDControllerImpl::ThunderSparkMaxCANPIDControllerImpl(rev::CANPIDController *pid) : pid(pid)
+ThunderSparkMaxCANPIDControllerImpl::ThunderSparkMaxCANPIDControllerImpl(rev::SparkMaxPIDController *pid) : pid(pid)
 {
 }
 
-rev::CANError ThunderSparkMaxCANPIDControllerImpl::SetOutputRange(double min, double max, int slotID)
+rev::REVLibError ThunderSparkMaxCANPIDControllerImpl::SetOutputRange(double min, double max, int slotID)
 {
     return pid->SetOutputRange(min, max, slotID);
 }
 
-rev::CANError ThunderSparkMaxCANPIDControllerImpl::SetFF(double gain, int slotID)
+rev::REVLibError ThunderSparkMaxCANPIDControllerImpl::SetFF(double gain, int slotID)
 {
     return pid->SetFF(gain, slotID);
 }
 
-rev::CANError ThunderSparkMaxCANPIDControllerImpl::SetP(double gain, int slotID)
+rev::REVLibError ThunderSparkMaxCANPIDControllerImpl::SetP(double gain, int slotID)
 {
     return pid->SetP(gain, slotID);
 }
 
-rev::CANError ThunderSparkMaxCANPIDControllerImpl::SetI(double gain, int slotID)
+rev::REVLibError ThunderSparkMaxCANPIDControllerImpl::SetI(double gain, int slotID)
 {
     return pid->SetI(gain, slotID);
 }
 
-rev::CANError ThunderSparkMaxCANPIDControllerImpl::SetD(double gain, int slotID)
+rev::REVLibError ThunderSparkMaxCANPIDControllerImpl::SetD(double gain, int slotID)
 {
     return pid->SetD(gain, slotID);
 }
 
-rev::CANError ThunderSparkMaxCANPIDControllerImpl::SetIZone(double IZone, int slotID)
+rev::REVLibError ThunderSparkMaxCANPIDControllerImpl::SetIZone(double IZone, int slotID)
 {
     return pid->SetIZone(IZone, slotID);
 }
 
-rev::CANError ThunderSparkMaxCANPIDControllerImpl::SetReference(double value, rev::ControlType ctrl, int pidSlot,
+rev::REVLibError ThunderSparkMaxCANPIDControllerImpl::SetReference(double value, rev::CANSparkMax::ControlType ctrl, int pidSlot,
         double arbFeedforward, 
-        rev::CANPIDController::ArbFFUnits arbFFUnits)
+        rev::SparkMaxPIDController::ArbFFUnits arbFFUnits)
 {
     return pid->SetReference(value, ctrl, pidSlot, arbFeedforward, arbFFUnits);
 }
@@ -330,48 +376,37 @@ ThunderSparkMax *ThunderSparkMax::create(MotorID id)
 {
     static MotorConfig config[] = {
 #ifndef TEST_BOARD
-        MotorConfig(MotorConfig::ControllerType::PWMSparkMax, PWM_DRIVE_LF),    // DriveFrontLeft
-        MotorConfig(MotorConfig::ControllerType::PWMSparkMax, PWM_DRIVE_RF),    // DriveFrontRight,
-        MotorConfig(MotorConfig::ControllerType::PWMSparkMax, PWM_DRIVE_LR),    // DriveRearLeft,
-        MotorConfig(MotorConfig::ControllerType::PWMSparkMax, PWM_DRIVE_RR),    // DriveRearRight,
+        MotorConfig(MotorConfig::ControllerType::CANSparkMax, CAN_SWERVE_FL_DRIVE_MOTOR),  // DriveFrontLeft
+        MotorConfig(MotorConfig::ControllerType::CANSparkMax, CAN_SWERVE_FR_DRIVE_MOTOR),  // DriveFrontRight,
+        MotorConfig(MotorConfig::ControllerType::CANSparkMax, CAN_SWERVE_BL_DRIVE_MOTOR),  // DriveRearLeft,
+        MotorConfig(MotorConfig::ControllerType::CANSparkMax, CAN_SWERVE_BR_DRIVE_MOTOR),  // DriveRearRight,
 
-        MotorConfig(MotorConfig::ControllerType::CANSparkMax, CAN_INTAKE_PIVOT),   // IntakePivot,
-        MotorConfig(MotorConfig::ControllerType::CANSparkMax, CAN_INTAKE_BEATERBARS),   // IntakeBeaterBars,
-        MotorConfig(MotorConfig::ControllerType::CANSparkMax, CAN_HELIX),    // StorageAgitator,
-        MotorConfig(MotorConfig::ControllerType::CANSparkMax, CAN_STORAGE_SHOOT_TRANSITION),   // StorageTransitionToShooter,
-        MotorConfig(MotorConfig::ControllerType::CANSparkMax, CAN_SHOOT_PRIMER),   // ShooterPrimer,
-        MotorConfig(MotorConfig::ControllerType::CANSparkMax, CAN_SHOOT_LEFT),   // ShooterLeft,
-        MotorConfig(MotorConfig::ControllerType::CANSparkMax, CAN_SHOOT_RIGHT),   // ShooterRight,
-        MotorConfig(MotorConfig::ControllerType::CANSparkMax, CAN_CONTROL_SPINNER),   // WheelOfFortune,
-        MotorConfig(MotorConfig::ControllerType::CANSparkMax, CAN_HANG_WINCH),   // Hang,
+        MotorConfig(MotorConfig::ControllerType::CANSparkMax, CAN_SWERVE_FL_ROT_MOTOR),    // DrivePivotFrontLeft
+        MotorConfig(MotorConfig::ControllerType::CANSparkMax, CAN_SWERVE_FR_ROT_MOTOR),    // DrivePivotFrontRight,
+        MotorConfig(MotorConfig::ControllerType::CANSparkMax, CAN_SWERVE_BL_ROT_MOTOR),    // DrivePivotRearLeft,
+        MotorConfig(MotorConfig::ControllerType::CANSparkMax, CAN_SWERVE_BR_ROT_MOTOR),    // DrivePivotRearRight,
+
+        MotorConfig(MotorConfig::ControllerType::CANSparkMax, CAN_STORAGE_STAGE_ONE),      // StorageStage1,
+        MotorConfig(MotorConfig::ControllerType::CANSparkMax, CAN_STORAGE_STAGE_TWO),      // StorageStage2,
+        MotorConfig(MotorConfig::ControllerType::CANSparkMax, CAN_SHOOTER_LEFT_FLYWHEEL_MOTOR),  // ShooterLeft,
+        MotorConfig(MotorConfig::ControllerType::CANSparkMax, CAN_SHOOTER_RIGHT_FLYWHEEL_MOTOR), // ShooterRight,
+        MotorConfig(MotorConfig::ControllerType::CANSparkMax, CAN_HANG_WINCH_MOTOR),       // Hang,
 #else
-        // Next 2 are fixed as CAN talon for At home testing with encoders
-        MotorConfig(MotorConfig::ControllerType::Talon, 3),    // DriveFrontLeft
-        MotorConfig(MotorConfig::ControllerType::Talon, 5),    // DriveFrontRight,
-        MotorConfig(MotorConfig::ControllerType::PWMSparkMax, PWM_DRIVE_LR),    // DriveRearLeft,
-        MotorConfig(MotorConfig::ControllerType::PWMSparkMax, PWM_DRIVE_RR),    // DriveRearRight,
+        MotorConfig(MotorConfig::ControllerType::Fake, 0),    // DriveFrontLeft
+        MotorConfig(MotorConfig::ControllerType::Fake, 1),    // DriveFrontRight,
+        MotorConfig(MotorConfig::ControllerType::Fake, 2),    // DriveRearLeft,
+        MotorConfig(MotorConfig::ControllerType::Fake, 3),    // DriveRearRight,
 
-        // As labelled on board
-        //MotorConfig(MotorConfig::ControllerType::CANSparkMax, 10),   // IntakePivot,
-        // at home testing
-        MotorConfig(MotorConfig::ControllerType::Jaguar, 10),   // IntakePivot,
-        MotorConfig(MotorConfig::ControllerType::Talon, 8),   // IntakeBeaterBars,
-        MotorConfig(MotorConfig::ControllerType::Jaguar, 2),    // StorageAgitator,
-        MotorConfig(MotorConfig::ControllerType::Talon, 2),   // StorageTransitionToShooter,
-        MotorConfig(MotorConfig::ControllerType::Jaguar, 3),   // ShooterPrimer,
-        // As labelled
-        //MotorConfig(MotorConfig::ControllerType::CANSparkMax, 9),   // ShooterLeft,
-        // at home testing
-        MotorConfig(MotorConfig::ControllerType::Jaguar, 11),   // ShooterLeft,
-        // As labelled
-        //MotorConfig(MotorConfig::ControllerType::Talon, 3),   // ShooterRight,
-        // At home testing
-        MotorConfig(MotorConfig::ControllerType::Jaguar, 6),   // ShooterRight,
-        MotorConfig(MotorConfig::ControllerType::Talon, 6),   // WheelOfFortune,
-        // As labelled
-        //MotorConfig(MotorConfig::ControllerType::Talon, 5),   // Hang,
-        // At home testing
-        MotorConfig(MotorConfig::ControllerType::Jaguar, 8),   // Hang,
+        MotorConfig(MotorConfig::ControllerType::Fake, 0),    // DrivePivotFrontLeft
+        MotorConfig(MotorConfig::ControllerType::Fake, 1),    // DrivePivotFrontRight,
+        MotorConfig(MotorConfig::ControllerType::Fake, 2),    // DrivePivotRearLeft,
+        MotorConfig(MotorConfig::ControllerType::Fake, 3),    // DrivePivotRearRight,
+
+        MotorConfig(MotorConfig::ControllerType::CANSparkMax, 4),    // StorageStage1,
+        MotorConfig(MotorConfig::ControllerType::CANSparkMax, 5),    // StorageStage2,
+        MotorConfig(MotorConfig::ControllerType::CANSparkMax, 6),    // ShooterLeft,
+        MotorConfig(MotorConfig::ControllerType::CANSparkMax, 7),    // ShooterRight,
+        MotorConfig(MotorConfig::ControllerType::CANSparkMax, 8),    // Hang,
 #endif
     };
 
@@ -390,6 +425,9 @@ ThunderSparkMax *ThunderSparkMax::create(MotorID id)
             break;
         case MotorConfig::ControllerType::Jaguar:
             c = new ThunderSMJagImpl(config[id].channelOrId);
+            break;
+        case MotorConfig::ControllerType::Fake:
+            c = new ThunderSMFakeImpl();
             break;
     }
 
@@ -519,7 +557,7 @@ void ThunderSMCANImpl::Follow(ThunderSparkMax *leader, bool invertOutput)
 
 
 /**************************************************************/
-// ThunderSMJagImpl
+// ThunderSMPWMImpl
 
 ThunderSMPWMImpl::ThunderSMPWMImpl(int pwmChannel) : ThunderSparkMaxImpl("PWM SparkMax", pwmChannel), spark(pwmChannel)
 {
@@ -531,4 +569,16 @@ void ThunderSMPWMImpl::Set(double speed)
     ThunderSparkMaxImpl::Set(speed);
 }
 
-#endif
+
+/**************************************************************/
+// ThunderSMFakeImpl
+
+ThunderSMFakeImpl::ThunderSMFakeImpl() : ThunderSparkMaxImpl("PWM SparkMax", 0)
+{
+}
+
+void ThunderSMFakeImpl::Set(double speed)
+{
+    ThunderSparkMaxImpl::Set(speed);
+}
+
