@@ -6,6 +6,7 @@
 
 void Robot::RobotInit() {}
 void Robot::RobotPeriodic() {
+  drive.sendFeedback();
 #ifndef HOMER
   blinkyBlinky.process();
 #endif
@@ -16,9 +17,9 @@ void Robot::AutonomousInit() {
 }
 
 void Robot::AutonomousPeriodic() {
-  camera.process();
   drive.process();
 #ifndef HOMER
+  camera.process();
   autonomous.process();
 #endif
 }
