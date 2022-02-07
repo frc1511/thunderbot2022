@@ -286,11 +286,6 @@ private:
     void exeFollowTrajectory();
 
     /**
-     * Executes the current position command.
-     */
-    void exePosition();
-
-    /**
      * Executes the current align with cargo command.
      */
     void exeAlignWithCargo();
@@ -377,7 +372,6 @@ private:
         enum CommandType {
             NONE,
             TRAJECTORY,     // Folow a trajectory.
-            POSITION,       // Drive to a position.
             ALIGN_TO_CARGO, // Align the robot with the cargo in front of the robot.
         };
 
@@ -391,11 +385,6 @@ private:
             frc::Timer timer;
         };
 
-        struct PositionData {
-            frc::Pose2d pose;
-            units::meters_per_second_t speed;
-        };
-
         struct AlignmentData {
 
         };
@@ -403,9 +392,6 @@ private:
         // Data regarding the current trajectory command.
         TrajectoryData trajectoryData {};
 
-        // Data regarding the current position command.
-        PositionData positionData {};
-        
         // Data regarding the current alignment command.
         AlignmentData alignmentData {};
     };

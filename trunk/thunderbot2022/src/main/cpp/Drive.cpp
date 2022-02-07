@@ -302,6 +302,8 @@ void Drive::resetToMode(MatchMode mode) {
         setIdleMode(SwerveModule::COAST);
     }
     else {
+        resetOdometry();
+
         // Set the drive motors to brake in teleop and autonomous modes because
         // we want the robot to stop when we tell it to stop.
         setIdleMode(SwerveModule::BRAKE);
@@ -342,9 +344,6 @@ void Drive::sendFeedback() {
             break;
         case SwerveCommand::TRAJECTORY:
             buffer = "trajectory";
-            break;
-        case SwerveCommand::POSITION:
-            buffer = "position";
             break;
         case SwerveCommand::ALIGN_TO_CARGO:
             buffer = "align with cargo";
@@ -400,10 +399,6 @@ void Drive::process() {
                 case SwerveCommand::TRAJECTORY:
                     // Execute the follow trajectory command.
                     exeFollowTrajectory();
-                    break;
-                case SwerveCommand::POSITION:
-                    // Execute the position command.
-                    exePosition();
                     break;
                 case SwerveCommand::ALIGN_TO_CARGO:
                     // Execute the align with cargo command.
@@ -519,21 +514,14 @@ bool Drive::cmdRotateToHub() {
 }
 
 void Drive::cmdRotate(frc::Rotation2d angle) {
-    cmdDrive(0_m, 0_m, angle);
+    // Won't work.
 }
 
 void Drive::cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle, units::meters_per_second_t speed) {
-    driveMode = COMMAND;
-    cmd.type = SwerveCommand::POSITION;
-
-    // The current pose.
-    frc::Pose2d currentPose = getPose();
-
-    // The target pose.
-    frc::Pose2d targetPose(currentPose.X() + x, currentPose.Y() + y, currentPose.Rotation() + angle);
-
-    cmd.positionData.pose = targetPose;
-    cmd.positionData.speed = speed;
+  frc::Trajectory trajectory = frc::TrajectoryGenerator::GenerateTrajectory(
+    getPose(), {}, { x, y, angle }, getTrajectoryConfig()
+  );
+  cmdFollowTrajectory(trajectory);
 }
 
 void Drive::cmdFollowPathweaverTrajectory(std::string jsonPath) {
@@ -570,12 +558,6 @@ bool Drive::cmdIsFinished() {
             // If a command is currently running but the total time of the
             // trajectory has elapsed.
             if (cmd.trajectoryData.timer.HasElapsed(cmd.trajectoryData.trajectory.TotalTime())) {
-                return true;
-            }
-            return false;
-        case SwerveCommand::POSITION:
-            // Check if the robot is within tolerance of the desired position.
-            if (cmdController.AtReference()) {
                 return true;
             }
             return false;
@@ -680,15 +662,6 @@ void Drive::exeFollowTrajectory() {
     //hi trevor
     //hi nevin
     //hi josh
-}
-
-void Drive::exePosition() {
-    // Generate chassis speeds to go to a position.
-    frc::ChassisSpeeds targetChassisSpeeds = cmdController.Calculate(
-        getPose(), cmd.positionData.pose, cmd.positionData.speed, cmd.positionData.pose.Rotation());
-
-    // Drive!
-    setModuleStates(targetChassisSpeeds);
 }
 
 void Drive::exeAlignWithCargo() {
