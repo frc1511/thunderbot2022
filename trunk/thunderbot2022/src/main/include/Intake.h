@@ -51,8 +51,9 @@ private:
 
     // Something here...
     //retract piston is intake enabled now, needs to be changed in code
-    frc::DoubleSolenoid rightIntake{frc::PneumaticsModuleType::CTREPCM, INTAKE_RIGHT_PIVOT_EXTEND, INTAKE_RIGHT_PIVOT_RETRACT}; 
-    frc::DoubleSolenoid leftIntake{frc::PneumaticsModuleType::CTREPCM, INTAKE_LEFT_PIVOT_EXTEND, INTAKE_LEFT_PIVOT_RETRACT};
+    frc::DoubleSolenoid rightIntake{frc::PneumaticsModuleType::CTREPCM, PCM1_INTAKE_PIVOT_EXTEND, PCM1_INTAKE_PIVOT_RETRACT}; 
+    // Make this go away and rename above
+    frc::DoubleSolenoid leftIntake{frc::PneumaticsModuleType::CTREPCM, 1, 2};
     ThunderSparkMax *intakeMotorStageOne;
     ThunderSparkMax *intakeMotorStageTwo;
     bool intakePosition; // used for manual and debug
