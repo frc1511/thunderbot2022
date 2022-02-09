@@ -12,12 +12,7 @@
 */
 
 // #define HOMER // Comment out if not homer
-
-//PWM
-#define PWM_STRING_SERVO 0
-#define PWM_HANG_RACHET_AND_PAWL 1
-#define PWM_SHOOTER_HOOD_SERVO 2
-#define PWM_BLINKY_BLINKY 3
+// #define TEST_BOARD // Enable for testing on test board
 
 //CAN
 #define CAN_HANG_WINCH_MOTOR 2
@@ -69,36 +64,72 @@
 
 #endif
 
-//DIO
-#define DIO_HANG_OPTICAL_HOME_SENSOR 0
-#define DIO_HANG_FLAG_SENSOR_LEFT 1
-#define DIO_HANG_FLAG_SENSOR_RIGHT 2
 
-#define DIO_INTAKE_BANNER_ENTRANCE 3
-#define DIO_STORAGE_BANNER_STAGE_ONE 4
-#define DIO_STORAGE_BANNER_STAGE_TWO 5
-#define DIO_SHOOTER_BANNER_LEFT_ROBOT 6
-#define DIO_HANG_RATCHET_BEAM_BREAK 7
+#ifndef TEST_BOARD
 
-//ANALOG
-#define ANALOG_SHOOTER_HOOD_POTENTIOMETER 0
+    //PWM
+    #define PWM_HANG_RACHET_AND_PAWL 0
+    #define PWM_SHOOTER_HOOD_SERVO 1
+    #define PWM_BLINKY_BLINKY 2
+    // Missing on Wiki
+    #define PWM_STRING_SERVO 3
 
-//PCM1
-#define PCM1_HANG_PIVOT_1_RETRACT 0
-#define PCM1_HANG_PIVOT_1_EXTEND 1
+    //DIO
+    #define DIO_HANG_OPTICAL_HOME_SENSOR 0
 
-#define PCM1_HANG_PIVOT_2_RETRACT 2
-#define PCM1_HANG_PIVOT_2_EXTEND 3
+    #define DIO_STORAGE_BANNER_STAGE_ONE 2
+    #define DIO_STORAGE_BANNER_STAGE_TWO 3
+    #define DIO_SHOOTER_BANNER_LEFT_ROBOT 4
 
-#define INTAKE_LEFT_PIVOT_EXTEND 4
-#define INTAKE_LEFT_PIVOT_RETRACT 5
+    //ANALOG
+    #define ANALOG_SHOOTER_HOOD_POTENTIOMETER 0
 
-#define INTAKE_RIGHT_PIVOT_EXTEND 6
-#define INTAKE_RIGHT_PIVOT_RETRACT 7
+    //PCM1
+    #define PCM1_INTAKE_PIVOT_EXTEND 0
+    #define PCM1_INTAKE_PIVOT_RETRACT 1
 
-//PCM2
-#define PCM1_HANG_BRAKE_PISTON_RETRACT 0
-#define PCM1_HANG_BRAKE_PISTON_EXTEND 1
+    #define PCM1_HANG_PIVOT_1_RETRACT 2
+    #define PCM1_HANG_PIVOT_1_EXTEND 3
+
+    #define PCM1_HANG_PIVOT_2_RETRACT 4
+    #define PCM1_HANG_PIVOT_2_EXTEND 5
+
+    #define PCM1_HANG_BRAKE_PISTON_RETRACT 6
+    #define PCM1_HANG_BRAKE_PISTON_EXTEND 7
+
+#else // for test board
+
+    //PWM
+    #define PWM_HANG_RACHET_AND_PAWL 0          // Servo at edge of board near radio
+    #define PWM_SHOOTER_HOOD_SERVO 1            // Loose servo; non-hi-tec 
+    #define PWM_BLINKY_BLINKY 6                 // Not present
+    // Missing on Wiki
+    #define PWM_STRING_SERVO 7                  // Loose servo; hi-tec brand
+
+    //DIO
+    #define DIO_HANG_OPTICAL_HOME_SENSOR 5      // U-sensor floating on Rio
+
+    #define DIO_STORAGE_BANNER_STAGE_ONE 0      // Big switch labelled 0.  Click for "beam broken". Requires INVERTED READ
+    #define DIO_STORAGE_BANNER_STAGE_TWO 1      // Big switch labelled 1. Click for "beam broken". Requires INVERTED READ
+    #define DIO_SHOOTER_BANNER_LEFT_ROBOT 3     // Large beam-break near off-board motor connectors. Requires INVERTED READ
+    
+    //ANALOG
+    #define ANALOG_SHOOTER_HOOD_POTENTIOMETER 0 // Only pot on board
+
+    //PCM1
+    #define PCM1_INTAKE_PIVOT_EXTEND 1
+    #define PCM1_INTAKE_PIVOT_RETRACT 6
+
+    #define PCM1_HANG_PIVOT_1_RETRACT 2
+    #define PCM1_HANG_PIVOT_1_EXTEND 5
+
+    #define PCM1_HANG_PIVOT_2_RETRACT 3
+    #define PCM1_HANG_PIVOT_2_EXTEND 4
+
+    #define PCM1_HANG_BRAKE_PISTON_RETRACT 0    // Not present
+    #define PCM1_HANG_BRAKE_PISTON_EXTEND 7     // Not present
+
+#endif
 
 //USB
 #define USB_INTAKE_CAMERA 1
