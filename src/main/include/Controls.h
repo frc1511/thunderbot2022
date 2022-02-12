@@ -10,11 +10,7 @@
 
 class Controls : public Mechanism {
 public:
-#ifdef HOMER
-    Controls(Drive* drive);
-#else
     Controls(Drive* drive, GamEpiece* gamEpiece, Hang* hang);
-#endif
 
     ~Controls();
 
@@ -22,10 +18,8 @@ public:
 
 private:
     Drive* drive;
-#ifndef HOMER
     GamEpiece* gamEpiece;
     Hang* hang;
-#endif
     bool cameraWasToggled = false;
     bool offsetsWereConfigured = false;
 
