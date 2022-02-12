@@ -38,7 +38,7 @@ Controls::~Controls()
 
 void Controls::process()
 {
-    switchPanel();
+    doSwitchPanel();
     doDrive();
     doAux();
 }
@@ -57,25 +57,25 @@ void Controls::doDrive()
          hang->move(Hang::STOP);
      }*/
 
-    bool brickDrive = controllerDriver.GetRawButton(CROSS_BUTTON);
-    bool alignWithHighHub = controllerDriver.GetRawButton(CIRCLE_BUTTON);
-    bool toggleCamera = controllerDriver.GetRawButton(SQUARE_BUTTON);
+    bool brickDrive = controllerDrive.GetRawButton(CROSS_BUTTON);
+    bool alignWithHighHub = controllerDrive.GetRawButton(CIRCLE_BUTTON);
+    bool toggleCamera = controllerDrive.GetRawButton(SQUARE_BUTTON);
 
-    double xDriveVelocity = controllerDriver.GetRawAxis(LEFT_X_AXIS);
-    double yDriveVelocity = controllerDriver.GetRawAxis(LEFT_Y_AXIS);
-    double leftRotateVelocity = (controllerDriver.GetRawAxis(LEFT_TRIGGER) + 1) / 2;
-    double rightRotateVelocity = (controllerDriver.GetRawAxis(RIGHT_TRIGGER) + 1) / 2;
+    double xDriveVelocity = controllerDrive.GetRawAxis(LEFT_X_AXIS);
+    double yDriveVelocity = controllerDrive.GetRawAxis(LEFT_Y_AXIS);
+    double leftRotateVelocity = (controllerDrive.GetRawAxis(LEFT_TRIGGER) + 1) / 2;
+    double rightRotateVelocity = (controllerDrive.GetRawAxis(RIGHT_TRIGGER) + 1) / 2;
 
-    double xSlowDriveVelocity = controllerDriver.GetRawAxis(RIGHT_X_AXIS);
-    double ySlowDriveVelocity = controllerDriver.GetRawAxis(RIGHT_Y_AXIS);
-    double leftSlowRotateVelocity = controllerDriver.GetRawButton(LEFT_BUMPER);
-    double rightSlowRotateVelocity = controllerDriver.GetRawButton(RIGHT_BUMPER);
+    double xSlowDriveVelocity = controllerDrive.GetRawAxis(RIGHT_X_AXIS);
+    double ySlowDriveVelocity = controllerDrive.GetRawAxis(RIGHT_Y_AXIS);
+    double leftSlowRotateVelocity = controllerDrive.GetRawButton(LEFT_BUMPER);
+    double rightSlowRotateVelocity = controllerDrive.GetRawButton(RIGHT_BUMPER);
 
-    bool zeroRotation = controllerDriver.GetRawButton(OPTIONS_BUTTON);
+    bool zeroRotation = controllerDrive.GetRawButton(OPTIONS_BUTTON);
 
     // Disable configue offsets because we don't want the drivers to mess it up.
 #ifdef DRIVE_DEBUG
-    bool configOffsets = controllerDriver.GetRawButton(SHARE_BUTTON);
+    bool configOffsets = controllerDrive.GetRawButton(SHARE_BUTTON);
 #else
     bool configOffsets = false;
 #endif
@@ -176,46 +176,22 @@ void Controls::doDrive()
         drive->manualDrive(finalXVelocity, -finalYVelocity, -finalRotateVelocity);
     }
 }
-    if (controllerDrive.GetRawButton(1)) {
-        //Field Centric/Robot Centric Toggle
-    } else if (controllerDrive.GetRawButton(2))
-    {
-        //Slow Mode Toggle
-    } else if (controllerDrive.GetRawButton(3))
-    {
-        //Camera Toggle
-    } else if (controllerDrive.GetRawButton(4))
-    {
-        //Reset Gyro
-    }
-    
-    if (controllerDrive.GetRawButton(5))
-    {
-        //Rotate Left
-    } else if (controllerDrive.GetRawButton(6))
-    {
-        //Rotate Right
-    }
-    
-    
-}
 
 void Controls::doAux()
 {
     // Normal Aux Controls
     if (controllerAux.GetRawButton(1))
     {
-        set.lastPressedMode == Shooter::TARMAC_LINE
+        lastPressedMode == Shooter::TARMAC_LINE;
     }
     else if (controllerAux.GetRawButton(3))
     {
-        set.lastPressedMode == Shooter::LAUNCH_PAD
+        lastPressedMode == Shooter::LAUNCH_PAD;
     }
-    else
-        (controllerAux.GetRawButton(2))
-        {
-            set.lastPressedMode == Shooter::ODOMETRY
-        }
+    else if (controllerAux.GetRawButton(2))
+    {
+        lastPressedMode == Shooter::ODOMETRY;
+    }
 
     if (controllerAux.GetRawButton(8))
     {
@@ -223,7 +199,7 @@ void Controls::doAux()
     }
     else if (controllerAux.GetRawButton(8) == false)
     {
-        gamEpiece->setShooterWarmUpEnabled(false);
+        gamEpiece->setShooterWarmUpEnabled(lastPressedMode, false);
     }
 
     if (controllerAux.GetRawButton(6))
@@ -280,17 +256,16 @@ void Controls::doAux()
     {
         if (controllerAux.GetRawButton(1))
         {
-            set.lastPressedMode == Shooter::TARMAC_LINE
+            lastPressedMode = Shooter::TARMAC_LINE;
         }
         else if (controllerAux.GetRawButton(3))
         {
-            set.lastPressedMode == Shooter::LAUNCH_PAD
+            lastPressedMode = Shooter::LAUNCH_PAD;
         }
-        else
-            (controllerAux.GetRawButton(2))
-            {
-                set.lastPressedMode == Shooter::ODOMETRY
-            }
+        else if (controllerAux.GetRawButton(2))
+        {
+            lastPressedMode = Shooter::ODOMETRY;
+        }
 
         if (controllerAux.GetRawButton(8))
         {
@@ -298,7 +273,7 @@ void Controls::doAux()
         }
         else if (controllerAux.GetRawButton(8) == false)
         {
-            gamEpiece->setShooterWarmUpEnabled(false);
+            gamEpiece->setShooterWarmUpEnabled(lastPressedMode, false);
         }
 
         if (controllerAux.GetRawButton(6))
@@ -324,28 +299,28 @@ void Controls::doAux()
     {
         if (controllerAux.GetRawButtonPressed(3))
         {
-            hang->extend();
+            hang->commandManual(Hang::EXTEND);
         }
         else if (controllerAux.GetRawButtonPressed(1))
         {
-            hang->retract();
+            hang->commandManual(Hang::RETRACT);
         }
         else if (controllerAux.GetRawButtonPressed(4))
         {
-            hang->engageBrake();
+            hang->commandManual(Hang::ENGAGE_BRAKE);
         }
         else if (controllerAux.GetRawButtonPressed(2))
         {
-            hang->extendALittle();
+            hang->commandManual(Hang::EXTEND_A_LITTLE);
         }
 
         if (lastDPadValue == -1 && dPadValue == 0)
         {
-            hang->pivot();
+            hang->commandManual(Hang::PIVOT);
         }
         else if (lastDPadValue == -1 && dPadValue == 180)
         {
-            hang->reversePivot();
+            hang->commandManual(Hang::REVERSE_PIVOT);
         }
         else if (lastDPadValue == -1 && dPadValue == 90)
         {
