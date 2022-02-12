@@ -6,6 +6,7 @@
 #include "Feedback.h"
 #include "Camera.h"
 #include <frc/geometry/Transform2d.h>
+#include <frc/geometry/Translation2d.h>
 #include <frc/geometry/Rotation2d.h>
 #include <frc/geometry/Pose2d.h>
 #include <frc/kinematics/SwerveDriveKinematics.h>
@@ -29,6 +30,8 @@
 #include <fstream>
 #include <iostream>
 
+// #define DRIVE_DEBUG // Un-comment to enable debug drive functionality.
+
 // The maximum speed of the chassis during manual drive.
 #define DRIVE_MANUAL_MAX_SPEED 4_mps
 // The maximum angular speed of the chassis during manual drive.
@@ -39,7 +42,7 @@
 // The maximum acceleration of the chassis during a drive command.
 #define DRIVE_CMD_MAX_ACCELERATION 0.4_mps_sq
 // The maximum angular speed of the chassis during a drive command.
-#define DRIVE_CMD_MAX_ANGULAR_SPEED 3.14_rad_per_s
+#define DRIVE_CMD_MAX_ANGULAR_SPEED 0.1_rad_per_s
 // The maximum angular acceleration of the chassis during a drive command.
 #define DRIVE_CMD_MAX_ANGULAR_ACCELERATION (3.14_rad_per_s / 1_s)
 
@@ -205,27 +208,23 @@ public:
      */
 
     /**
-     * Begins a command to rotate the robot towards the cargo using the forward-
-     * facing camera. Returns whether it has successfully identified a cargo.
+     * Begins a command to align the robot to the cargo using the forward-facing
+     * camera. Returns whether it has successfully identified a cargo.
      */
-    bool cmdRotateToCargo();
+    bool cmdAlignToCargo();
 
     /**
-     * Begins a command to rotate the robot to the high hub using limelight or
-     * odometry. Returns whether it has successfully identified the high hub.
+     * Begins a command to align the robot to the high hub using limelight.
+     * Returns whether it has successfully identified the high hub.
      */
-    bool cmdRotateToHub();
-
-    /**
-     * Begins a command to rotate a specified angle.
-     */
-    void cmdRotate(frc::Rotation2d angle);
+    bool cmdAlignToHighHub();
 
     /**
      * Begins a command to drive a specified distance and rotate a specified
      * angle.
      */
-    void cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle = frc::Rotation2d(),
+    void cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle,
+                  std::vector<frc::Translation2d> waypoints,
                   units::meters_per_second_t speed = DRIVE_CMD_MAX_SPEED);
     
     /**
@@ -289,6 +288,11 @@ private:
      * Executes the current align with cargo command.
      */
     void exeAlignWithCargo();
+
+    /**
+     * Executes the current align with high hub command.
+     */
+    void exeAlignWithHighHub();
 
     /**
      * Reads the magnetic encoder offsets file.
@@ -371,8 +375,9 @@ private:
     struct SwerveCommand {
         enum CommandType {
             NONE,
-            TRAJECTORY,     // Folow a trajectory.
-            ALIGN_TO_CARGO, // Align the robot with the cargo in front of the robot.
+            TRAJECTORY,        // Folow a trajectory.
+            ALIGN_TO_CARGO,    // Align the robot with the cargo in front of the robot.
+            ALIGN_TO_HIGH_HUB, // Align the robot with the high hub.
         };
 
         // The type of command to be executing.

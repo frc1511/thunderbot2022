@@ -35,7 +35,8 @@ public:
   void TestInit() override;
   void TestPeriodic() override;
 
-  void resetMechanisms(Mechanism::MatchMode);
+  void reset(Mechanism::MatchMode mode);
+  void sendFeedback();
   
 private:
   Camera camera {};
