@@ -26,11 +26,8 @@ private:
     GamEpiece* gamEpiece;
     Hang* hang;
 #endif
-
-    bool wasDriveModeToggled = false;
-    bool isFieldCentric = false;
-    bool wasSlowModeToggled = false;
-    bool slowModeEnabled = false;
+    bool cameraWasToggled = false;
+    bool offsetsWereConfigured = false;
 
     frc::Joystick controllerDriver{0};
     frc::Joystick controllerAux{1};

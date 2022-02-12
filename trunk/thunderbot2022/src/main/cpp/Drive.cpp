@@ -3,28 +3,20 @@
 // The path to the file to save encoder offsets into.
 #define ENCODER_OFFSETS_FILE_NAME "/home/lvuser/magnetic_encoder_offsets.txt"
 
-// The circumference of the drive wheels (meters).
-#define DRIVE_WHEEL_CIRCUMFERENCE 0.21
-
 /**
- * The gear ratio of the drive motor (5.25:1).
- * 
- * AKA: The number of rotations the drive encoder will read after 1 rotation of
- * the wheel.
- */
+NOTE: This stuff doesn't work.
+
+#define DRIVE_WHEEL_CIRCUMFERENCE 0.21
 #define DRIVE_GEAR_RATIO 5.25
+#define DRIVE_ENCODER_TO_METER_FACTOR (DRIVE_WHEEL_CIRCUMFERENCE / DRIVE_GEAR_RATIO)
+#define DRIVE_METER_TO_ENCODER_FACTOR (DRIVE_GEAR_RATIO / DRIVE_WHEEL_CIRCUMFERENCE)
+*/
 
 /**
  * The coefficient used to convert rotations of the NEO motors into a distance
  * traveled in meters.
  */
-#define DRIVE_ENCODER_TO_METER_FACTOR (DRIVE_WHEEL_CIRCUMFERENCE / DRIVE_GEAR_RATIO)
-
-/**
- * The coefficient used to convert a distance in meters into a number of
- * rotations of the NEO motors.
- */
-#define DRIVE_METER_TO_ENCODER_FACTOR (DRIVE_GEAR_RATIO / DRIVE_WHEEL_CIRCUMFERENCE)
+#define DRIVE_ENCODER_TO_METER_FACTOR 0.00002226
 
 /**
  * The coeffieient used to convert a radian value into rotations of the NEO 550
@@ -45,15 +37,6 @@
 // The number of seconds for the drive motors to ramp from idle to full trottle.
 #define DRIVE_RAMP_TIME 0.5
 
-// The tolerance of the X axis of the desired position.
-#define DRIVE_POSITION_TOLERANCE_X 1_in
-
-// The tolerance of the Y axis of the desired position.
-#define DRIVE_POSITION_TOLERANCE_Y 1_in
-
-// The tolerance of the angle of the desired position.
-#define DRIVE_POSITION_TOLERANCE_ANGLE 2_deg
-
 // The maximum speed during alignment using vision.
 #define DRIVE_VISION_MAX_SPEED 1_mps
 
@@ -62,6 +45,9 @@
 
 // The allowable tolerance of the vision alignment.
 #define VISION_TOLERANCE 0.05
+
+// The allowable tolerance of the horizontal limelight angle.
+#define LIMELIGHT_TOLERANCE 2_deg
 
 // --- PID values ---
 
@@ -87,7 +73,7 @@ SwerveModule::SwerveModule(int driveCANID, int turningCANID, int canCoderCANID)
     turningRelEncoder(turningMotor.GetEncoder()),
     turningPID(turningMotor.GetPIDController()),
     turningAbsEncoder(canCoderCANID) {
-  
+    
     // --- Drive motor config ---
     
     driveMotor.RestoreFactoryDefaults();
@@ -181,7 +167,7 @@ void SwerveModule::setState(frc::SwerveModuleState targetState) {
 
 void SwerveModule::setDriveMotor(units::meters_per_second_t velocity) {
     // Convert meters per second into rotations per minute.
-    double rpm = velocity.value() * 60 * DRIVE_METER_TO_ENCODER_FACTOR;
+    double rpm = velocity.value() / DRIVE_ENCODER_TO_METER_FACTOR;
 
     // Set the target RPM of the drive motor.
     drivePID.SetReference(rpm, rev::CANSparkMax::ControlType::kVelocity);
@@ -235,7 +221,7 @@ void SwerveModule::setIdleMode(IdleMode mode) {
 
 units::meters_per_second_t SwerveModule::getDriveVelocity() {
     // Convert rotations per minute to meters per second.
-    double mps = (driveEncoder.GetVelocity() / 60) * DRIVE_ENCODER_TO_METER_FACTOR;
+    double mps = driveEncoder.GetVelocity() * 10 * DRIVE_ENCODER_TO_METER_FACTOR;
     
     return units::meters_per_second_t(mps);
 }
@@ -251,9 +237,9 @@ frc::Rotation2d SwerveModule::getAbsoluteRotation() {
     // Subtract the offset from the angle.
     angle -= canCoderOffset;
 
-    // Subtract 90 degrees from the angle because the kinematics thinks that
+    // Add 90 degrees from the angle because the kinematics thinks that
     // forward is to the right for some reason.
-    angle -= 90_deg;
+    angle += 90_deg;
 
     return angle;
 }
@@ -348,6 +334,9 @@ void Drive::sendFeedback() {
         case SwerveCommand::ALIGN_TO_CARGO:
             buffer = "align with cargo";
             break;
+        case SwerveCommand::ALIGN_TO_HIGH_HUB:
+            buffer = "align with high hub";
+            break;
     }
     Feedback::sendString("drive", "command type", buffer);
     
@@ -355,7 +344,7 @@ void Drive::sendFeedback() {
 
     Feedback::sendDouble("drive", "robot x position (meters)", pose.X().value());
     Feedback::sendDouble("drive", "robot y position (meters)", pose.Y().value());
-    Feedback::sendDouble("drive", "robot rotation (degrees)", pose.Rotation().Degrees().value());
+    Feedback::sendDouble("drive", "robot rotation (degrees)", getRotation().Degrees().value());
 
     Feedback::sendDouble("drive", "wheel 0 rotation (degrees)", swerveModules.at(0)->getState().angle.Degrees().value());
     Feedback::sendDouble("drive", "wheel 1 rotation (degrees)", swerveModules.at(1)->getState().angle.Degrees().value());
@@ -404,6 +393,10 @@ void Drive::process() {
                     // Execute the align with cargo command.
                     exeAlignWithCargo();
                     break;
+                case SwerveCommand::ALIGN_TO_HIGH_HUB:
+                    // Execute the align with high hub command.
+                    exeAlignWithHighHub();
+                    break;
             }
             break;
     }
@@ -427,8 +420,8 @@ void Drive::configMagneticEncoders() {
     for (unsigned i = 0; i < swerveModules.size(); i++) {
         units::radian_t angle(swerveModules.at(i)->getState().angle.Radians());
         
-        // Subtract the 90 degree offset.
-        angle -= 90_deg;
+        // Add the 90 degree offset.
+        angle += 90_deg;
         
         // Add the angle of the module to the offset that is already applied.
         offsets.at(i) += angle;
@@ -442,10 +435,13 @@ void Drive::configMagneticEncoders() {
 }
 
 void Drive::manualDrive(double xPct, double yPct, double rotPct) {
-    driveMode = MANUAL;
-
     if (xPct == 0 && yPct == 0 && rotPct == 0) {
-        driveMode = STOPPED;
+        if (driveMode != COMMAND) {
+            driveMode = STOPPED;
+        }
+    }
+    else {
+        driveMode = MANUAL;
     }
 
     manualData = { xPct, yPct, rotPct };
@@ -485,7 +481,7 @@ frc::TrajectoryConfig Drive::getTrajectoryConfig() {
     return std::move(trajectoryConfig);
 }
 
-bool Drive::cmdRotateToCargo() {
+bool Drive::cmdAlignToCargo() {
     // Make sure it is in auto and that the camera sees a target.
     if (getCurrentMode() != MODE_AUTO || !camera->hasTarget()) {
         return false;
@@ -497,29 +493,21 @@ bool Drive::cmdRotateToCargo() {
     return true;
 }
 
-bool Drive::cmdRotateToHub() {
+bool Drive::cmdAlignToHighHub() {
     // Make sure the limelight sees a target.
     if (!limelight->hasTarget()) {
-        // TODO Use odometry instead.
         return false;
     }
+
+    driveMode = COMMAND;
+    cmd.type = SwerveCommand::ALIGN_TO_HIGH_HUB;
     
-    // Get the horizontal angle from limelight.
-    units::radian_t angle(limelight->getAngleHorizontal());
-
-    // Start a rotate command.
-    cmdRotate(angle);
-
     return true;
 }
 
-void Drive::cmdRotate(frc::Rotation2d angle) {
-    // Won't work.
-}
-
-void Drive::cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle, units::meters_per_second_t speed) {
+void Drive::cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle, std::vector<frc::Translation2d> waypoints, units::meters_per_second_t speed) {
   frc::Trajectory trajectory = frc::TrajectoryGenerator::GenerateTrajectory(
-    getPose(), {}, { x, y, angle }, getTrajectoryConfig()
+    getPose(), waypoints, { x, y, angle }, getTrajectoryConfig()
   );
   cmdFollowTrajectory(trajectory);
 }
@@ -558,12 +546,24 @@ bool Drive::cmdIsFinished() {
             // If a command is currently running but the total time of the
             // trajectory has elapsed.
             if (cmd.trajectoryData.timer.HasElapsed(cmd.trajectoryData.trajectory.TotalTime())) {
-                return true;
+                // if (cmdController.AtReference()) {
+                    // std::cout << "Trajectory has finished\n";
+                    return true;
+                // }
+                // else {
+                    // std::cout << "Not at reference yet\n";
+                // }
+                // return false;
             }
             return false;
         case SwerveCommand::ALIGN_TO_CARGO:
             // Check if the cargo is in the center of the frame.
             if (camera->getTargetSector() == Camera::CENTER) {
+                return true;
+            }
+            return false;
+        case SwerveCommand::ALIGN_TO_HIGH_HUB:
+            if (units::math::abs(limelight->getAngleHorizontal()) <= LIMELIGHT_TOLERANCE) {
                 return true;
             }
             return false;
@@ -681,6 +681,25 @@ void Drive::exeAlignWithCargo() {
             // Begin rotating to the right.
             setModuleStates({ 0_mps, 0_mps, +DRIVE_VISION_MAX_ANGULAR_SPEED });
             break;
+    }
+}
+
+void Drive::exeAlignWithHighHub() {
+    units::radian_t angle = limelight->getAngleHorizontal();
+
+    // The robot is aligned with the high hub.
+    if (units::math::abs(angle) <= LIMELIGHT_TOLERANCE) {
+        // We all good now.
+    }
+    // The high hub is to the right of the robot.
+    else if (angle > LIMELIGHT_TOLERANCE) {
+        // Begin rotating to the right.
+        setModuleStates({ 0_mps, 0_mps, +DRIVE_VISION_MAX_ANGULAR_SPEED });
+    }
+    // The high hub is to the left of the robot.
+    else if (angle < -LIMELIGHT_TOLERANCE) {
+        // Begin rotating to the left.
+        setModuleStates({ 0_mps, 0_mps, -DRIVE_VISION_MAX_ANGULAR_SPEED });
     }
 }
 

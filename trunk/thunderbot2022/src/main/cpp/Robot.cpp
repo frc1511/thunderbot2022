@@ -6,30 +6,32 @@
 
 void Robot::RobotInit() {}
 void Robot::RobotPeriodic() {
-  drive.sendFeedback();
+  sendFeedback();
 #ifndef HOMER
   blinkyBlinky.process();
 #endif
 }
 
 void Robot::AutonomousInit() {
-  resetMechanisms(Mechanism::MODE_AUTO);
+  reset(Mechanism::MODE_AUTO);
 }
 
 void Robot::AutonomousPeriodic() {
+  limelight.process();
   drive.process();
-#ifndef HOMER
   camera.process();
+#ifndef HOMER
   autonomous.process();
 #endif
 }
 
 void Robot::TeleopInit() {
-  resetMechanisms(Mechanism::MODE_TELEOP);
+  reset(Mechanism::MODE_TELEOP);
 }
 
 void Robot::TeleopPeriodic() {
   controls.process();
+  limelight.process();
   drive.process();
 #ifndef HOMER
   //gamEpiece.process();
@@ -38,7 +40,7 @@ void Robot::TeleopPeriodic() {
 }
 
 void Robot::DisabledInit() {
-  resetMechanisms(Mechanism::MODE_DISABLED);
+  reset(Mechanism::MODE_DISABLED);
 }
 
 void Robot::DisabledPeriodic() {
@@ -46,17 +48,18 @@ void Robot::DisabledPeriodic() {
 }
 
 void Robot::TestInit() {
-  resetMechanisms(Mechanism::MODE_TEST);
+  reset(Mechanism::MODE_TEST);
 }
 
 void Robot::TestPeriodic() {
   // Why would we use test?
+  
 #ifndef HOMER
   blinkyBlinky.process();
 #endif
 }
 
-void Robot::resetMechanisms(Mechanism::MatchMode mode) {
+void Robot::reset(Mechanism::MatchMode mode) {
   limelight.resetToMode(mode);
   drive.resetToMode(mode);
   camera.resetToMode(mode);
@@ -66,6 +69,19 @@ void Robot::resetMechanisms(Mechanism::MatchMode mode) {
   controls.resetToMode(mode);
   autonomous.resetToMode(mode);
   blinkyBlinky.resetToMode(mode);
+#endif
+}
+
+void Robot::sendFeedback() {
+  limelight.sendFeedback();
+  drive.sendFeedback();
+  camera.sendFeedback();
+#ifndef HOMER
+  //gamEpiece.sendFeedback();
+  hang.sendFeedback();
+  controls.sendFeedback();
+  autonomous.sendFeedback();
+  blinkyBlinky.sendFeedback();
 #endif
 }
 
