@@ -44,7 +44,7 @@ private:
   Drive drive { &camera, &limelight };
 
 #ifdef HOMER
-  Controls controls { &drive };
+  Controls controls { &drive, nullptr, nullptr };
 #else
   GamEpiece gamEpiece { &limelight };
   Hang hang {};

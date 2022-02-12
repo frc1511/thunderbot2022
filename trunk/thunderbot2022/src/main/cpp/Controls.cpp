@@ -28,12 +28,8 @@
 
 #define AXIS_DEADZONE .05
 
-#ifdef HOMER
-Controls::Controls(Drive* drive) : drive(drive) {
-#else
 Controls::Controls(Drive* drive, GamEpiece* gamEpiece, Hang* hang) 
 : drive(drive), gamEpiece(gamEpiece), hang(hang) {
-#endif
 
 }
 
