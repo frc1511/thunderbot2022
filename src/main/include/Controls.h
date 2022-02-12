@@ -40,6 +40,6 @@ private:
 //Normal Aux Variables
     Shooter::ShooterMode lastPressedMode = Shooter::TARMAC_LINE;
 //Manual Aux Variables
-    int lastDPadValue = -1
+    int lastDPadValue = -1;
     // Something here...
 };
