@@ -1,5 +1,5 @@
 #pragma once
-// #pragma twice
+// RIP "#pragma twice", Forever in our hearts, Revision 68 to Revision 106
 
 #include "Mechanism.h"
 #include "IOMap.h"
