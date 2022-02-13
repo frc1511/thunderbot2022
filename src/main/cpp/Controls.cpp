@@ -40,7 +40,9 @@ void Controls::process()
 {
     doSwitchPanel();
     doDrive();
+#ifndef HOMER
     doAux();
+#endif
 }
 
 void Controls::doDrive()
