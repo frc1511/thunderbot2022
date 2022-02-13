@@ -36,10 +36,19 @@ class ThunderSparkMax {
         // Returns rotations of encoder
         virtual double GetEncoder() = 0;
         virtual void SetEncoder(double rotations) = 0;
+        // Must call ConfigAlternateEncoder(int) first, else these always return 0
+        virtual double GetAlternateEncoder() = 0;
+        virtual void SetAlternateEncoder(double rotations) = 0;
 
         virtual double GetVelocity() = 0;
         virtual double GetOutputCurrent() = 0;
         virtual ThunderSparkMaxCANPIDController *GetPIDController() = 0;
+
+        // enables use of the alternate encoder with it configured to read a
+        // quadrature encoder with the given counts per revolution.
+        // This enables use of Set/GetAlternateEncoder().  This also disables 
+        // sparkmax limit inputs
+        virtual void ConfigAlternateEncoder(int countsPerRev) = 0;
 
         /*********************************************/
         // Configuration methods

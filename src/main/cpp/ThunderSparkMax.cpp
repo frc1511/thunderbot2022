@@ -14,6 +14,8 @@ class ThunderSparkMaxImpl : public ThunderSparkMax {
         // Returns rotations of encoder
         virtual double GetEncoder() ;
         virtual void SetEncoder(double rotations);
+        virtual double GetAlternateEncoder() ;
+        virtual void SetAlternateEncoder(double rotations);
 
         virtual double GetVelocity();
 
@@ -21,6 +23,7 @@ class ThunderSparkMaxImpl : public ThunderSparkMax {
         virtual void SetInverted(bool inverted);
         virtual void Follow(ThunderSparkMax *leader, bool invertOutput = false);
 
+        virtual void ConfigAlternateEncoder(int countsPerRev);
         virtual ThunderSparkMaxCANPIDController* GetPIDController();
         virtual double GetOutputCurrent();
 
@@ -39,6 +42,7 @@ class ThunderSparkMaxImpl : public ThunderSparkMax {
         double lastSpeed;
         bool printedPIDWarning;
         bool printedEncoderWarning;
+        bool printedAlternateEncoderWarning;
         bool printedIdleWarning;
         bool printedInvertWarning;
         bool printedFollowWarning;
@@ -58,6 +62,7 @@ ThunderSparkMaxImpl::ThunderSparkMaxImpl(const char *implName, int id) :
         lastSpeed(0),
         printedPIDWarning(false),
         printedEncoderWarning(false),
+        printedAlternateEncoderWarning(false),
         printedIdleWarning(false),
         printedInvertWarning(false),
         printedFollowWarning(false),
@@ -110,6 +115,17 @@ void ThunderSparkMaxImpl::SetEncoder(double rotations)
     printWarning(&printedEncoderWarning, "Encoder");
 }
 
+double ThunderSparkMaxImpl::GetAlternateEncoder()
+{
+    printWarning(&printedAlternateEncoderWarning, "Alternate Encoder");
+    return 0;
+}
+
+void ThunderSparkMaxImpl::SetAlternateEncoder(double rotations)
+{
+    printWarning(&printedAlternateEncoderWarning, "Alternate Encoder");
+}
+
 double ThunderSparkMaxImpl::GetVelocity()
 {
     printWarning(&printedVelocityWarning, "Getting Velocity");
@@ -133,6 +149,11 @@ void ThunderSparkMaxImpl::Follow(ThunderSparkMax *leader, bool invertOutput)
 ThunderSparkMaxCANPIDController* ThunderSparkMaxImpl::GetPIDController() {
     printWarning(&printedPIDWarning, "Native PID");
     return &fakePIDController;
+}
+
+void ThunderSparkMaxImpl::ConfigAlternateEncoder(int cpr) 
+{
+    printWarning(&printedAlternateEncoderWarning, "Alternate Encoder");
 }
 
 double ThunderSparkMaxImpl::GetOutputCurrent()
@@ -230,8 +251,10 @@ class ThunderSMCANImpl : public ThunderSparkMaxImpl {
         virtual void SetClosedLoopRampRate(double rate);
 
         virtual double GetEncoder();
+        virtual double GetAlternateEncoder();
         virtual double Get();
         virtual void SetEncoder(double rotations);
+        virtual void SetAlternateEncoder(double rotations);
         virtual void SetInverted(bool invert);
 
         virtual void SetIdleMode(IdleMode idleMode);
@@ -239,6 +262,7 @@ class ThunderSMCANImpl : public ThunderSparkMaxImpl {
 
         virtual rev::CANSparkMax *getSparkMax() { return &spark; }
         virtual ThunderSparkMaxCANPIDController *GetPIDController() { return &pid; }
+        virtual void ConfigAlternateEncoder(int cpr);
         virtual double GetVelocity() { return enc.GetVelocity(); }
 
         virtual double GetOutputCurrent() { return spark.GetOutputCurrent();}
@@ -253,6 +277,12 @@ class ThunderSMCANImpl : public ThunderSparkMaxImpl {
         rev::SparkMaxRelativeEncoder enc;
         rev::SparkMaxPIDController smpid;
         ThunderSparkMaxCANPIDControllerImpl pid;
+
+        struct AltHolder {
+            AltHolder(rev::SparkMaxAlternateEncoder enc) : enc(enc) {};
+            rev::SparkMaxAlternateEncoder enc;
+        };
+        AltHolder *alt;
 };
 
 #include <frc/motorcontrol/PWMSparkMax.h>
@@ -512,7 +542,8 @@ ThunderSMCANImpl::ThunderSMCANImpl(int canid) : ThunderSparkMaxImpl("CAN SparkMa
         spark(canid, rev::CANSparkMaxLowLevel::MotorType::kBrushless),
         enc(spark.GetEncoder()),
         smpid(spark.GetPIDController()),
-        pid(&smpid)
+        pid(&smpid),
+        alt(NULL)
 {
 }
 
@@ -537,6 +568,14 @@ double ThunderSMCANImpl::GetEncoder()
     return enc.GetPosition();
 }
 
+double ThunderSMCANImpl::GetAlternateEncoder()
+{
+    if (alt)
+        return alt->enc.GetPosition();
+    else 
+        return 0;
+}
+
 double ThunderSMCANImpl::Get() {
     return spark.GetAppliedOutput();
 }
@@ -544,6 +583,12 @@ double ThunderSMCANImpl::Get() {
 void ThunderSMCANImpl::SetEncoder(double rotations)
 {
     enc.SetPosition(rotations);
+}
+
+void ThunderSMCANImpl::SetAlternateEncoder(double rotations)
+{
+    if (alt)
+        alt->enc.SetPosition(rotations);
 }
 
 void ThunderSMCANImpl::SetIdleMode(IdleMode idleMode)
@@ -565,6 +610,13 @@ void ThunderSMCANImpl::Follow(ThunderSparkMax *leader, bool invertOutput)
     } else {
         printf("ERROR: CAN id %d cannot follow a fake spark max!\n", spark.GetDeviceId());
     }
+}
+
+void ThunderSMCANImpl::ConfigAlternateEncoder(int cpr)
+{
+    if (alt)
+        delete alt;
+    alt = new AltHolder(spark.GetAlternateEncoder(cpr));
 }
 
 
