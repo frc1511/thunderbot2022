@@ -1,5 +1,6 @@
 #pragma once
-#include "rev/CANSparkMax.h"
+#include <rev/CANSparkMax.h>
+#include <ctre/Phoenix.h>
 
 class ThunderSparkMaxImpl;
 
@@ -82,4 +83,20 @@ class ThunderSparkMax {
         };
         
         static ThunderSparkMax *create(MotorID id);
+};
+
+
+class ThunderCANCoder {
+    protected:
+        bool printedWarning;
+        ThunderCANCoder();
+        virtual ~ThunderCANCoder() {};
+        void printWarning();
+
+    public:
+        virtual double GetAbsolutePosition();
+        virtual void ConfigFactoryDefault();
+        virtual void ConfigAbsoluteSensorRange(ctre::phoenix::sensors::AbsoluteSensorRange absoluteSensorRange);
+
+        static ThunderCANCoder *create(int id);
 };

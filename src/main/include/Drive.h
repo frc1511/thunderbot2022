@@ -122,7 +122,7 @@ private:
     ThunderSparkMaxCANPIDController *turningPID;
 
     // The absolute encoder (CTRE CANCoder).
-    ctre::phoenix::sensors::CANCoder turningAbsEncoder;
+    ThunderCANCoder *turningAbsEncoder;
 
     // The offset of the CANCoders.
     units::radian_t canCoderOffset = 0_rad;
@@ -354,7 +354,7 @@ private:
      * Our super accurate IMU (3d gyro and accelerometer) in the SPI port on the
      * roborio.
      */
-    frc::ADIS16470_IMU imu {};
+    frc::ADIS16470_IMU *imu;
 
     enum DriveMode {
         STOPPED,
