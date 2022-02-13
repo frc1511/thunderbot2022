@@ -9,6 +9,7 @@ class ThunderSparkMaxImpl : public ThunderSparkMax {
         virtual double Get();
         
         virtual void SetOpenLoopRampRate(double rate);
+        virtual void SetClosedLoopRampRate(double rate);
 
         // Returns rotations of encoder
         virtual double GetEncoder() ;
@@ -89,6 +90,11 @@ double ThunderSparkMaxImpl::Get()
 }
 
 void ThunderSparkMaxImpl::SetOpenLoopRampRate(double rate)
+{
+    printWarning(&printedRampWarning, "Output Ramping");
+}
+        
+void ThunderSparkMaxImpl::SetClosedLoopRampRate(double rate)
 {
     printWarning(&printedRampWarning, "Output Ramping");
 }
@@ -221,6 +227,7 @@ class ThunderSMCANImpl : public ThunderSparkMaxImpl {
         virtual void Set(double speed);
         
         virtual void SetOpenLoopRampRate(double rate);
+        virtual void SetClosedLoopRampRate(double rate);
 
         virtual double GetEncoder();
         virtual double Get();
@@ -518,6 +525,11 @@ void ThunderSMCANImpl::Set(double speed)
 void ThunderSMCANImpl::SetOpenLoopRampRate(double rate)
 {
     spark.SetOpenLoopRampRate(rate);
+}
+
+void ThunderSMCANImpl::SetClosedLoopRampRate(double rate)
+{
+    spark.SetClosedLoopRampRate(rate);
 }
 
 double ThunderSMCANImpl::GetEncoder()

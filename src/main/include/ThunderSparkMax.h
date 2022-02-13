@@ -48,6 +48,7 @@ class ThunderSparkMax {
         virtual void SetInverted(bool inverted) = 0;
         // Rate is amount of time to go from 0 to full throttle in seconds
         virtual void SetOpenLoopRampRate(double rate) = 0;
+        virtual void SetClosedLoopRampRate(double rate) = 0;
         virtual void Follow(ThunderSparkMax *leader, bool invertOutput = false) = 0;
         virtual void SetSmartCurrentLimit(unsigned int limitAmps) = 0;
         virtual void EnableVoltageCompensation(double nominalVoltage) = 0;
