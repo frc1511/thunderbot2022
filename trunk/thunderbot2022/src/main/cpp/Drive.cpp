@@ -65,76 +65,60 @@ NOTE: This stuff doesn't work.
 
 // --- Swerve module ---
 
-SwerveModule::SwerveModule(int driveCANID, int turningCANID, int canCoderCANID)
-  : driveMotor(driveCANID, rev::CANSparkMax::MotorType::kBrushless),
-    driveEncoder(driveMotor.GetEncoder()),
-    drivePID(driveMotor.GetPIDController()),
-    turningMotor(turningCANID, rev::CANSparkMax::MotorType::kBrushless),
-    turningRelEncoder(turningMotor.GetEncoder()),
-    turningPID(turningMotor.GetPIDController()),
+SwerveModule::SwerveModule(ThunderSparkMax::MotorID driveID, ThunderSparkMax::MotorID turningID, int canCoderCANID)
+  : driveMotor(ThunderSparkMax::create(driveID)),
+    drivePID(driveMotor->GetPIDController()),
+    turningMotor(ThunderSparkMax::create(turningID)),
+    turningPID(turningMotor->GetPIDController()),
     turningAbsEncoder(canCoderCANID) {
     
     // --- Drive motor config ---
     
-    driveMotor.RestoreFactoryDefaults();
+    driveMotor->RestoreFactoryDefaults();
 
     // Set the idle mode to coast (Because the robot will start disabled).
     setIdleMode(COAST);
 
     // Voltage limit.
-    driveMotor.EnableVoltageCompensation(DRIVE_MAX_VOLTAGE);
+    driveMotor->EnableVoltageCompensation(DRIVE_MAX_VOLTAGE);
     // Amperage limit.
-    driveMotor.SetSmartCurrentLimit(DRIVE_MAX_AMPERAGE);
+    driveMotor->SetSmartCurrentLimit(DRIVE_MAX_AMPERAGE);
 
     // It is not inverted!
-    driveMotor.SetInverted(false);
+    driveMotor->SetInverted(false);
 
     // Ramping (0.5 seconds to accelerate from neutral to full throttle).
-    driveMotor.SetClosedLoopRampRate(DRIVE_RAMP_TIME);
-    driveMotor.SetOpenLoopRampRate(DRIVE_RAMP_TIME);
+    driveMotor->SetClosedLoopRampRate(DRIVE_RAMP_TIME);
+    driveMotor->SetOpenLoopRampRate(DRIVE_RAMP_TIME);
 
-    // Frame period.
-    driveMotor.SetPeriodicFramePeriod(rev::CANSparkMaxLowLevel::PeriodicFrame::kStatus0, 10);
-    driveMotor.SetPeriodicFramePeriod(rev::CANSparkMaxLowLevel::PeriodicFrame::kStatus1, 10);
-    driveMotor.SetPeriodicFramePeriod(rev::CANSparkMaxLowLevel::PeriodicFrame::kStatus2, 10);
-
-    // Make sure the PID controller uses the encoder for its error correction.
-    drivePID.SetFeedbackDevice(driveEncoder);
     // PID Values.
-    drivePID.SetP(DRIVE_P_VALUE, 0);
-    drivePID.SetI(DRIVE_I_VALUE, 0);
-    drivePID.SetD(DRIVE_D_VALUE, 0);
-    drivePID.SetIZone(DRIVE_I_ZONE_VALUE, 0);
-    drivePID.SetFF(DRIVE_FF_VALUE, 0);
+    drivePID->SetP(DRIVE_P_VALUE, 0);
+    drivePID->SetI(DRIVE_I_VALUE, 0);
+    drivePID->SetD(DRIVE_D_VALUE, 0);
+    drivePID->SetIZone(DRIVE_I_ZONE_VALUE, 0);
+    drivePID->SetFF(DRIVE_FF_VALUE, 0);
   
     // --- Turning motor config ---
     
-    turningMotor.RestoreFactoryDefaults();
+    turningMotor->RestoreFactoryDefaults();
 
     // Coast when idle.
-    turningMotor.SetIdleMode(rev::CANSparkMax::IdleMode::kCoast);
+    turningMotor->SetIdleMode(ThunderSparkMax::COAST);
 
     // Voltage limit.
-    turningMotor.EnableVoltageCompensation(TURN_MAX_VOLTAGE);
+    turningMotor->EnableVoltageCompensation(TURN_MAX_VOLTAGE);
     // Amperage limit.
-    turningMotor.SetSmartCurrentLimit(TURN_MAX_AMPERAGE);
+    turningMotor->SetSmartCurrentLimit(TURN_MAX_AMPERAGE);
 
     // It is not inverted!
-    turningMotor.SetInverted(true);
+    turningMotor->SetInverted(true);
 
-    // Frame period.
-    turningMotor.SetPeriodicFramePeriod(rev::CANSparkMaxLowLevel::PeriodicFrame::kStatus0, 10);
-    turningMotor.SetPeriodicFramePeriod(rev::CANSparkMaxLowLevel::PeriodicFrame::kStatus1, 10);
-    turningMotor.SetPeriodicFramePeriod(rev::CANSparkMaxLowLevel::PeriodicFrame::kStatus2, 10);
-
-    // Make sure the PID controller uses the encoder for its error correction.
-    turningPID.SetFeedbackDevice(turningRelEncoder);
     // PID values.
-    turningPID.SetP(ROT_P_VALUE, 0);
-    turningPID.SetI(ROT_I_VALUE, 0);
-    turningPID.SetD(ROT_D_VALUE, 0);
-    turningPID.SetIZone(ROT_I_ZONE_VALUE, 0);
-    turningPID.SetFF(ROT_FF_VALUE, 0);
+    turningPID->SetP(ROT_P_VALUE, 0);
+    turningPID->SetI(ROT_I_VALUE, 0);
+    turningPID->SetD(ROT_D_VALUE, 0);
+    turningPID->SetIZone(ROT_I_ZONE_VALUE, 0);
+    turningPID->SetFF(ROT_FF_VALUE, 0);
     
     // --- CANCoder config ---
     
@@ -170,7 +154,7 @@ void SwerveModule::setDriveMotor(units::meters_per_second_t velocity) {
     double rpm = velocity.value() / DRIVE_ENCODER_TO_METER_FACTOR;
 
     // Set the target RPM of the drive motor.
-    drivePID.SetReference(rpm, rev::CANSparkMax::ControlType::kVelocity);
+    drivePID->SetReference(rpm, rev::CANSparkMax::ControlType::kVelocity);
 }
 
 void SwerveModule::setTurningMotor(units::radian_t angle) {
@@ -191,7 +175,7 @@ void SwerveModule::setTurningMotor(units::radian_t angle) {
     output += getRelativeRotation();
     
     // Set PID controller reference.
-    turningPID.SetReference(output, rev::CANSparkMax::ControlType::kPosition);
+    turningPID->SetReference(output, rev::CANSparkMax::ControlType::kPosition);
 }
 
 frc::SwerveModuleState SwerveModule::getState() {
@@ -204,30 +188,30 @@ void SwerveModule::setOffset(units::radian_t offset) {
 }
 
 void SwerveModule::setIdleMode(IdleMode mode) {
-    rev::CANSparkMax::IdleMode idleMode {};
+    ThunderSparkMax::IdleMode idleMode {};
     
     switch (mode) {
         case BRAKE:
-            idleMode = rev::CANSparkMax::IdleMode::kBrake;
+            idleMode = ThunderSparkMax::BRAKE;
             break;
         case COAST:
-            idleMode = rev::CANSparkMax::IdleMode::kCoast;
+            idleMode = ThunderSparkMax::COAST;
             break;
     }
 
     // Set the idle mode of the drive motor.
-    driveMotor.SetIdleMode(idleMode);
+    driveMotor->SetIdleMode(idleMode);
 }
 
 units::meters_per_second_t SwerveModule::getDriveVelocity() {
     // Convert rotations per minute to meters per second.
-    double mps = driveEncoder.GetVelocity() * 10 * DRIVE_ENCODER_TO_METER_FACTOR;
+    double mps = driveMotor->GetVelocity() * 10 * DRIVE_ENCODER_TO_METER_FACTOR;
     
     return units::meters_per_second_t(mps);
 }
 
 double SwerveModule::getRelativeRotation() {
-    return turningRelEncoder.GetPosition();
+    return turningMotor->GetEncoder(); 
 }
 
 frc::Rotation2d SwerveModule::getAbsoluteRotation() {

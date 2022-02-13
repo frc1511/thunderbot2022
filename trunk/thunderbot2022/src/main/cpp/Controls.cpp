@@ -28,8 +28,8 @@
 
 #define AXIS_DEADZONE .05
 
-Controls::Controls(/*Drive *drive, */GamEpiece *gamEpiece, Hang *hang)
-    : /*drive(drive),*/ gamEpiece(gamEpiece), hang(hang){
+Controls::Controls(Drive *drive, GamEpiece *gamEpiece, Hang *hang)
+    : drive(drive), gamEpiece(gamEpiece), hang(hang){
 }
 
 Controls::~Controls()

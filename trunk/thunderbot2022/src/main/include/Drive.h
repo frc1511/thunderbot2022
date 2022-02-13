@@ -5,6 +5,7 @@
 #include "Limelight.h"
 #include "Feedback.h"
 #include "Camera.h"
+#include "ThunderSparkMax.h"
 #include <frc/geometry/Transform2d.h>
 #include <frc/geometry/Translation2d.h>
 #include <frc/geometry/Rotation2d.h>
@@ -58,7 +59,7 @@
  */
 class SwerveModule {
 public:
-    SwerveModule(int driveCANID, int turningCANID, int canCoderCANID);
+    SwerveModule(ThunderSparkMax::MotorID driveID, ThunderSparkMax::MotorID turningID, int canCoderCANID);
     ~SwerveModule();
 
     /**
@@ -113,14 +114,12 @@ private:
     frc::Rotation2d getAbsoluteRotation();
 
     // The drive motor (NEO Brushless motor).
-    rev::CANSparkMax driveMotor;
-    rev::SparkMaxRelativeEncoder driveEncoder;
-    rev::SparkMaxPIDController drivePID;
+    ThunderSparkMax *driveMotor;
+    ThunderSparkMaxCANPIDController *drivePID;
 
     // The turning motor (NEO 550).
-    rev::CANSparkMax turningMotor;
-    rev::SparkMaxRelativeEncoder turningRelEncoder;
-    rev::SparkMaxPIDController turningPID;
+    ThunderSparkMax *turningMotor;
+    ThunderSparkMaxCANPIDController *turningPID;
 
     // The absolute encoder (CTRE CANCoder).
     ctre::phoenix::sensors::CANCoder turningAbsEncoder;
@@ -330,10 +329,10 @@ private:
 
     // The swerve modules on the robot.
     wpi::array<SwerveModule*, 4> swerveModules {
-      new SwerveModule(CAN_SWERVE_FL_DRIVE_MOTOR, CAN_SWERVE_FL_ROT_MOTOR, CAN_SWERVE_FL_ROT_CAN_CODER),
-      new SwerveModule(CAN_SWERVE_BL_DRIVE_MOTOR, CAN_SWERVE_BL_ROT_MOTOR, CAN_SWERVE_BL_ROT_CAN_CODER),
-      new SwerveModule(CAN_SWERVE_BR_DRIVE_MOTOR, CAN_SWERVE_BR_ROT_MOTOR, CAN_SWERVE_BR_ROT_CAN_CODER),
-      new SwerveModule(CAN_SWERVE_FR_DRIVE_MOTOR, CAN_SWERVE_FR_ROT_MOTOR, CAN_SWERVE_FR_ROT_CAN_CODER),
+      new SwerveModule(ThunderSparkMax::MotorID::DriveFrontLeft, ThunderSparkMax::MotorID::DrivePivotFrontLeft, CAN_SWERVE_FL_ROT_CAN_CODER),
+      new SwerveModule(ThunderSparkMax::MotorID::DriveRearLeft, ThunderSparkMax::MotorID::DrivePivotRearLeft, CAN_SWERVE_BL_ROT_CAN_CODER),
+      new SwerveModule(ThunderSparkMax::MotorID::DriveRearRight, ThunderSparkMax::MotorID::DrivePivotRearRight, CAN_SWERVE_BR_ROT_CAN_CODER),
+      new SwerveModule(ThunderSparkMax::MotorID::DriveFrontRight, ThunderSparkMax::MotorID::DrivePivotFrontRight, CAN_SWERVE_FR_ROT_CAN_CODER),
     };
 
     // The magnetic encoder offsets of the swerve modules.
