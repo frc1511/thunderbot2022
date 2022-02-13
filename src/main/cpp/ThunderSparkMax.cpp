@@ -402,11 +402,11 @@ ThunderSparkMax *ThunderSparkMax::create(MotorID id)
         MotorConfig(MotorConfig::ControllerType::Fake, 2),    // DrivePivotRearLeft,
         MotorConfig(MotorConfig::ControllerType::Fake, 3),    // DrivePivotRearRight,
 
-        MotorConfig(MotorConfig::ControllerType::CANSparkMax, 4),    // StorageStage1,
-        MotorConfig(MotorConfig::ControllerType::CANSparkMax, 5),    // StorageStage2,
-        MotorConfig(MotorConfig::ControllerType::CANSparkMax, 6),    // ShooterLeft,
-        MotorConfig(MotorConfig::ControllerType::CANSparkMax, 7),    // ShooterRight,
-        MotorConfig(MotorConfig::ControllerType::CANSparkMax, 8),    // Hang,
+        MotorConfig(MotorConfig::ControllerType::Talon, 2),   // StorageStage1,
+        MotorConfig(MotorConfig::ControllerType::Talon, 8),   // StorageStage2,
+        MotorConfig(MotorConfig::ControllerType::CANSparkMax, 9),    // ShooterLeft,
+        MotorConfig(MotorConfig::ControllerType::CANSparkMax, 10),   // ShooterRight,
+        MotorConfig(MotorConfig::ControllerType::Jaguar, 2),    // Hang,
 #endif
     };
 
