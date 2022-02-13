@@ -594,3 +594,51 @@ void ThunderSMFakeImpl::Set(double speed)
     ThunderSparkMaxImpl::Set(speed);
 }
 
+
+
+class RealCANCoder : public ThunderCANCoder {
+    public:
+        RealCANCoder(int id) : cc(id) {};
+        virtual double GetAbsolutePosition() { return cc.GetAbsolutePosition(); };
+        virtual void ConfigFactoryDefault() { cc.ConfigFactoryDefault(); };
+        virtual void ConfigAbsoluteSensorRange(ctre::phoenix::sensors::AbsoluteSensorRange absoluteSensorRange) { cc.ConfigAbsoluteSensorRange(absoluteSensorRange); };
+    private:
+        ctre::phoenix::sensors::CANCoder cc;
+};
+
+
+ThunderCANCoder::ThunderCANCoder() : printedWarning(false)
+{
+}
+
+double ThunderCANCoder::GetAbsolutePosition()
+{
+    printWarning();
+    return 0;
+}
+
+void ThunderCANCoder::ConfigFactoryDefault()
+{
+    printWarning();
+}
+
+void ThunderCANCoder::ConfigAbsoluteSensorRange(ctre::phoenix::sensors::AbsoluteSensorRange absoluteSensorRange)
+{
+    printWarning();
+}
+
+void ThunderCANCoder::printWarning()
+{
+    if (!printedWarning)
+        printf("WARNING: Fake CANCoder is in use!\n");
+    printedWarning = true;
+}
+
+ThunderCANCoder *ThunderCANCoder::create(int id)
+{
+#ifdef TEST_BOARD
+    return new ThunderCANCoder();
+#else
+    return new RealCANCoder(id);
+#endif
+}

@@ -70,7 +70,7 @@ SwerveModule::SwerveModule(ThunderSparkMax::MotorID driveID, ThunderSparkMax::Mo
     drivePID(driveMotor->GetPIDController()),
     turningMotor(ThunderSparkMax::create(turningID)),
     turningPID(turningMotor->GetPIDController()),
-    turningAbsEncoder(canCoderCANID) {
+    turningAbsEncoder(ThunderCANCoder::create(canCoderCANID)) {
     
     // --- Drive motor config ---
     
@@ -122,9 +122,9 @@ SwerveModule::SwerveModule(ThunderSparkMax::MotorID driveID, ThunderSparkMax::Mo
     
     // --- CANCoder config ---
     
-    turningAbsEncoder.ConfigFactoryDefault();
+    turningAbsEncoder->ConfigFactoryDefault();
     // Set the range of the CANCoder to -180 to +180 instead of 0 to 360.
-    turningAbsEncoder.ConfigAbsoluteSensorRange(ctre::phoenix::sensors::AbsoluteSensorRange::Signed_PlusMinus180);
+    turningAbsEncoder->ConfigAbsoluteSensorRange(ctre::phoenix::sensors::AbsoluteSensorRange::Signed_PlusMinus180);
 }
 
 SwerveModule::~SwerveModule() {
@@ -216,7 +216,7 @@ double SwerveModule::getRelativeRotation() {
 
 frc::Rotation2d SwerveModule::getAbsoluteRotation() {
     // The angle from the CANCoder.
-    units::degree_t angle(turningAbsEncoder.GetAbsolutePosition());
+    units::degree_t angle(turningAbsEncoder->GetAbsolutePosition());
 
     // Subtract the offset from the angle.
     angle -= canCoderOffset;
@@ -231,15 +231,19 @@ frc::Rotation2d SwerveModule::getAbsoluteRotation() {
 // --- Drivetrain ---
 
 Drive::Drive(Camera* camera, Limelight* limelight)
-  : camera(camera), limelight(limelight) {
+  : camera(camera), limelight(limelight), imu(NULL) {
 
     // thetaController.EnableContinuousInput(-180_deg, 180_deg);
     cmdController.SetEnabled(true);
 
+#ifndef TEST_BOARD
+    imu = new frc::ADIS16470_IMU();
     // Configure the calibration time of the IMU to 4 seconds.
-    imu.ConfigCalTime(frc::ADIS16470_IMU::CalibrationTime::_4s);
+    imu->ConfigCalTime(frc::ADIS16470_IMU::CalibrationTime::_4s);
     // Set the default axis for the IMU's gyro to take (Z for up and down).
-    imu.SetYawAxis(frc::ADIS16470_IMU::IMUAxis::kZ);
+    imu->SetYawAxis(frc::ADIS16470_IMU::IMUAxis::kZ);
+#endif
+
     // Zero the IMU.
     resetIMU();
     // Calibrate the IMU.
@@ -256,6 +260,7 @@ Drive::~Drive() {
     for (SwerveModule* module : swerveModules) {
         delete module;
     }
+    delete imu;
 }
 
 void Drive::resetToMode(MatchMode mode) {
@@ -281,7 +286,7 @@ void Drive::resetToMode(MatchMode mode) {
 }
 
 void Drive::sendFeedback() {
-    Feedback::sendDouble("drive", "imu angle (degrees)", imu.GetAngle().value());
+    Feedback::sendDouble("drive", "imu angle (degrees)", imu ? imu->GetAngle().value() : 0);
 
     const char* buffer = "";
 
@@ -396,7 +401,8 @@ void Drive::zeroRotation() {
 }
 
 void Drive::calibrateIMU() {
-    imu.Calibrate();
+    if (imu)
+        imu->Calibrate();
 }
 
 void Drive::configMagneticEncoders() {
@@ -589,12 +595,17 @@ void Drive::resetOdometry(frc::Pose2d pose) {
 }
 
 void Drive::resetIMU() {
-    imu.Reset();
+    if (imu)
+        imu->Reset();
 }
 
 frc::Rotation2d Drive::getRotation() {
+    units::angle::degree_t imuAngle = 0_deg;
+    if (imu)
+        imuAngle = imu->GetAngle();
+
     // Get the current rotation of the robot.
-    units::radian_t rotation(units::math::fmod(imu.GetAngle(), 360_deg));
+    units::radian_t rotation(units::math::fmod(imuAngle, 360_deg));
 
     // Convert -2π to 2π value into -π to π value.
     if(units::math::abs(rotation).value() > wpi::numbers::pi) {
