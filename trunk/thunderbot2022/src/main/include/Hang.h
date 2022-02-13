@@ -53,7 +53,7 @@ class Hang : public Mechanism {
 
 private:
     //pivots the extending arms forwards/backwards
-    void pivot();
+    void pivot();//working
     //retract function if sensors broke
     void brokenRetract();
     //extend function if sensors broke
@@ -61,18 +61,22 @@ private:
     //extendALittle function if sensors broke
     void brokenExtendALittle();
     //pivots the extending arms just a little bit so the arms hit the bar
-    void reversePivot();
+    void reversePivot();//working
     //engages brake to stop arms from extending more
-    void engageBrake();
+    void engageBrake();//working
+    //winds up the string to pull the arms together
+    void windUpString();
+    //unwinds the string
+    void unwindString();
     //hi jeff
     //disengages brake to extend arms
-    void disengageBrake();
+    void disengageBrake();//working
     //retracts arms
     void retract();
     //extends arms fully
-    void extend();
+    void extend();//working
     //extends the extending arms a little to get off the bar
-    void extendALittle();
+    void extendALittle();//working
     //step that the robot is on in the overall process: mid, high, traversal, and what it is doing in general
     int step;
     //broken step 
@@ -101,28 +105,34 @@ private:
     ThunderSparkMax *winchMotor;
     //TOP PISTON CONNECTING hangPivot2 to the arm
     frc::DoubleSolenoid hangPivot1{frc::PneumaticsModuleType::CTREPCM, PCM1_HANG_PIVOT_1_EXTEND, PCM1_HANG_PIVOT_1_RETRACT};
-    frc::DoubleSolenoid brake{frc::PneumaticsModuleType::CTREPCM, /*hi jeff*/PCM1_HANG_BRAKE_PISTON_EXTEND, PCM1_HANG_BRAKE_PISTON_RETRACT};
+    //frc::DoubleSolenoid brake{frc::PneumaticsModuleType::CTREPCM, /*hi jeff*/PCM1_HANG_BRAKE_PISTON_EXTEND, PCM1_HANG_BRAKE_PISTON_RETRACT};
     //connects the robot to hangPivot1
     frc::DoubleSolenoid hangPivot2{frc::PneumaticsModuleType::CTREPCM, PCM1_HANG_PIVOT_2_EXTEND, PCM1_HANG_PIVOT_2_RETRACT};
     
     //servos
     frc::Servo ratchetServo{PWM_HANG_RACHET_AND_PAWL};
+    frc::Servo stringServo{PWM_STRING_SERVO};
 
     //hi trevor
 
     //timer
     frc::Timer hangTimer;
+    bool isDone;
+    int controlsStep;
 
     public:
 
     //manual enumerator for actions
     enum Manual{EXTEND, 
-                RETRACT, 
+                //RETRACT, 
                 EXTEND_A_LITTLE, 
                 PIVOT, 
                 REVERSE_PIVOT, 
                 ENGAGE_BRAKE, 
-                DISENGAGE_BRAKE};
+                DISENGAGE_BRAKE,
+                PULL_STRING, 
+                RETRACT,
+                NOT};
     //enumerator variable thing
     Manual manual;
     //bar that the robot is going to
