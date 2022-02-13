@@ -182,7 +182,7 @@ void Shooter::process() {
     // Set the speed of the servo.
     if(fabs(servoSpeed) >= .05){
         if(servoSpeed > 0){
-            hoodServo.Set(1);
+            hoodServo.Set(1); //might need to reverse
         }
         else{
             hoodServo.Set(0);
@@ -191,7 +191,6 @@ void Shooter::process() {
     else{
         hoodServo.Set(.5);
     }
-    //hoodServo.SetSpeed(servoSpeed); // might crash :D
 }
 
 void Shooter::setShooterSpinup(bool shouldShoot) {

@@ -1,7 +1,7 @@
 #include "GamEpiece.h"
 
-GamEpiece::GamEpiece(/*Limelight* limelight*/)
-  /*: limelight(limelight) */{
+GamEpiece::GamEpiece(Limelight* limelight)
+  : limelight(limelight) {
 }
 
 GamEpiece::~GamEpiece() {
@@ -14,7 +14,7 @@ void GamEpiece::resetToMode(MatchMode mode) {
 
     if (mode == MODE_TELEOP || mode == MODE_AUTO) {
         double ballCount = Feedback::getEditableDouble("thunderdashboard", "starting_ball_count", -1);
-        if(ballCount >= 0 ){ //&& !intakeCounterBroken && !shooterCounterBroken
+        if(ballCount >= 0 ){ 
             currentBallCount = ballCount;
         }
         intakeDirection = NOTTAKE;
@@ -68,7 +68,6 @@ void GamEpiece::process() {
             if(intake.finishedShooting()){
                 intake.setIntakeDirection(Intake::NOTTAKE);
                 shooterState = WARMUP_SHOOTER;
-
             }
             break;
     }
