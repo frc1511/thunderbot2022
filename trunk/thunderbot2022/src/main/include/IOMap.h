@@ -14,7 +14,6 @@
 // #define HOMER // Comment out if not homer
 // #define TEST_BOARD // Enable for testing on test board
 
-
 //CAN
 #define CAN_HANG_WINCH_MOTOR 2
 #define CAN_HANG_ENCODER_A 21
@@ -86,8 +85,8 @@
     #define ANALOG_SHOOTER_HOOD_POTENTIOMETER 0
 
     //PCM1
-    #define INTAKE_PIVOT_EXTEND_PISTON 0 //changed bc of pcm section on IO map
-    #define INTAKE_PIVOT_RETRACT_PISTON 1
+    #define PCM1_INTAKE_PIVOT_EXTEND 0
+    #define PCM1_INTAKE_PIVOT_RETRACT 1
 
     #define PCM1_HANG_PIVOT_1_RETRACT 2
     #define PCM1_HANG_PIVOT_1_EXTEND 3
@@ -118,22 +117,19 @@
     #define ANALOG_SHOOTER_HOOD_POTENTIOMETER 0 // Only pot on board
 
     //PCM1
-    #define INTAKE_PIVOT_EXTEND_PISTON 1
-    #define INTAKE_PIVOT_RETRACT_PISTON 6
+    #define PCM1_INTAKE_PIVOT_EXTEND 1
+    #define PCM1_INTAKE_PIVOT_RETRACT 6
 
-    #define PCM1_HANG_PIVOT_1_RETRACT 2
-    #define PCM1_HANG_PIVOT_1_EXTEND 5
+    #define PCM1_HANG_PIVOT_1_RETRACT 1
+    #define PCM1_HANG_PIVOT_1_EXTEND 6
 
-    #define PCM1_HANG_PIVOT_2_RETRACT 3
-    #define PCM1_HANG_PIVOT_2_EXTEND 4
+    #define PCM1_HANG_PIVOT_2_RETRACT 2
+    #define PCM1_HANG_PIVOT_2_EXTEND 5
 
     #define PCM1_HANG_BRAKE_PISTON_RETRACT 0    // Not present
     #define PCM1_HANG_BRAKE_PISTON_EXTEND 7     // Not present
 
 #endif
-
-
-
 
 //USB
 #define USB_INTAKE_CAMERA 1
