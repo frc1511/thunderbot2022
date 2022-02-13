@@ -1,6 +1,6 @@
 #pragma once
 
-#pragma thrice
+//#pragma thrice
 
 #include "Mechanism.h"
 #include "Intake.h"
@@ -11,6 +11,7 @@
 #include <frc/Timer.h>
 #include <frc/Counter.h>
 #include <frc/DigitalInput.h>
+#include <frc/Compressor.h>
 #include "IOMap.h"
 
 /**PART 1: DESCRIBE MECHANISM
@@ -40,7 +41,7 @@
 
 class GamEpiece : public Mechanism {
 public:
-    GamEpiece(Limelight* limelight);
+    GamEpiece(/*Limelight* limelight*/);
     ~GamEpiece();
     
     void resetToMode(MatchMode mode) override;
@@ -87,14 +88,14 @@ public:
     void setManualIntakePosition(bool intakePosition);
 
 
-    // Trevor doc me
+    // obtains the current ball count from intake :D
     int getCurrentBallCount();
 
 
 
     // disables ball sensor usage
-    void setBallSensorsBroken(bool broken);
-    static const int BALL_COUNT_UNKNOWN = -1;
+    //void setBallSensorsBroken(bool broken);
+    //static const int BALL_COUNT_UNKNOWN = -1;
 
 
 private:
@@ -113,9 +114,10 @@ private:
     frc::Timer brokenShotTimer; //used for timing the shot between balls if our ball counter is broken
 
 
-    frc::DigitalInput shooterBeam {DIO_SHOOTER_BANNER_LEFT_ROBOT}; // last beam break for shotoer
+    //frc::DigitalInput shooterBeam {DIO_SHOOTER_BANNER_LEFT_ROBOT}; // last beam break for shotoer
 
     bool beforeShotCount;
+    //frc::Compressor compressor{frc::PneumaticsModuleType::CTREPCM};
 
     
 
