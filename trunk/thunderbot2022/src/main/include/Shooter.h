@@ -60,7 +60,7 @@ private:
     // The target position of the hood.
     double targetHoodPosition = 0;
 
-    ShooterMode mode = ODOMETRY;
+    ShooterMode shooterMode = TARMAC_LINE;
 
     // right and left shooter motors
     ThunderSparkMax *shooterLeftMotor;

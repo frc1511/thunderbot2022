@@ -13,8 +13,8 @@
 #include "Limelight.h"
 #include "Feedback.h"
 #include "Autonomous.h"
-//#include "AutoForTrevor.h"
-//#include "ControlsForTrevor.h"
+#include "AutoForTrevor.h"
+#include "ControlsForTrevor.h"
 #include "BlinkyBlinky.h"
 #include "Camera.h"
 
@@ -39,22 +39,19 @@ public:
   void sendFeedback();
   
 private:
-  Camera camera {};
+  /*Camera camera {};
   Limelight limelight {};
-  Drive drive { &camera, &limelight };
+  Drive drive { &camera, &limelight };*/
 
 #ifdef HOMER
   Controls controls { &drive, nullptr, nullptr };
 #else
-  GamEpiece gamEpiece { &limelight };
+  GamEpiece gamEpiece {/* &limelight */};
   Hang hang {};
-  
-  //ControlsForTrevor controlsForTrevor{};
-  //AutoForTrevor autoForTrevor{};
-  Autonomous autonomous { &drive, &gamEpiece };
+  //Autonomous autonomous { &drive, &gamEpiece };
 
   BlinkyBlinky blinkyBlinky {};
-  Controls controls { &drive, &gamEpiece, &hang };
+  Controls controls {/*&drive,*/ &gamEpiece, &hang};
 #endif
 
 };

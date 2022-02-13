@@ -46,12 +46,14 @@ private:
     // ball count!!!!
 
     void switchStates();
-    void ballCountIntake(bool currentsensoroneinput, bool currentsensortwoinput);
-    void ballCountOuttake(bool currentsensoroneinput, bool currentsensortwoinput);
+    void ballCountIntake(bool currentSensorOneInput, bool currentSensorTwoInput);
+    void ballCountOuttake(bool currentSensorOneInput, bool currentSensorTwoInput);
+    bool checkSensor(frc::DigitalInput* sensor);
     enum States // States for what intake should do
     {
-        STATE_INTAKE2Ball,
-        STATE_INTAKE1Ball,
+        STATE_INTAKE_TWO_BALL,
+        STATE_INTAKE_ONE_BALL,
+        
         STATE_OUTTAKE,
         STATE_STOP,
         STATE_MANUAL,

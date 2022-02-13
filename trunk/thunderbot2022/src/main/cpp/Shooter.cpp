@@ -16,35 +16,35 @@
 #define HOOD_MAX_POS (HOOD_MIN_POS + .486)
 
 // The maximum RPM of the shooter wheels.
-#define SHOOTER_MAX_RPM 5700
+#define SHOOTER_MAX_RPM 100 // 5700
 
 // The tolerance of the hood position.
-#define HOOD_TOLERANCE .01
+#define HOOD_TOLERANCE .05
 
 // Speeds of the hood servo.
 #define HOOD_SPEED_STOPPED 0
 #define HOOD_SPEED_FORWARD .5
 #define HOOD_SPEED_BACKWARD -.5
 
-#define SHOOTER_TOLERANCE 100
+#define SHOOTER_TOLERANCE 30
 
 // --- Preset values ---
 
 // The hood position and shooter RPM when the robot is right next to the hub.
-#define HUB_HOOD_POS 0
-#define HUB_SHOOTER_RPM 4000
+#define HUB_HOOD_POS .6
+#define HUB_SHOOTER_RPM 60 // 4000?????? 
 
 // The hood position and shooter RPM when the robot is at the far wall.
-#define WALL_HOOD_POS 0
-#define WALL_SHOOTER_RPM 4000
+#define WALL_HOOD_POS 0.6
+#define WALL_SHOOTER_RPM 60 // 4000
 
 // The hood position and shooter RPM when the robot is at the launch pad.
-#define LAUNCH_PAD_HOOD_POS 0
-#define LAUNCH_PAD_SHOOTER_RPM 3500
+#define LAUNCH_PAD_HOOD_POS 0.6
+#define LAUNCH_PAD_SHOOTER_RPM 60 //3500
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
-#define TARMAC_LINE_HOOD_POS 0
-#define TARMAC_LINE_SHOOTER_RPM 3250
+#define TARMAC_LINE_HOOD_POS 0.6
+#define TARMAC_LINE_SHOOTER_RPM 60 //3250
 
 Shooter::Shooter(Limelight* limelight)
   : limelight(limelight),
@@ -89,11 +89,14 @@ Shooter::~Shooter() {
 void Shooter::resetToMode(MatchMode mode) {
     shooterLeftMotor->Set(0);
     shooterRightMotor->Set(0);
+    hoodSpeedManual = 0;
+    wantToShoot = false;
+    shooterMode = TARMAC_LINE;
 }
 
 void Shooter::sendFeedback() {
     std::string modeString = "";
-    switch (mode) {
+    switch (shooterMode) {
         case ODOMETRY:
             modeString = "Odometry";
             break;
@@ -101,7 +104,7 @@ void Shooter::sendFeedback() {
             modeString = "Launch Pad";
             break;
         case TARMAC_LINE:
-            modeString = "Tarmac Line";
+            modeString = "Tarmac Line (hi tester :D)";
             break;
         case MANUAL:
             modeString = "Manual";
@@ -120,7 +123,7 @@ void Shooter::sendFeedback() {
 }
 
 void Shooter::process() {
-    switch (mode) {
+    switch (shooterMode) {
         case ODOMETRY:
             // TODO Align the hood to high hub and set shooter speed using
             // either limelight or the position of the robot on the field.
@@ -155,7 +158,7 @@ void Shooter::process() {
         servoSpeed = hoodSpeedManual;
     }
     // If hood position is within the tolerance level to the target position.
-    else if (abs(hoodPosition - targetHoodPosition) <= HOOD_TOLERANCE) {
+    else if (fabs(hoodPosition - targetHoodPosition) <= HOOD_TOLERANCE) {
         servoSpeed = HOOD_SPEED_STOPPED;
     }
     // Below the target position.
@@ -177,7 +180,18 @@ void Shooter::process() {
     }
 
     // Set the speed of the servo.
-    hoodServo.SetSpeed(servoSpeed);
+    if(fabs(servoSpeed) >= .05){
+        if(servoSpeed > 0){
+            hoodServo.Set(1);
+        }
+        else{
+            hoodServo.Set(0);
+        }
+    }
+    else{
+        hoodServo.Set(.5);
+    }
+    //hoodServo.SetSpeed(servoSpeed); // might crash :D
 }
 
 void Shooter::setShooterSpinup(bool shouldShoot) {
@@ -185,9 +199,9 @@ void Shooter::setShooterSpinup(bool shouldShoot) {
 }
 // sees if the shooter is ready
 bool Shooter::isShooterReady() {
-    return (shooterLeftMotor->GetVelocity() > targetRPM - SHOOTER_TOLERANCE) &&
-           (shooterRightMotor->GetVelocity() > targetRPM - SHOOTER_TOLERANCE) &&
-           (abs(hoodPotentiometer.Get() - targetHoodPosition) < HOOD_TOLERANCE);
+    return (shooterLeftMotor->GetVelocity() > targetRPM - SHOOTER_TOLERANCE) && // if left is speedy enough :D
+           (shooterRightMotor->GetVelocity() > targetRPM - SHOOTER_TOLERANCE) && // if right is speedy enough :D
+           (fabs(hoodPotentiometer.Get() - targetHoodPosition) < HOOD_TOLERANCE); // if hood is in the right place
 }
 // allows manual control of the hood speed
 void Shooter::setHoodManual(double speed) {
@@ -196,5 +210,5 @@ void Shooter::setHoodManual(double speed) {
 }
 
 void Shooter::setShooterMode(ShooterMode targetMode) {
-    mode = targetMode;
+    shooterMode = targetMode;
 }

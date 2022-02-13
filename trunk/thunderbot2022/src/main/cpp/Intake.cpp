@@ -1,5 +1,4 @@
 #include "Intake.h"
-#include "GamEpiece.h"
 
 const double kSpeedStageOne = .7;
 const double kSpeedStageTwo = .7;
@@ -24,42 +23,42 @@ void Intake::resetToMode(MatchMode mode)
     intakePosition = false;
     intakeSpeed = 0;
     ballCount = 0;        // set the ball count to zero
-    stageOneSensorPrevious = stageOneFlag.Get(); 
-    stageTwoSensorPrevious = stageTwoFlag.Get(); 
-    shooterSensorPrevious = shooterFlag.Get();
+    stageOneSensorPrevious = checkSensor(&stageOneFlag); 
+    stageTwoSensorPrevious = checkSensor(&stageTwoFlag); 
+    shooterSensorPrevious = checkSensor(&shooterFlag);
     stageTwoOccupied = 0; // stage 2 isn't occupied 
     currentState = STATE_STOP;
     targetDirection = NOTTAKE;
     
 }
-void Intake::ballCountIntake(bool currentsensoroneinput, bool currentsensortwoinput)
+void Intake::ballCountIntake(bool currentSensorOneInput, bool currentSensorTwoInput)
 {
-    if (stageOneSensorPrevious == false && currentsensoroneinput == true)
+    if (stageOneSensorPrevious == false && currentSensorOneInput == true)
     {
         ballCount = ballCount + 1;
     }
 
-    if (stageTwoSensorPrevious == true && currentsensortwoinput == false)
+    if (stageTwoSensorPrevious == true && currentSensorTwoInput == false)
     {
         stageTwoOccupied = true;
     }
-    stageOneSensorPrevious = currentsensoroneinput;
-    stageTwoSensorPrevious = currentsensortwoinput;
+    stageOneSensorPrevious = currentSensorOneInput;
+    stageTwoSensorPrevious = currentSensorTwoInput;
 }
-void Intake::ballCountOuttake(bool currentsensoroneinput, bool currentsensortwoinput)
+void Intake::ballCountOuttake(bool currentSensorOneInput, bool currentSensorTwoInput)
 {
 
-    if (stageOneSensorPrevious == true && currentsensoroneinput == false)
+    if (stageOneSensorPrevious == true && currentSensorOneInput == false)
     {
         ballCount = ballCount - 1;
     }
 
-    if (stageTwoSensorPrevious == false && currentsensortwoinput == true)
+    if (stageTwoSensorPrevious == false && currentSensorTwoInput == true)
     {
         stageTwoOccupied = false;
     }
-    stageOneSensorPrevious = currentsensoroneinput;
-    stageTwoSensorPrevious = currentsensortwoinput;
+    stageOneSensorPrevious = currentSensorOneInput;
+    stageTwoSensorPrevious = currentSensorTwoInput;
 }
 void Intake::switchStates() // command switches
 {
@@ -68,11 +67,11 @@ void Intake::switchStates() // command switches
     case INTAKE:
         if (ballCount == 2)
         {
-            currentState = STATE_INTAKE2Ball;
+            currentState = STATE_INTAKE_TWO_BALL;
         }
         else
         {
-            currentState = STATE_INTAKE1Ball;
+            currentState = STATE_INTAKE_ONE_BALL;
         }
         break;
     case OUTTAKE:
@@ -88,40 +87,47 @@ void Intake::switchStates() // command switches
         if (stageTwoOccupied == false)
         {
             currentState = STATE_STOP;
-        };
-        currentState = STATE_SHOOT;
+        }
+        else{
+            currentState = STATE_SHOOT;
+        }
         break;
     }
 }
 void Intake::process()
 {
 
-    bool currentsensoroneinput = shooterFlag.Get();
-    bool currentsensortwoinput = stageOneFlag.Get();
-    bool currentshootersensorinput = stageTwoFlag.Get();
+    bool currentSensorOneInput = checkSensor(&stageOneFlag);
+    bool currentSensorTwoInput = checkSensor(&stageTwoFlag);
+    bool currentShooterSensorInput = checkSensor(&shooterFlag);
     // the desired actions of the intake motors
     switch (currentState)
     { // extend piston to retract intake, retract piston to extend/deploy intake
-    case STATE_INTAKE1Ball:
+    case STATE_INTAKE_ONE_BALL:
         horizontalIntake.Set(frc::DoubleSolenoid::Value::kForward); // deploy intake, forward is forward
         intakeMotorStageOne->Set(kSpeedStageOne);                   // stage 1 go
-        intakeMotorStageTwo->Set(kSpeedStageTwoSlow);               // stage 2 go, slow
+        if(stageTwoOccupied) { //ball in stage two
+            intakeMotorStageTwo->Set(0);                            // stage 2 go, slow
+        }
+        else{
+            intakeMotorStageTwo->Set(kSpeedStageTwoSlow);
+        }
         switchStates();
-        ballCountIntake(currentsensoroneinput, currentsensortwoinput);
+        ballCountIntake(currentSensorOneInput, currentSensorTwoInput);
         break;
-    case STATE_INTAKE2Ball:
+    case STATE_INTAKE_TWO_BALL:
         horizontalIntake.Set(frc::DoubleSolenoid::Value::kReverse); // retract intake
         intakeMotorStageOne->Set(0);                                // stage 1 stop
         intakeMotorStageTwo->Set(0);                                // stage 2 stop
         switchStates();
-        ballCountIntake(currentsensoroneinput, currentsensortwoinput);
+        ballCountIntake(currentSensorOneInput, currentSensorTwoInput);
         break;
     case STATE_OUTTAKE:
         horizontalIntake.Set(frc::DoubleSolenoid::Value::kOff); // leave intake as is
         intakeMotorStageOne->Set(kReverseSpeedStageOne);        // stage 1 go reverse
         intakeMotorStageTwo->Set(kReverseSpeedStageTwo);        // stage 2 go reverse
         switchStates();
-        ballCountOuttake(currentsensoroneinput, currentsensortwoinput);
+        ballCountOuttake(currentSensorOneInput, currentSensorTwoInput);
         break;
     case STATE_STOP:
         horizontalIntake.Set(frc::DoubleSolenoid::Value::kReverse); // retract intake
@@ -136,7 +142,7 @@ void Intake::process()
             intakeMotorStageTwo->Set(kSpeedStageTwoSlow); // stage 2 go, slow
         }
         switchStates();
-        ballCountIntake(currentsensoroneinput, currentsensortwoinput);
+        ballCountIntake(currentSensorOneInput, currentSensorTwoInput);
         break;
     case STATE_SHOOT:
         horizontalIntake.Set(frc::DoubleSolenoid::Value::kReverse); // retract intake
@@ -152,18 +158,18 @@ void Intake::process()
             currentState = STATE_STOP;   // go back to stop, which gets any other possible balls in position
         }
 
-        if (currentshootersensorinput == false && shooterSensorPrevious == true)
+        if (currentShooterSensorInput == false && shooterSensorPrevious == true)
         {
             ballCount = ballCount - 1;
             stageTwoOccupied = false;
         }
 
-        shooterSensorPrevious = currentshootersensorinput;
+        shooterSensorPrevious = currentShooterSensorInput;
         break;
     case STATE_MANUAL:
         if (intakePosition == true)
         { // intake goes down
-            horizontalIntake.Set(frc::DoubleSolenoid::Value::kForward);
+            horizontalIntake.Set(frc::DoubleSolenoid::Value::kReverse);
         }
         else
         { // intake goes up
@@ -171,23 +177,20 @@ void Intake::process()
         };
         intakeMotorStageOne->Set(intakeSpeed); // set stage 1 and 2 to the manual speed
         intakeMotorStageTwo->Set(intakeSpeed);
-        ballCount = GamEpiece::BALL_COUNT_UNKNOWN;
+        ballCount = -1;
         stageTwoOccupied = false;
         // YOU CAN NEVER LEAVE MANUAL!!!
         break;
     }
-    shooterSensorPrevious = currentshootersensorinput;
-    stageOneSensorPrevious = currentsensoroneinput;
-    stageTwoSensorPrevious = currentsensortwoinput;
+    shooterSensorPrevious = currentShooterSensorInput;
+    stageOneSensorPrevious = currentSensorOneInput;
+    stageTwoSensorPrevious = currentSensorTwoInput;
 }
 // connects to gamEpiece
 void Intake::setIntakeDirection(IntakeDirection intakeDirection)
 {
     // make sure you arent shooting when you try to tell intake what to do
-    if (targetDirection != SHOOTING)
-    {
-        targetDirection = intakeDirection;
-    }
+    targetDirection = intakeDirection;
 }
 
 void Intake::setIntakePosition(bool position)
@@ -210,44 +213,54 @@ int Intake::returnBallCount()
 
 bool Intake::finishedShooting()
 {
-    return targetDirection == NOTTAKE;
+    return currentState == STATE_STOP;
+}
+
+bool Intake::checkSensor(frc::DigitalInput* sensor){
+    bool sensorOutput = sensor->Get();
+    #ifdef TEST_BOARD
+        return sensorOutput;
+    #else
+        return !sensorOutput;
+    #endif
+        
 }
 
 void Intake::sendFeedback()
 { // debug
-    std::string intakeState = "";
+    std::string targetIntakeState = "";
     switch (targetDirection)
     {
     case (INTAKE):
-        intakeState = "Intake";
+        targetIntakeState = "Intake";
         break;
     case (OUTTAKE):
-        intakeState = "Outtake";
+        targetIntakeState = "Outtake";
         break;
     case (NOTTAKE):
-        intakeState = "Nottake";
+        targetIntakeState = "Nottake";
         break;
     case (MANUAL):
-        intakeState = "Manual";
+        targetIntakeState = "Manual";
         break;
     case (SHOOTING):
-        intakeState = "Shooting";
+        targetIntakeState = "Shooting";
         break;
     }
     std::string currentstate = "";
     switch (currentState)
     {
-    case (STATE_INTAKE1Ball):
-        currentstate = "Intake 1 ball";
+    case (STATE_INTAKE_ONE_BALL):
+        currentstate = "Intake one ball";
         break;
-    case (STATE_INTAKE2Ball):
-        currentstate = "Intake 2 ball";
+    case (STATE_INTAKE_TWO_BALL):
+        currentstate = "Intake two ball";
         break;
     case (STATE_OUTTAKE):
         currentstate = "Outtake";
         break;
     case (STATE_STOP):
-        currentstate = "Nottake";
+        currentstate = "Stop";
         break;
     case (STATE_MANUAL):
         currentstate = "Manual";
@@ -256,7 +269,14 @@ void Intake::sendFeedback()
         currentstate = "Shooting";
         break;
     }
-    Feedback::sendString("Intake", "Current target direction", intakeState.c_str());
+    std::string intakePositionString = "";
+    if(intakePosition){
+        intakePositionString = "intake is down";
+    }
+    else{
+        intakePositionString = "intake is up";
+    }
+    Feedback::sendString("Intake", "Current target direction", targetIntakeState.c_str());
     Feedback::sendBoolean("Intake", "State of Intake, true = up", intakePosition);
     Feedback::sendDouble("Intake", "Manual speed of intake/storage", intakeSpeed);
     Feedback::sendString("Intake", "current state of the intake", currentstate.c_str());
@@ -265,6 +285,8 @@ void Intake::sendFeedback()
     Feedback::sendBoolean("Intake", "sensor shooter true is tripped", shooterSensorPrevious);
     Feedback::sendBoolean("Intake", "true is stage two is occupied", stageTwoOccupied);
     Feedback::sendDouble("Intake", "ball count", ballCount); 
+    Feedback::sendString("Intake", "current manual position of the intake", intakePositionString.c_str());
+    Feedback::sendDouble("Intake", "current manual speed of the intake stage one/two", intakeSpeed);
 
 
 }

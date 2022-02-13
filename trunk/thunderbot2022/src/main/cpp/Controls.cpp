@@ -28,8 +28,8 @@
 
 #define AXIS_DEADZONE .05
 
-Controls::Controls(Drive *drive, GamEpiece *gamEpiece, Hang *hang)
-    : drive(drive), gamEpiece(gamEpiece), hang(hang){
+Controls::Controls(/*Drive *drive, */GamEpiece *gamEpiece, Hang *hang)
+    : /*drive(drive),*/ gamEpiece(gamEpiece), hang(hang){
 }
 
 Controls::~Controls()
@@ -90,13 +90,13 @@ void Controls::doDrive()
 
     if (brickDrive)
     {
-        drive->makeBrick();
+        //drive->makeBrick();
         driveDisabled = true;
     }
 
     if (alignWithHighHub)
     {
-        drive->cmdAlignToHighHub();
+        //drive->cmdAlignToHighHub();
     }
 
     if (toggleCamera && !cameraWasToggled)
@@ -107,22 +107,22 @@ void Controls::doDrive()
 
     if (zeroRotation)
     {
-        drive->zeroRotation();
+        //drive->zeroRotation();
     }
 
     if (configOffsets && !offsetsWereConfigured)
     {
-        drive->configMagneticEncoders();
+        //drive->configMagneticEncoders();
     }
     offsetsWereConfigured = configOffsets;
 
     if (fieldCentricBroken)
     {
-        drive->setControlMode(Drive::ROBOT_CENTRIC);
+        //drive->setControlMode(Drive::ROBOT_CENTRIC);
     }
     else
     {
-        drive->setControlMode(Drive::FIELD_CENTRIC);
+        //drive->setControlMode(Drive::FIELD_CENTRIC);
     }
 
     double finalXVelocity = 0.0;
@@ -175,7 +175,7 @@ void Controls::doDrive()
 
     if (!driveDisabled)
     {
-        drive->manualDrive(finalXVelocity, -finalYVelocity, -finalRotateVelocity);
+        //drive->manualDrive(finalXVelocity, -finalYVelocity, -finalRotateVelocity);
     }
 }
 
@@ -184,15 +184,15 @@ void Controls::doAux()
     // Normal Aux Controls
     if (controllerAux.GetRawButton(1))
     {
-        lastPressedMode == Shooter::TARMAC_LINE;
+        lastPressedMode = Shooter::TARMAC_LINE;
     }
     else if (controllerAux.GetRawButton(3))
     {
-        lastPressedMode == Shooter::LAUNCH_PAD;
+        lastPressedMode = Shooter::LAUNCH_PAD;
     }
     else if (controllerAux.GetRawButton(2))
     {
-        lastPressedMode == Shooter::ODOMETRY;
+        lastPressedMode = Shooter::ODOMETRY;
     }
 
     if (controllerAux.GetRawButton(8))
@@ -252,6 +252,9 @@ void Controls::doAux()
         else if (dPadValue == 270)
         {
             gamEpiece->setManualIntakeSpeed(-1);
+        }
+        if(dPadValue == -1){
+            gamEpiece->setManualIntakeSpeed(0);
         }
     }
     else if (gamePieceManual == false || hangActive == true)
@@ -348,7 +351,7 @@ void Controls::doAux()
 
 void Controls::doSwitchPanel()
 {
-    hangActive = switchPanel.GetRawButton(8);
+    hangActive = switchPanel.GetRawButton(6); // do be 8 tho
     gamePieceManual = switchPanel.GetRawButton(1);
     if (hangActive)
     {

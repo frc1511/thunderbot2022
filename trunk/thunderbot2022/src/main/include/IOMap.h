@@ -12,7 +12,7 @@
 */
 
 // #define HOMER // Comment out if not homer
- #define TEST_BOARD // Enable for testing on test board
+// #define TEST_BOARD // Enable for testing on test board
 
 //CAN
 #define CAN_HANG_WINCH_MOTOR 2
@@ -117,8 +117,8 @@
     #define ANALOG_SHOOTER_HOOD_POTENTIOMETER 0 // Only pot on board
 
     //PCM1
-    #define INTAKE_PIVOT_EXTEND_PISTON 4
-    #define INTAKE_PIVOT_RETRACT_PISTON 3
+    #define INTAKE_PIVOT_EXTEND_PISTON 3
+    #define INTAKE_PIVOT_RETRACT_PISTON 4
 
     #define PCM1_HANG_PIVOT_1_RETRACT 1
     #define PCM1_HANG_PIVOT_1_EXTEND 6
