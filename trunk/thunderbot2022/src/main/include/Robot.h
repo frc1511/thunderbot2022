@@ -43,6 +43,12 @@ private:
 
 #ifdef HOMER
   Controls controls { &drive, nullptr, nullptr };
+  Autonomous autonomous { &drive, nullptr };
+
+  static const int nMechanisms = 4;
+  Mechanism *allMechanisms[nMechanisms] {
+    &camera, &limelight, &controls, &drive
+  };
 #else
   GamEpiece gamEpiece { &limelight };
   Hang hang {};
@@ -50,6 +56,12 @@ private:
 
   BlinkyBlinky blinkyBlinky {};
   Controls controls { &drive, &gamEpiece, &hang };
+
+  static const int nMechanisms = 6;
+  Mechanism *allMechanisms[nMechanisms] = {
+    &camera, &limelight, &controls, &hang, &gamEpiece, &drive
+  };
 #endif
+
 
 };
