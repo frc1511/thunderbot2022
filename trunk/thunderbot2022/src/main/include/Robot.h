@@ -45,9 +45,9 @@ private:
   Controls controls { &drive, nullptr, nullptr };
   Autonomous autonomous { &drive, nullptr };
 
-  static const int nMechanisms = 4;
+  static const int nMechanisms = 3;
   Mechanism *allMechanisms[nMechanisms] {
-    &camera, &limelight, &controls, &drive
+    &camera, &limelight, &drive
   };
 #else
   GamEpiece gamEpiece { &limelight };
@@ -57,9 +57,9 @@ private:
   BlinkyBlinky blinkyBlinky {};
   Controls controls { &drive, &gamEpiece, &hang };
 
-  static const int nMechanisms = 6;
+  static const int nMechanisms = 5;
   Mechanism *allMechanisms[nMechanisms] = {
-    &camera, &limelight, &controls, &hang, &gamEpiece, &drive
+    &camera, &limelight, &hang, &gamEpiece, &drive
   };
 #endif
 
