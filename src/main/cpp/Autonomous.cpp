@@ -55,6 +55,9 @@ void Autonomous::sendFeedback() {
 }
 
 void Autonomous::process() {
+    if (!gamEpiece)
+        return;
+
     switch (currentMode) {
         case DO_NOTHING:
             doNothing();
