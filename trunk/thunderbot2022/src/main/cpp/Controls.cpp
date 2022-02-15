@@ -222,130 +222,123 @@ void Controls::doAux()
         gamEpiece->setIntakeDirection(GamEpiece::IntakeDirection::NOTTAKE);
     }
 
-    if (hangActive == true)
-    {
-        if (controllerAux.GetRawButtonPressed(12))
+    int dPadValue = controllerAux.GetPOV();
+
+    if (hangActive == true) {
+        // Turn off gamepiece when hanging
+        gamEpiece->setIntakeDirection(GamEpiece::NOTTAKE);
+        gamEpiece->setShooterWarmUpEnabled(Shooter::TARMAC_LINE, false);
+
+        if (hangManual)
+        {
+            if (controllerAux.GetRawButtonPressed(3))
+            {
+                hang->commandManual(Hang::EXTEND);
+            }
+            else if (controllerAux.GetRawButtonPressed(1))
+            {
+                hang->commandManual(Hang::RETRACT);
+            }
+            else if (controllerAux.GetRawButtonPressed(4))
+            {
+                hang->commandManual(Hang::ENGAGE_BRAKE);
+            }
+            else if (controllerAux.GetRawButtonPressed(2))
+            {
+                hang->commandManual(Hang::EXTEND_A_LITTLE);
+            }
+
+            if (lastDPadValue == -1 && dPadValue == 0)
+            {
+                hang->commandManual(Hang::PIVOT);
+            }
+            else if (lastDPadValue == -1 && dPadValue == 180)
+            {
+                hang->commandManual(Hang::REVERSE_PIVOT);
+            }
+            else if (lastDPadValue == -1 && dPadValue == 90)
+            {
+                // Wind-Up Servo
+            }
+            else if (lastDPadValue == -1 && dPadValue == 270)
+            {
+                // Unwind Servo
+            }
+        } else if (controllerAux.GetRawButtonPressed(12))
         {
             hang->commandAuto();
         }
-    }
-    // Manual Aux Controls
-    int dPadValue = controllerAux.GetPOV();
+    } else {
+        // Manual Aux Controls
+        if (gamePieceManual == true)
+        {
+            gamEpiece->setIntakeDirection(GamEpiece::IntakeDirection::MANUAL);
 
-    if (gamePieceManual == true && hangActive == false)
-    {
-        gamEpiece->setIntakeDirection(GamEpiece::IntakeDirection::MANUAL);
-
-        if (dPadValue == 180)
-        {
-            gamEpiece->setManualIntakePosition(true);
-        }
-        else if (dPadValue == 0)
-        {
-            gamEpiece->setManualIntakePosition(false);
-        }
-
-        if (dPadValue == 90)
-        {
-            gamEpiece->setManualIntakeSpeed(1);
-        }
-        else if (dPadValue == 270)
-        {
-            gamEpiece->setManualIntakeSpeed(-1);
-        }
-        if(dPadValue == -1){
-            gamEpiece->setManualIntakeSpeed(0);
-        }
-    }
-    else if (gamePieceManual == false || hangActive == true)
-    {
-        if (controllerAux.GetRawButton(1))
-        {
-            lastPressedMode = Shooter::TARMAC_LINE;
-        }
-        else if (controllerAux.GetRawButton(3))
-        {
-            lastPressedMode = Shooter::LAUNCH_PAD;
-        }
-        else if (controllerAux.GetRawButton(2))
-        {
-            lastPressedMode = Shooter::ODOMETRY;
-        }
-
-        if (controllerAux.GetRawButton(8))
-        {
-            gamEpiece->setShooterWarmUpEnabled(lastPressedMode, true);
-        }
-        else if (controllerAux.GetRawButton(8) == false)
-        {
-            gamEpiece->setShooterWarmUpEnabled(lastPressedMode, false);
-        }
-
-        if (controllerAux.GetRawButton(6))
-        {
-            gamEpiece->shootABall(lastPressedMode);
-        }
-
-        if (controllerAux.GetRawButton(7))
-        {
-            gamEpiece->setIntakeDirection(GamEpiece::IntakeDirection::INTAKE);
-        }
-        else if (controllerAux.GetRawButton(5))
-        {
-            gamEpiece->setIntakeDirection(GamEpiece::IntakeDirection::OUTTAKE);
-        }
-        else
-        {
-            gamEpiece->setIntakeDirection(GamEpiece::IntakeDirection::NOTTAKE);
-        }
-    }
-
-    if (hangManual)
-    {
-        if (controllerAux.GetRawButtonPressed(3))
-        {
-            hang->commandManual(Hang::EXTEND);
-        }
-        else if (controllerAux.GetRawButtonPressed(1))
-        {
-            hang->commandManual(Hang::RETRACT);
-        }
-        else if (controllerAux.GetRawButtonPressed(4))
-        {
-            hang->commandManual(Hang::ENGAGE_BRAKE);
-        }
-        else if (controllerAux.GetRawButtonPressed(2))
-        {
-            hang->commandManual(Hang::EXTEND_A_LITTLE);
-        }
-
-        if (lastDPadValue == -1 && dPadValue == 0)
-        {
-            hang->commandManual(Hang::PIVOT);
-        }
-        else if (lastDPadValue == -1 && dPadValue == 180)
-        {
-            hang->commandManual(Hang::REVERSE_PIVOT);
-        }
-        else if (lastDPadValue == -1 && dPadValue == 90)
-        {
-            // Wind-Up Servo
-        }
-        else if (lastDPadValue == -1 && dPadValue == 270)
-        {
-            // Unwind Servo
-        }
-    }
-    else
-    {
-        if (hangActive == true)
-        {
-            if (controllerAux.GetRawButtonPressed(12))
+            if (dPadValue == 180)
             {
-                hang->commandAuto();
+                gamEpiece->setManualIntakePosition(true);
+            }
+            else if (dPadValue == 0)
+            {
+                gamEpiece->setManualIntakePosition(false);
+            }
+
+            if (dPadValue == 90)
+            {
+                gamEpiece->setManualIntakeSpeed(1);
+            }
+            else if (dPadValue == 270)
+            {
+                gamEpiece->setManualIntakeSpeed(-1);
+            }
+            if(dPadValue == -1){
+                gamEpiece->setManualIntakeSpeed(0);
+            }
+        }
+        else if (gamePieceManual == false)
+        {
+            if (controllerAux.GetRawButton(1))
+            {
+                lastPressedMode = Shooter::TARMAC_LINE;
+            }
+            else if (controllerAux.GetRawButton(3))
+            {
+                lastPressedMode = Shooter::LAUNCH_PAD;
+            }
+            else if (controllerAux.GetRawButton(2))
+            {
+                lastPressedMode = Shooter::ODOMETRY;
+            }
+
+            if (controllerAux.GetRawButton(8))
+            {
+                gamEpiece->setShooterWarmUpEnabled(lastPressedMode, true);
+            }
+            else if (controllerAux.GetRawButton(8) == false)
+            {
+                gamEpiece->setShooterWarmUpEnabled(lastPressedMode, false);
+            }
+
+            if (controllerAux.GetRawButton(6))
+            {
+                gamEpiece->shootABall(lastPressedMode);
+            }
+
+            if (controllerAux.GetRawButton(7))
+            {
+                gamEpiece->setIntakeDirection(GamEpiece::IntakeDirection::INTAKE);
+            }
+            else if (controllerAux.GetRawButton(5))
+            {
+                gamEpiece->setIntakeDirection(GamEpiece::IntakeDirection::OUTTAKE);
+            }
+            else
+            {
+                gamEpiece->setIntakeDirection(GamEpiece::IntakeDirection::NOTTAKE);
             }
         }
     }
+
     lastDPadValue = dPadValue;
 }
 
