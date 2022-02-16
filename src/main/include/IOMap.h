@@ -12,12 +12,10 @@
 */
 
 // #define HOMER // Comment out if not homer
-// #define TEST_BOARD // Enable for testing on test board
+#define TEST_BOARD // Enable for testing on test board
 
 //CAN
-#define CAN_HANG_WINCH_MOTOR 2
-#define CAN_HANG_ENCODER_A 21
-#define CAN_HANG_ENCODER_B 22
+#define CAN_HANG_WINCH_MOTOR 9
 
 #define CAN_INTAKE_MOTOR 3
 
@@ -88,11 +86,11 @@
     #define INTAKE_PIVOT_EXTEND_PISTON 0
     #define INTAKE_PIVOT_RETRACT_PISTON 1
 
-    #define PCM1_HANG_PIVOT_1_RETRACT 2
-    #define PCM1_HANG_PIVOT_1_EXTEND 3
+    #define PCM1_HANG_PIVOT_1_RETRACT_ARMS 2
+    #define PCM1_HANG_PIVOT_1_EXTEND_ARMS 3
 
-    #define PCM1_HANG_PIVOT_2_RETRACT 4
-    #define PCM1_HANG_PIVOT_2_EXTEND 5
+    #define PCM1_HANG_PIVOT_2_RETRACT_ARMS 4
+    #define PCM1_HANG_PIVOT_2_EXTEND_ARMS 5
 
     #define PCM1_HANG_BRAKE_PISTON_RETRACT 6
     #define PCM1_HANG_BRAKE_PISTON_EXTEND 7
@@ -107,9 +105,11 @@
     #define PWM_STRING_SERVO 7                  // Loose servo; hi-tec brand
 
     //DIO
-    #define DIO_HANG_OPTICAL_HOME_SENSOR 5      // U-sensor floating on Rio
+    #define DIO_HANG_OPTICAL_HOME_SENSOR 0    // U-sensor floating on Rio
+    #define DIO_HANG_ENCODER_A 8
+    #define DIO_HANG_ENCODER_B 9
 
-    #define DIO_STORAGE_BANNER_STAGE_ONE 0      // Big switch labelled 0.  Click for "beam broken". Requires INVERTED READ
+    #define DIO_STORAGE_BANNER_STAGE_ONE 5     // Big switch labelled 0.  Click for "beam broken". Requires INVERTED READ
     #define DIO_STORAGE_BANNER_STAGE_TWO 1      // Big switch labelled 1. Click for "beam broken". Requires INVERTED READ
     #define DIO_SHOOTER_BANNER_LEFT_ROBOT 3     // Large beam-break near off-board motor connectors. Requires INVERTED READ
     
@@ -120,11 +120,11 @@
     #define INTAKE_PIVOT_EXTEND_PISTON 3
     #define INTAKE_PIVOT_RETRACT_PISTON 4
 
-    #define PCM1_HANG_PIVOT_1_RETRACT 1
-    #define PCM1_HANG_PIVOT_1_EXTEND 6
+    #define PCM1_HANG_PIVOT_1_RETRACT_ARMS 1
+    #define PCM1_HANG_PIVOT_1_EXTEND_ARMS 6
 
-    #define PCM1_HANG_PIVOT_2_RETRACT 2
-    #define PCM1_HANG_PIVOT_2_EXTEND 5
+    #define PCM1_HANG_PIVOT_2_RETRACT_ARMS 2
+    #define PCM1_HANG_PIVOT_2_EXTEND_ARMS 5
 
     #define PCM1_HANG_BRAKE_PISTON_RETRACT 0    // Not present
     #define PCM1_HANG_BRAKE_PISTON_EXTEND 7     // Not present
