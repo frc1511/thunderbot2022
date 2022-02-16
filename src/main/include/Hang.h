@@ -52,8 +52,13 @@ PART 2
 class Hang : public Mechanism {
 
 private:
+    double currentEncoderValue;
     //pivots the extending arms forwards/backwards
-    void pivot();//working
+    void pivot(bool armsForward);//working
+    //reads encoder
+    double readEncoder();
+    //sets encoder
+    double setEncoder();
     //retract function if sensors broke
     void brokenRetract();
     //extend function if sensors broke
@@ -96,7 +101,9 @@ private:
 
 //sensors that are not servos
     //encoder on winch to tell how far its gone
-    frc::Encoder winchEncoder {CAN_HANG_ENCODER_A,  CAN_HANG_ENCODER_B};//change to something else
+#ifdef TEST_BOARD
+    frc::Encoder winchEncoder {DIO_HANG_ENCODER_A,  DIO_HANG_ENCODER_B};//change to something else
+#endif
     /*sensor on the bottom of the arm to tell when fully retracted, doesnt matter which
     could also be on the winch i dont know yet*/
     frc::DigitalInput homeSensor {DIO_HANG_OPTICAL_HOME_SENSOR};
@@ -104,10 +111,10 @@ private:
     //actuator stuff
     ThunderSparkMax *winchMotor;
     //TOP PISTON CONNECTING hangPivot2 to the arm
-    frc::DoubleSolenoid hangPivot1{frc::PneumaticsModuleType::CTREPCM, PCM1_HANG_PIVOT_1_EXTEND, PCM1_HANG_PIVOT_1_RETRACT};
+    frc::DoubleSolenoid hangPivot1{frc::PneumaticsModuleType::CTREPCM, PCM1_HANG_PIVOT_1_EXTEND_ARMS, PCM1_HANG_PIVOT_1_RETRACT_ARMS};
     //frc::DoubleSolenoid brake{frc::PneumaticsModuleType::CTREPCM, /*hi jeff*/PCM1_HANG_BRAKE_PISTON_EXTEND, PCM1_HANG_BRAKE_PISTON_RETRACT};
     //connects the robot to hangPivot1
-    frc::DoubleSolenoid hangPivot2{frc::PneumaticsModuleType::CTREPCM, PCM1_HANG_PIVOT_2_EXTEND, PCM1_HANG_PIVOT_2_RETRACT};
+    frc::DoubleSolenoid hangPivot2{frc::PneumaticsModuleType::CTREPCM, PCM1_HANG_PIVOT_2_EXTEND_ARMS, PCM1_HANG_PIVOT_2_RETRACT_ARMS};
     
     //servos
     frc::Servo ratchetServo{PWM_HANG_RACHET_AND_PAWL};
@@ -118,19 +125,20 @@ private:
     //timer
     frc::Timer hangTimer;
     bool isDone;
-    int controlsStep;
+    bool stepDone;
 
     public:
 
     //manual enumerator for actions
-    enum Manual{EXTEND, 
-                //RETRACT, 
+    enum Manual{EXTEND,  
                 EXTEND_A_LITTLE, 
-                PIVOT, 
+                PIVOT_IN,
+                PIVOT_OUT,
                 REVERSE_PIVOT, 
                 ENGAGE_BRAKE, 
                 DISENGAGE_BRAKE,
                 PULL_STRING, 
+                UNWIND_STRING,
                 RETRACT,
                 NOT};
     //enumerator variable thing
