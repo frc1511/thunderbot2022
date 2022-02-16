@@ -39,7 +39,7 @@
 #define DRIVE_MANUAL_MAX_ANGULAR_SPEED 3.14_rad_per_s
 
 // The maximum speed of the chassis during a drive command.
-#define DRIVE_CMD_MAX_SPEED 1_mps
+#define DRIVE_CMD_MAX_SPEED 0.1_mps
 // The maximum acceleration of the chassis during a drive command.
 #define DRIVE_CMD_MAX_ACCELERATION 0.4_mps_sq
 // The maximum angular speed of the chassis during a drive command.
@@ -47,10 +47,21 @@
 // The maximum angular acceleration of the chassis during a drive command.
 #define DRIVE_CMD_MAX_ANGULAR_ACCELERATION (3.14_rad_per_s / 1_s)
 
+#ifdef HOMER
+
+// The width of the robot.
+#define ROBOT_WIDTH 0.362_m
+// The length of the robot.
+#define ROBOT_LENGTH 0.66_m
+
+#else
+
 // The width of the robot.
 #define ROBOT_WIDTH 0.54_m
 // The length of the robot.
 #define ROBOT_LENGTH 0.67_m
+
+#endif
 
 // --- Swerve module ---
 
@@ -190,6 +201,11 @@ public:
      * to reduce pushing by other robots (aka making the robot into a brick).
      */
     void makeBrick();
+    
+    /**
+     * Resets the position and rotation on the field.
+     */
+    void resetOdometry(frc::Pose2d pose = frc::Pose2d());
 
     /**
      * Returns the configuration for all trajectories.
@@ -257,11 +273,6 @@ private:
      * Updates the position and rotation on the field.
      */
     void updateOdometry();
-
-    /**
-     * Resets the position and rotation on the field.
-     */
-    void resetOdometry(frc::Pose2d pose = frc::Pose2d());
 
     /**
      * Resets the IMU to 0.
