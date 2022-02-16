@@ -248,8 +248,12 @@ Drive::Drive(Camera* camera, Limelight* limelight)
     imu = new frc::ADIS16470_IMU();
     // Configure the calibration time of the IMU to 4 seconds.
     imu->ConfigCalTime(frc::ADIS16470_IMU::CalibrationTime::_4s);
-    // Set the default axis for the IMU's gyro to take (Z for up and down).
+    // Set the default axis for the IMU's gyro to take.
+#   ifdef HOMER
     imu->SetYawAxis(frc::ADIS16470_IMU::IMUAxis::kZ);
+#   else
+    imu->SetYawAxis(frc::ADIS16470_IMU::IMUAxis::kY);
+#   endif
 #endif
 
     // Zero the IMU.
