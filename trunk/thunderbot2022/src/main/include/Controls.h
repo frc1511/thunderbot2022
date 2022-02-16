@@ -14,6 +14,7 @@ public:
 
     ~Controls();
 
+    void resetToMode(MatchMode mode);
     void process() override;
 
 

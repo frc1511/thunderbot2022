@@ -3,20 +3,28 @@
 // The path to the file to save encoder offsets into.
 #define ENCODER_OFFSETS_FILE_NAME "/home/lvuser/magnetic_encoder_offsets.txt"
 
-/**
-NOTE: This stuff doesn't work.
+// The circumference of the drive wheels.
+#define DRIVE_WHEEL_CIRCUMFERENCE 0.21 // meters
 
-#define DRIVE_WHEEL_CIRCUMFERENCE 0.21
+/**
+ * The gear ratio of the drive motor (5.25:1).
+ * 
+ * AKA: The number of rotations the drive encoder will read after 1 rotation of
+ * the wheel.
+ */
 #define DRIVE_GEAR_RATIO 5.25
-#define DRIVE_ENCODER_TO_METER_FACTOR (DRIVE_WHEEL_CIRCUMFERENCE / DRIVE_GEAR_RATIO)
-#define DRIVE_METER_TO_ENCODER_FACTOR (DRIVE_GEAR_RATIO / DRIVE_WHEEL_CIRCUMFERENCE)
-*/
 
 /**
  * The coefficient used to convert rotations of the NEO motors into a distance
  * traveled in meters.
  */
-#define DRIVE_ENCODER_TO_METER_FACTOR 0.00002226
+#define DRIVE_ENCODER_TO_METER_FACTOR (DRIVE_WHEEL_CIRCUMFERENCE / DRIVE_GEAR_RATIO)
+
+/**
+ * The coefficient used to convert a distance in meters into a number of
+ * rotations of the NEO motors.
+ */
+#define DRIVE_METER_TO_ENCODER_FACTOR (DRIVE_GEAR_RATIO / DRIVE_WHEEL_CIRCUMFERENCE)
 
 /**
  * The coeffieient used to convert a radian value into rotations of the NEO 550
@@ -38,10 +46,10 @@ NOTE: This stuff doesn't work.
 #define DRIVE_RAMP_TIME 0.5
 
 // The maximum speed during alignment using vision.
-#define DRIVE_VISION_MAX_SPEED 1_mps
+#define DRIVE_VISION_MAX_SPEED .1_mps
 
 // The maximum angular speed during alignment using vision.
-#define DRIVE_VISION_MAX_ANGULAR_SPEED 1.57_rad_per_s
+#define DRIVE_VISION_MAX_ANGULAR_SPEED 5_deg_per_s
 
 // The allowable tolerance of the vision alignment.
 #define VISION_TOLERANCE 0.05
@@ -151,7 +159,7 @@ void SwerveModule::setState(frc::SwerveModuleState targetState) {
 
 void SwerveModule::setDriveMotor(units::meters_per_second_t velocity) {
     // Convert meters per second into rotations per minute.
-    double rpm = velocity.value() / DRIVE_ENCODER_TO_METER_FACTOR;
+    double rpm = velocity.value() * 60 * DRIVE_METER_TO_ENCODER_FACTOR;
 
     // Set the target RPM of the drive motor.
     drivePID->SetReference(rpm, rev::CANSparkMax::ControlType::kVelocity);
@@ -205,7 +213,7 @@ void SwerveModule::setIdleMode(IdleMode mode) {
 
 units::meters_per_second_t SwerveModule::getDriveVelocity() {
     // Convert rotations per minute to meters per second.
-    double mps = driveMotor->GetVelocity() * 10 * DRIVE_ENCODER_TO_METER_FACTOR;
+    double mps =  (driveMotor->GetVelocity() / 60) * DRIVE_ENCODER_TO_METER_FACTOR;
     
     return units::meters_per_second_t(mps);
 }
@@ -536,14 +544,7 @@ bool Drive::cmdIsFinished() {
             // If a command is currently running but the total time of the
             // trajectory has elapsed.
             if (cmd.trajectoryData.timer.HasElapsed(cmd.trajectoryData.trajectory.TotalTime())) {
-                // if (cmdController.AtReference()) {
-                    // std::cout << "Trajectory has finished\n";
-                    return true;
-                // }
-                // else {
-                    // std::cout << "Not at reference yet\n";
-                // }
-                // return false;
+                return true;
             }
             return false;
         case SwerveCommand::ALIGN_TO_CARGO:
