@@ -16,56 +16,94 @@ public:
         DO_NOTHING = 0,
     
         /**
-         * 1. Align with high hub.
-         * 2. Shoot ball.
-         */
-        ONE_BALL,
-    
-        /**
-         * 1. Pick up ball behind the robot.
+         * 1. Start in the left starting location.
          * 2. Align with high hub.
-         * 3. Shoot both balls.
-         */    
+         * 3. Shoot cargo.
+         */
+        LEFT_ONE_BALL,
+
+        /**
+         * 1. Start in the center starting location.
+         * 2. Align with high hub.
+         * 3. Shoot cargo.
+         */
+        CENTER_ONE_BALL,
+
+        /**
+         * 1. Start in the right starting location.
+         * 2. Align with high hub.
+         * 3. Shoot cargo.
+         */
+        RIGHT_ONE_BALL,
+
+        /**
+         * 1. Start in the left starting location.
+         * 2. Pick up ball 1.
+         * 3. Align with high hub.
+         * 4. Shoot both cargo.
+         */
         LEFT_TWO_BALL,
+
+        /**
+         * 1. Start in the center starting location.
+         * 2. Pick up ball 2.
+         * 3. Align with high hub.
+         * 4. Shoot both cargo.
+         */
         CENTER_TWO_BALL,
+
+        /**
+         * 1. Start in the right starting location.
+         * 2. Pick up ball 3.
+         * 3. Align with high hub.
+         * 4. Shoot both cargo.
+         */
         RIGHT_TWO_BALL,
         
         /**
-         * 1. Pick up ball behind the robot.
-         * 2. Align with high hub.
-         * 3. Shoot both balls.
-         * 4. Pick up ball at the alliance station wall.
-         * 5. Align with high hub.
-         * 6. Shoot ball.
+         * 1. Start in the center starting location.
+         * 2. Pick up ball 2.
+         * 3. Align with high hub.
+         * 4. Shoot both cargo.
+         * 5. Pick up ball 4.
+         * 6. Align with high hub.
+         * 7. Shoot cargo.
          */
-        LEFT_THREE_BALL,
         CENTER_THREE_BALL,
-        RIGHT_THREE_BALL,
-
-        /*
-         * 1. pick up ball behind the robot.
-         * 2. align with high hub
-         * 3. Shoot both balls
-         * 4. drive to left ball
-         * 5. collect the ball
-         * 6. shoot the ball
-        */
-        ALTERNATE_THREE_BALL,
 
         /**
-         * (Start in center spot).
-         *
-         * 1. Pick up ball behind the robot.
-         * 2. Align with high hub.
-         * 3. Shoot both balls.
-         * 4. Pick up ball at the alliance station wall.
-         * 5. Align with high hub.
-         * 6. Shoot ball.
-         * 7. Pick up two balls at cargo line.
-         * 8. Align with high hub.
-         * 9. Shoot both balls.
+         * 1. Start in the right starting location.
+         * 2. Pick up ball 3.
+         * 3. Align with high hub.
+         * 4. Shoot both cargo.
+         * 5. Pick up ball 2.
+         * 6. Align with high hub.
+         * 7. Shoot cargo.
          */
-        FOUR_BALL,
+        RIGHT_SHORT_THREE_BALL,
+
+        /**
+         * 1. Start in the right starting location.
+         * 2. Pick up ball 3.
+         * 3. Align with high hub.
+         * 4. Shoot both cargo.
+         * 5. Pick up ball 4.
+         * 6. Align with high hub.
+         * 7. Shoot cargo.
+         */
+        RIGHT_FAR_THREE_BALL,
+
+        /**
+         * 1. Start in the right starting location.
+         * 2. Pick up ball 3.
+         * 3. Align with high hub.
+         * 4. Shoot both cargo.
+         * 5. Pick up ball 2.
+         * 6. Pick up ball 4.
+         * 6. Align with high hub.
+         * 7. Shoot cargo.
+         */
+        RIGHT_FOUR_BALL,
     };
 
     void resetToMode(MatchMode mode) override;
@@ -73,23 +111,35 @@ public:
     void process() override;
 
 private:
+    enum StartingPosition {
+        UNKNOWN = 0,
+        LEFT,
+        CENTER,
+        RIGHT,
+    };
+
+    StartingPosition startPosition = UNKNOWN;
+
     void doNothing();
-    void oneBall();
+    void leftOneBall();
+    void centerOneBall();
+    void rightOneBall();
     void leftTwoBall();
     void centerTwoBall();
     void rightTwoBall();
-    void leftThreeBall();
     void centerThreeBall();
-    void rightThreeBall();
-    void fourBall();
-    void alternateThreeBall();
+    void rightShortThreeBall();
+    void rightFarThreeBall();
+    void rightFourBall();
 
-    bool cameraBroken = false;
+    bool alignAndShoot(Shooter::ShooterMode shooterMode, unsigned ballNum);
 
     AutoMode currentMode = DO_NOTHING;
 
     frc::Timer timer {};
+
     int step = 0;
+    int shootStep = 0;
 
     Drive* drive;
     GamEpiece* gamEpiece;
