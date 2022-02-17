@@ -282,21 +282,17 @@ void Controls::doAux() {
                 gamEpiece->setManualIntakePosition(false);
             }
 
-            if (dPadValue == 90) {
-                gamEpiece->setManualIntakeSpeed(1);
-            }
-            else if (dPadValue == 270) {
-                gamEpiece->setManualIntakeSpeed(-1);
-            }
-            if(dPadValue == -1){
+            double v = -1 * controllerAux.GetRawAxis(LEFT_Y_AXIS);
+            if (v > 0.1 || v < -0.1) {
+                gamEpiece->setManualIntakeSpeed(v);
+            } else {
                 gamEpiece->setManualIntakeSpeed(0);
             }
 
-            if (controllerAux.GetRawButtonPressed(LEFT_BUMPER)){
-                gamEpiece->changeShooterSpeed(false);
-            }
-            else if(controllerAux.GetRawButtonPressed(RIGHT_BUMPER)){
+            if (dPadValue == 90 && lastDPadValue == -1) {
                 gamEpiece->changeShooterSpeed(true);
+            } else if (dPadValue == 270 && lastDPadValue == -1) {            
+                gamEpiece->changeShooterSpeed(false);
             }
 
 
