@@ -2,6 +2,7 @@
 
 #include "IOMap.h"
 #include "Mechanism.h"
+#include "Feedback.h"
 #include <frc/AddressableLED.h>
 #include <frc/DriverStation.h>
 #include <frc/Timer.h>
@@ -23,6 +24,7 @@ public:
 
     void resetToMode(MatchMode mode);
     void process() override;
+    void sendFeedback() override;
 
 private:
     frc::AddressableLED strip { PWM_BLINKY_BLINKY };
@@ -36,4 +38,6 @@ private:
 
     int underglowOffset = 0;
     frc::Timer timer {};
+    // 0=red, 1=blue
+    int currentAlliance;
 };

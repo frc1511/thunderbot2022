@@ -25,6 +25,8 @@ public:
      */
     units::radian_t getAngleHorizontal();
 
+    double getDistance();
+
     /**
      * Returns the vertical angle to the target.
      */

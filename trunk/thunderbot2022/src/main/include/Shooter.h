@@ -7,6 +7,7 @@
 #include "ThunderSparkMax.h"
 #include <frc/Servo.h>
 #include <frc/AnalogPotentiometer.h>
+#include <vector>
 
 class Shooter : public Mechanism {
 public:
@@ -45,8 +46,20 @@ public:
      */
     void setShooterMode(ShooterMode mode);
 
+    // changes the manual speed by 100, great for testing, true will increase, false will decrease.
+    void changeManualSpeed(bool increaseOrDecrease);
+
 private:
     Limelight* limelight;
+
+    // find a and b in y=ax+b, something the ti84+CE can already do but peter doesnt like calculators
+    double distance;
+    int goodNumber;
+    std::vector<double> xVarsHood = {};
+    std::vector<double> yVarsHood = {};
+    std::vector<double> xVarsSpeed = {};
+    std::vector<double> yVarsSpeed = {};
+    double interpolation(double firstX, double firstY, double lastX,  double lastY, double distance);
 
     // Whether the shooter wheels should spin up to speed.
     bool wantToShoot = false;
@@ -59,6 +72,9 @@ private:
 
     // The target position of the hood.
     double targetHoodPosition = 0;
+
+    // 
+    double manualRPM = 0;
 
     ShooterMode shooterMode = TARMAC_LINE;
 

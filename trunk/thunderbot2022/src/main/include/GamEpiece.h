@@ -1,6 +1,6 @@
 #pragma once
 
-// RIP "#pragma thrice", Forever in our hearts, Revision 74 to Revision 106
+// RIP "#pragma thrice", Forever in our hearts, Revision 74 to Revision 107
 
 #include "Mechanism.h"
 #include "Intake.h"
@@ -90,6 +90,11 @@ public:
     // obtains the current ball count from intake :D
     int getCurrentBallCount();
 
+    // checks if a ball is at stage one
+    bool ballAtStageOne();
+
+    // changes the manual speed by 100, great for testing, true will increase, false will decrease.
+    void changeShooterSpeed(bool increaseOrDecrease);
 
 
 private:
@@ -121,7 +126,7 @@ private:
     };
     // object for ShooterState setting
     ShooterState shooterState;
-
+    ShooterState desiredShooterState;
 
     
     IntakeDirection intakeDirection;

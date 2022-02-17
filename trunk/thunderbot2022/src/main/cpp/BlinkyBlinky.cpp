@@ -15,6 +15,7 @@ BlinkyBlinky::BlinkyBlinky() {
     double mrPalmer;
     switch (frc::DriverStation::GetAlliance()) {
         case frc::DriverStation::kRed:
+            currentAlliance = 0;
             mrPalmer = LED_NUM_UNDERGLOW_TOTAL/(RED_HIGH - RED_LOW);
 
             for(int i = 0; i < LED_NUM_UNDERGLOW_TOTAL; i++) {
@@ -22,6 +23,7 @@ BlinkyBlinky::BlinkyBlinky() {
             }
             break;
         case frc::DriverStation::kBlue:
+            currentAlliance = 1;
             mrPalmer = LED_NUM_UNDERGLOW_TOTAL/(BLUE_HIGH - BLUE_LOW);
             
             for(int i = 0; i < LED_NUM_UNDERGLOW_TOTAL; i++) {
@@ -132,4 +134,8 @@ void BlinkyBlinky::setSection(LEDSection section, frc::Color color) {
     for (int i = 0; i < length; i++) {
         setPixel(section, i, color);
     }
+}
+
+void BlinkyBlinky::sendFeedback(){
+    Feedback::sendDouble("thunderdashboard","alliance",currentAlliance);
 }
