@@ -94,39 +94,22 @@ void Shooter::resetToMode(MatchMode mode) {
     shooterMode = TARMAC_LINE;
 }
 
-void Shooter::sendFeedback() {
-    std::string modeString = "";
-    switch (shooterMode) {
-        case ODOMETRY:
-            modeString = "Odometry";
-            break;
-        case LAUNCH_PAD:
-            modeString = "Launch Pad";
-            break;
-        case TARMAC_LINE:
-            modeString = "Tarmac Line (hi tester :D)";
-            break;
-        case MANUAL:
-            modeString = "Manual";
-            break;
-    }
 
-    Feedback::sendString("shooter", "Mode", modeString.c_str());
-    Feedback::sendDouble("shooter", "Left velocity (RPM)", shooterLeftMotor->GetVelocity());
-    Feedback::sendDouble("shooter", "Right velocity (RPM)", shooterRightMotor->GetVelocity());
-    Feedback::sendDouble("shooter", "Hood position", hoodPotentiometer.Get());
-
-    Feedback::sendBoolean("shooter", "Want to shoot", wantToShoot);
-    Feedback::sendDouble("shooter", "Hood speed manual", hoodSpeedManual);
-    Feedback::sendDouble("shooter", "Target RPM", targetRPM);
-    Feedback::sendDouble("shooter", "Target hood position", targetHoodPosition);
-}
 
 void Shooter::process() {
     switch (shooterMode) {
         case ODOMETRY:
             // TODO Align the hood to high hub and set shooter speed using
             // either limelight or the position of the robot on the field.
+            distance = limelight->getDistance();
+            for(int i = 0; i <= xVarsHood.size(); i++){
+                if(distance >= xVarsHood[i]){
+                    goodNumber = i;
+                    break;
+                }
+            }
+            targetHoodPosition = interpolation(xVarsHood[goodNumber], yVarsHood[goodNumber], xVarsHood[goodNumber+1], yVarsHood[goodNumber+1], distance);
+            targetRPM = interpolation(xVarsSpeed[goodNumber], yVarsSpeed[goodNumber], xVarsSpeed[goodNumber+1], yVarsSpeed[goodNumber+1], distance);
             break;
         case LAUNCH_PAD:
             targetHoodPosition = LAUNCH_PAD_HOOD_POS;
@@ -137,7 +120,7 @@ void Shooter::process() {
             targetRPM = TARMAC_LINE_SHOOTER_RPM;
             break;
         case MANUAL:
-            targetRPM = LAUNCH_PAD_SHOOTER_RPM;
+            targetRPM = manualRPM;
             break;
     }
     
@@ -210,4 +193,47 @@ void Shooter::setHoodManual(double speed) {
 
 void Shooter::setShooterMode(ShooterMode targetMode) {
     shooterMode = targetMode;
+}
+
+void Shooter::changeManualSpeed(bool increaseOrDecrease){
+    if(increaseOrDecrease && manualRPM < SHOOTER_MAX_RPM){
+        manualRPM += 100;
+    }
+    else if(increaseOrDecrease == false && manualRPM > 0){
+        manualRPM -= 100;
+    }
+}
+
+double Shooter::interpolation(double firstX, double firstY, double lastX,  double lastY, double distance){
+    return (((lastY-firstY)/(lastX-firstX))*distance)+firstY-(firstX*((lastY-firstY)/(lastX-firstX)));
+}
+
+void Shooter::sendFeedback() {
+    std::string modeString = "";
+    switch (shooterMode) {
+        case ODOMETRY:
+            modeString = "Odometry";
+            break;
+        case LAUNCH_PAD:
+            modeString = "Launch Pad";
+            break;
+        case TARMAC_LINE:
+            modeString = "Tarmac Line";
+            break;
+        case MANUAL:
+            modeString = "Manual";
+            break;
+    }
+
+    Feedback::sendString("shooter", "Mode", modeString.c_str());
+    Feedback::sendDouble("shooter", "Left velocity (RPM)", shooterLeftMotor->GetVelocity());
+    Feedback::sendDouble("shooter", "Right velocity (RPM)", shooterRightMotor->GetVelocity());
+    Feedback::sendDouble("shooter", "Hood position", hoodPotentiometer.Get());
+
+    Feedback::sendBoolean("shooter", "A. Want to shoot", wantToShoot);
+    Feedback::sendDouble("shooter", "Hood speed manual", hoodSpeedManual);
+    Feedback::sendDouble("shooter", "Target RPM", targetRPM);
+    Feedback::sendDouble("shooter", "Target hood position", targetHoodPosition);
+
+    Feedback::sendDouble("thunderdashboard", "shooter_hood", hoodPotentiometer.Get());
 }

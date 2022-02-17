@@ -42,6 +42,8 @@ public:
 
     bool finishedShooting();
 
+    bool ballAtStageOne();
+
 private:
     // ball count!!!!
 

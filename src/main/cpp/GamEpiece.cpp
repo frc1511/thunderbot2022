@@ -27,6 +27,26 @@ void GamEpiece::resetToMode(MatchMode mode) {
 
 void GamEpiece::process() {
     currentBallCount = intake.returnBallCount();
+    switch(desiredShooterState){
+        case(NOT_SHOOTING):
+            if(shooterState == WARMUP_SHOOTER){
+                shooterState = NOT_SHOOTING;
+            }
+            break;
+        case(WARMUP_SHOOTER):
+            if(shooterState == NOT_SHOOTING){
+                shooterState = WARMUP_SHOOTER;
+            }
+            break;
+        case(WANT_TO_SHOOT):
+            if(shooterState != SHOOTING){
+                shooterState = WANT_TO_SHOOT;
+            }
+            break;
+        case(SHOOTING):
+
+            break;
+    }
     if(currentBallCount == 0){
         shooterState = NOT_SHOOTING;
     }
@@ -78,23 +98,17 @@ void GamEpiece::process() {
 
 void GamEpiece::setShooterWarmUpEnabled(Shooter::ShooterMode shooterMode, bool enabled){
     if(enabled){ // if they want to warmup
-        if(shooterState == NOT_SHOOTING){ // dont take it out of shooting/want to shoot becasue once started you cant stop
-            shooterState = WARMUP_SHOOTER;
-        }
+        desiredShooterState = WARMUP_SHOOTER;
     }
-    else if(shooterState != SHOOTING && shooterState != WANT_TO_SHOOT){ // dont take it out of shooting/want to shoot becasue once started you cant stop    
-        shooterState = NOT_SHOOTING;
+    else{ // dont take it out of shooting/want to shoot becasue once started you cant stop    
+        desiredShooterState = NOT_SHOOTING;
     }
     shooter.setShooterMode(shooterMode);
 }
 
 void GamEpiece::shootABall(Shooter::ShooterMode shooterMode){
-    if(shooterState == NOT_SHOOTING){ // if it is anything else then warmup is already telling the shooter where to go, warmup takes priority
-        shooter.setShooterMode(shooterMode);
-    }
-    if(shooterState != SHOOTING){ // dont take it from shooting to move it to want to shoot, anything else if fine
-        shooterState = WANT_TO_SHOOT;
-    }
+    shooter.setShooterMode(shooterMode);
+    desiredShooterState = WANT_TO_SHOOT;
 }
 
 void GamEpiece::setIntakeDirection(IntakeDirection intDir){ // intState is a local variable which is a "copy of intakeDirection"
@@ -117,17 +131,22 @@ void GamEpiece::setManualHoodSpeed(double hoodSpeed){
     shooter.setHoodManual(hoodSpeed);
 }
 
-//void GamEpiece::setManualShooterSpeed(double shooterSpeed){
-    //desiredShooterSpeed += shooterSpeed;
-//}
-
-/*void GamEpiece::setBallSensorsBroken(bool ballCounter){
-    intake.setBallCounterBroken(ballCounter);
-}*/
+bool GamEpiece::ballAtStageOne(){
+    return intake.ballAtStageOne();
+}
 
 bool GamEpiece::isShotInProgress(){
     return shooterState == SHOOTING || shooterState == WANT_TO_SHOOT;
 }
+
+int GamEpiece::getCurrentBallCount(){
+    return currentBallCount;
+}
+
+void GamEpiece::changeShooterSpeed(bool increaseOrDecrease){
+    shooter.changeManualSpeed(increaseOrDecrease);
+}
+
 void GamEpiece::sendFeedback() {
     intake.sendFeedback();
     shooter.sendFeedback();

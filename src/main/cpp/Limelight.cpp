@@ -1,6 +1,10 @@
 #include "Limelight.h"
 
-#define LIMELIGHT_ANGLE 90_rad
+#define LIMELIGHT_ANGLE 30  // degrees
+
+#define LIMELIGHT_HEIGHT 43 // inches
+
+#define HUB_HEIGHT 12 // inches
 
 Limelight::Limelight() {
     table = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
@@ -36,4 +40,8 @@ void Limelight::setCameraMode(CameraMode mode) {
 
 Limelight::CameraMode Limelight::getCameraMode() {
     return (CameraMode)(int)table->GetNumber("camMode", 0.0);
+}
+
+double Limelight::getDistance(){
+    return (HUB_HEIGHT - LIMELIGHT_HEIGHT) / tan(LIMELIGHT_ANGLE + units::degree_t(getAngleVertical()).value());
 }
