@@ -60,6 +60,9 @@ void Hang::resetToMode(MatchMode mode){
     manual = NOT;
     stepDone = false;
     currentEncoderValue = 0;
+
+
+
 }
 
 void Hang::sendFeedback(){

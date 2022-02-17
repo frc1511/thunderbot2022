@@ -227,7 +227,7 @@ bool Intake::checkSensor(frc::DigitalInput* sensor){
 }
 
 bool Intake::ballAtStageOne(){
-    return(checkSensor(&stageOneFlag));
+    return stageOneSensorPrevious;
 }
 
 void Intake::sendFeedback()
@@ -292,7 +292,7 @@ void Intake::sendFeedback()
     Feedback::sendString("Intake", "current manual position of the intake", intakePositionString.c_str());
     Feedback::sendDouble("Intake", "current manual speed of the intake stage one/two", intakeSpeed);
 
-    Feedback::sendDouble("thunderdashboard", "stage1", checkSensor(&stageOneFlag) ? 0 : 1);
+    Feedback::sendDouble("thunderdashboard", "stage1", stageOneSensorPrevious ? 0 : 1);
     Feedback::sendDouble("thunderdashboard", "stage2", stageTwoOccupied ? 0 : 1);
 
 }

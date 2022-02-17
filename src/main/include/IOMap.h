@@ -17,7 +17,7 @@ extern bool isCraterMode;
 #define TEST_BOARD // Enable for testing on test board
 
 //CAN
-#define CAN_HANG_WINCH_MOTOR 9
+#define CAN_HANG_WINCH_MOTOR 2
 
 #define CAN_INTAKE_MOTOR 3
 
@@ -107,11 +107,11 @@ extern bool isCraterMode;
     #define PWM_STRING_SERVO 7                  // Loose servo; hi-tec brand
 
     //DIO
-    #define DIO_HANG_OPTICAL_HOME_SENSOR 0    // U-sensor floating on Rio
+    #define DIO_HANG_OPTICAL_HOME_SENSOR 5    // U-sensor floating on Rio
     #define DIO_HANG_ENCODER_A 8
     #define DIO_HANG_ENCODER_B 9
 
-    #define DIO_STORAGE_BANNER_STAGE_ONE 5     // Big switch labelled 0.  Click for "beam broken". Requires INVERTED READ
+    #define DIO_STORAGE_BANNER_STAGE_ONE 0     // Big switch labelled 0.  Click for "beam broken". Requires INVERTED READ
     #define DIO_STORAGE_BANNER_STAGE_TWO 1      // Big switch labelled 1. Click for "beam broken". Requires INVERTED READ
     #define DIO_SHOOTER_BANNER_LEFT_ROBOT 3     // Large beam-break near off-board motor connectors. Requires INVERTED READ
     
