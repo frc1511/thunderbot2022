@@ -234,47 +234,43 @@ void Controls::doAux() {
         // Turn off gamepiece when hanging
         gamEpiece->setIntakeDirection(GamEpiece::NOTTAKE);
         gamEpiece->setShooterWarmUpEnabled(Shooter::TARMAC_LINE, false);
-        if (controllerAux.GetRawButtonPressed(RIGHT_STICK_PRESS)) {   
-            hang->commandAuto();
+        if (!hangManual) {
+            if (controllerAux.GetRawButtonPressed(RIGHT_STICK_PRESS)) {   
+                hang->commandAuto();
+            }
+        } else {
+            if (controllerAux.GetRawButtonPressed(3)) {
+                hang->commandManual(Hang::EXTEND);
+            }
+            else if (controllerAux.GetRawButtonPressed(1)) {
+                hang->commandManual(Hang::RETRACT);
+            }
+            else if (controllerAux.GetRawButtonPressed(4)) {
+                hang->commandManual(Hang::ENGAGE_BRAKE);
+            }
+            else if (controllerAux.GetRawButtonPressed(2)) {
+                hang->commandManual(Hang::EXTEND_A_LITTLE);
+            }
+            
+            if (lastDPadValue == -1 && dPadValue == 0) {
+                hang->commandManual(Hang::PIVOT_OUT);
+            }
+            else if (lastDPadValue == -1 && dPadValue == 180) {
+                hang->commandManual(Hang::PIVOT_IN);
+            }
+            else if (lastDPadValue == -1 && dPadValue == 90) {
+                hang->commandManual(Hang::PULL_STRING);
+            }
+            else if (lastDPadValue == -1 && dPadValue == 270) {
+                hang->commandManual(Hang::UNWIND_STRING);
+            }
+            else if(controllerAux.GetRawButton(SHARE_BUTTON)){
+                hang->commandManual(Hang::REVERSE_PIVOT);
+            }
         }
     }
-    if (hangManual) {
-        if (controllerAux.GetRawButtonPressed(3)) {
-            hang->commandManual(Hang::EXTEND);
-        }
-        else if (controllerAux.GetRawButtonPressed(1)) {
-            hang->commandManual(Hang::RETRACT);
-        }
-        else if (controllerAux.GetRawButtonPressed(4)) {
-            hang->commandManual(Hang::ENGAGE_BRAKE);
-        }
-        else if (controllerAux.GetRawButtonPressed(2)) {
-            hang->commandManual(Hang::EXTEND_A_LITTLE);
-        }
-        
-        if (lastDPadValue == -1 && dPadValue == 0) {
-            hang->commandManual(Hang::PIVOT_OUT);
-        }
-        else if (lastDPadValue == -1 && dPadValue == 180) {
-            hang->commandManual(Hang::PIVOT_IN);
-        }
-        else if (lastDPadValue == -1 && dPadValue == 90) {
-            hang->commandManual(Hang::PULL_STRING);
-        }
-        else if (lastDPadValue == -1 && dPadValue == 270) {
-            hang->commandManual(Hang::UNWIND_STRING);
-        }
-        else if(controllerAux.GetRawButton(SHARE_BUTTON)){
-            hang->commandManual(Hang::REVERSE_PIVOT);
-        }
-        if (controllerAux.GetRawButtonPressed(LEFT_BUMPER)){
-            gamEpiece->changeShooterSpeed(false);
-        }
-        else if(controllerAux.GetRawButtonPressed(RIGHT_BUMPER)){
-            gamEpiece->changeShooterSpeed(true);
-        }
-    } 
     else {
+
         // Manual Aux Controls
         if (gamePieceManual == true) {
             gamEpiece->setIntakeDirection(GamEpiece::IntakeDirection::MANUAL);
@@ -295,6 +291,15 @@ void Controls::doAux() {
             if(dPadValue == -1){
                 gamEpiece->setManualIntakeSpeed(0);
             }
+
+            if (controllerAux.GetRawButtonPressed(LEFT_BUMPER)){
+                gamEpiece->changeShooterSpeed(false);
+            }
+            else if(controllerAux.GetRawButtonPressed(RIGHT_BUMPER)){
+                gamEpiece->changeShooterSpeed(true);
+            }
+
+
         }
         else if (gamePieceManual == false) {
             if (controllerAux.GetRawButton(SQUARE_BUTTON)) {
