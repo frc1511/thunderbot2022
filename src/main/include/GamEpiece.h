@@ -11,6 +11,7 @@
 #include <frc/Timer.h>
 #include <frc/Counter.h>
 #include <frc/DigitalInput.h>
+#include <frc/DriverStation.h>
 #include "IOMap.h"
 
 /**PART 1: DESCRIBE MECHANISM

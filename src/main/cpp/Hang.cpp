@@ -64,6 +64,7 @@ void Hang::resetToMode(MatchMode mode){
 
 void Hang::sendFeedback(){
     std::string targetString = "";
+    int hangBar = 0;
     switch (targetStage){
         case MID:
             targetString = "going to/on mid";
@@ -78,6 +79,13 @@ void Hang::sendFeedback(){
             targetString = "stopped";
             break;
     }
+    int hangStatus = 0;
+    if(stepDone){
+        hangStatus = 1;
+    }
+    else{
+        hangStatus = 2;
+    }
     Feedback::sendDouble("Hang", "encoder value", readEncoder());
     Feedback::sendDouble("Hang", "winch motor speed", winchMotor->Get());
     Feedback::sendDouble("Hang", "Max extending arm height", hangMaxHeight);
@@ -86,6 +94,9 @@ void Hang::sendFeedback(){
     Feedback::sendString("Hang", "stage robot is going to", targetString.c_str());
     Feedback::sendDouble("Hang", "extend step value", extendStep);
     Feedback::sendDouble("Hang", "retract step", retractStep);
+
+    Feedback::sendDouble("thunderdashboard", "hang_bar", hangBar);
+    Feedback::sendDouble("thunderdashboard", "hang_status", hangStatus);
 }
 
 void Hang::process(){
@@ -127,12 +138,12 @@ void Hang::process(){
             {
                 retract();
                 stepDone = true;
+                hangBar++;
                 //std::cout << "retract" << '\n';
             }
             else
             {
                 winchMotor->Set(0);
-                
             }
             break;
         case HIGH_TRAVERSAL:
@@ -207,6 +218,7 @@ void Hang::process(){
                 windUpString();
                 autoDone = true;
                 stepDone = true;
+                hangBar++;
                 std::cout << "windUpString" << '\n';
             }
             else

@@ -19,6 +19,10 @@ class ControllerState{
     bool getRawButton(int buttonID);
     double getRawAxis(int axisID);
 
+    bool getRawButtonPressed(int buttonID);
+    bool getRawButtonReleased(int buttonID);
+
+
     void setRawButton(int buttonID);
     void setRawAxis(int axisID);
 

@@ -126,6 +126,7 @@ private:
     frc::Timer hangTimer;
     bool isDone;
     bool stepDone;
+    int hangBar = 0;
 
     public:
 

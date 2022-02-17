@@ -67,56 +67,53 @@ void ControllerState::process(){
         }
     }
 
-
     //records when each button is pressed and realeased
-    if(recordOrNot){
-        for (int i = 0; i < 14; i++) {
-            buttons[2*i] = myController.GetRawButton(i+1);
-            if(buttons[2*i] != buttons[(2*i)+1]) { //the button IS pressed and WAS NOT pressed before this loop or the button IS NOT pressed and WAS pressed before this loop
-                //std::cout << "which button:" << i << "pressed?" << buttons[2*i] << "\n";
+    for (int i = 0; i < 14; i++) {
+        buttons[(2*i)+1] = buttons[2*i];
+        buttons[2*i] = myController.GetRawButton(i+1);
+        if(buttons[2*i] != buttons[(2*i)+1] && recordOrNot) { //the button IS pressed and WAS NOT pressed before this loop or the button IS NOT pressed and WAS pressed before this loop
+            //std::cout << "which button:" << i << "pressed?" << buttons[2*i] << "\n";
+            if(timerStartedYet == false){
+                autoTimer.Reset();
+                autoTimer.Start();
+                timerStartedYet = true;
+            }
+            recordButton(i+1,autoTimer.Get().value());
+        }
+        
+        if(i<=5){
+            axes[2*i] = myController.GetRawAxis(i);
+            if(fabs(axes[2*i]-axes[(2*i)+1]) >=.05 && recordOrNot){
+                //std::cout << "which axis" << i << "where?" << axes[2*i] << "\n";
                 if(timerStartedYet == false){
                     autoTimer.Reset();
                     autoTimer.Start();
                     timerStartedYet = true;
                 }
-                recordButton(i+1,autoTimer.Get().value());
-            }
-            buttons[(2*i)+1] = buttons[2*i];
-            if(i<=5){
-                axes[2*i] = myController.GetRawAxis(i);
-                if(fabs(axes[2*i]-axes[(2*i)+1]) >=.05){
-                    //std::cout << "which axis" << i << "where?" << axes[2*i] << "\n";
-                    if(timerStartedYet == false){
-                        autoTimer.Reset();
-                        autoTimer.Start();
-                        timerStartedYet = true;
-                    }
-                    recordAxis(i,autoTimer.Get().value(), axes[2*i]);
-                    axes[(2*i)+1] = axes[2*i];
-                }
+                recordAxis(i,autoTimer.Get().value(), axes[2*i]);
+                axes[(2*i)+1] = axes[2*i];
             }
         }
     }
+
 }
 
 bool ControllerState::getRawButton(int buttonID){
     //put stuff here
-    if(normalOrRelay){ // in normal mode so very simple
-        return myController.GetRawButton(buttonID);
-    }
-    else{
-        return buttonsValues[buttonID-1];
-    }
+    return buttons[(buttonID-1)*2];
 }
 
 double ControllerState::getRawAxis(int axisID){ 
     //put stuff here
-    if(normalOrRelay){ // in normal mode so very simple
-        return myController.GetRawAxis(axisID);
-    }
-    else{
-        return axesValues[axisID];
-    }
+    return axes[axisID*2];
+}
+
+bool ControllerState::getRawButtonPressed(int buttonID){
+    return buttons[(buttonID-1)*2] && !buttons[(buttonID*2)];
+}
+
+bool ControllerState::getRawButtonReleased(int buttonID){
+    return !buttons[(buttonID-1)*2] && buttons[(buttonID*2)];
 }
 
 void ControllerState::setRawButton(int buttonID){
