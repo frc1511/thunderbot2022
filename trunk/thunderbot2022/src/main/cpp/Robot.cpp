@@ -1,5 +1,7 @@
 #include "Robot.h"
 
+bool isCraterMode = false;
+
 void Robot::RobotInit() {}
 void Robot::RobotPeriodic() {
     for (int i = 0; i < nMechanisms; ++i)

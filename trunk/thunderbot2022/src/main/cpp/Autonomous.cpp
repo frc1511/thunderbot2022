@@ -84,17 +84,19 @@ void Autonomous::sendFeedback() {
     handleDashboardString(CENTER_ONE_BALL, "(Positioned center) Score ball in robot", buffer);
     handleDashboardString(RIGHT_ONE_BALL,  "(Positioned right) Score ball in robot", buffer);
 
-    handleDashboardString(LEFT_TWO_BALL,   "(Positioned left) Score ball 1 and ball in robot", buffer);
-    handleDashboardString(CENTER_TWO_BALL, "(Positioned center) Score ball 2 and ball in robot", buffer);
-    handleDashboardString(RIGHT_TWO_BALL,  "(Positioned right) Score ball 3 and ball in robot", buffer);
+    handleDashboardString(LEFT_TWO_BALL,   "(Positioned left) Score ball in robot and 1", buffer);
+    handleDashboardString(CENTER_TWO_BALL, "(Positioned center) Score ball in robot, and 2", buffer);
+    handleDashboardString(RIGHT_TWO_BALL,  "(Positioned right) Score ball in robot, and 3", buffer);
     //hi ishan
-    handleDashboardString(CENTER_THREE_BALL,      "(Positioned center) Score ball 2, 4, and ball in robot", buffer);
-    handleDashboardString(RIGHT_SHORT_THREE_BALL, "(Positioned right) Score ball 3, 2, and ball in robot", buffer);
-    handleDashboardString(RIGHT_FAR_THREE_BALL,   "(Positioned right) Score ball 3, 4, and ball in robot", buffer);
-    handleDashboardString(RIGHT_FOUR_BALL,        "(Positioned center) Score ball 3, 2, 4, and ball in robot", buffer);
+    //handleDashboardString(CENTER_THREE_BALL,      "(Positioned center) Score ball 2, 4, and ball in robot", buffer);
+    handleDashboardString(RIGHT_SHORT_THREE_BALL, "(Positioned right) Score ball in robot, 3, and 2,", buffer);
+    handleDashboardString(RIGHT_FAR_THREE_BALL,   "(Positioned right) Score ball in robot, 3, and 4,", buffer);
+    handleDashboardString(RIGHT_FOUR_BALL,        "(Positioned right) Score ball in robot, 3, 2, and 4", buffer);
 
     Feedback::sendString("thunderdashboard", "auto_list", buffer);
 }
+
+
 
 void Autonomous::process() {
     if (!gamEpiece)

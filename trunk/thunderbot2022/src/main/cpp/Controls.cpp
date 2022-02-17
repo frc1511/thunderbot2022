@@ -339,4 +339,5 @@ void Controls::doSwitchPanel() {
     if (hangActive) {
         hangManual = switchPanel.GetRawButton(2);
     }
+    isCraterMode = switchPanel.GetRawButton(10);
 }
