@@ -9,6 +9,13 @@ const double kReverseSpeedStageTwo = -.7;
 Intake::Intake() : intakeMotorStageOne(ThunderSparkMax::create(ThunderSparkMax::MotorID::StorageStage1)),
                    intakeMotorStageTwo(ThunderSparkMax::create(ThunderSparkMax::MotorID::StorageStage2))
 {
+    intakeMotorStageOne->SetIdleMode(ThunderSparkMax::IdleMode::BRAKE);
+    intakeMotorStageTwo->SetIdleMode(ThunderSparkMax::IdleMode::BRAKE);
+
+    // Inverted?
+    intakeMotorStageOne->SetInverted(false);
+    intakeMotorStageTwo->SetInverted(false);
+
 }
 
 Intake::~Intake()
@@ -17,6 +24,13 @@ Intake::~Intake()
 
 void Intake::resetToMode(MatchMode mode)
 {
+    if (mode != MatchMode::MODE_DISABLED) {
+        intakeMotorStageOne->SetIdleMode(ThunderSparkMax::IdleMode::BRAKE);
+        intakeMotorStageTwo->SetIdleMode(ThunderSparkMax::IdleMode::BRAKE);
+    } else {
+        intakeMotorStageOne->SetIdleMode(ThunderSparkMax::IdleMode::COAST);
+        intakeMotorStageTwo->SetIdleMode(ThunderSparkMax::IdleMode::COAST);
+    }
     horizontalIntake.Set(frc::DoubleSolenoid::Value::kReverse);
     intakeMotorStageOne->Set(0); // stage 1 stop
     intakeMotorStageTwo->Set(0);
