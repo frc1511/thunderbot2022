@@ -278,11 +278,7 @@ class ThunderSMCANImpl : public ThunderSparkMaxImpl {
         rev::SparkMaxPIDController smpid;
         ThunderSparkMaxCANPIDControllerImpl pid;
 
-        struct AltHolder {
-            AltHolder(rev::SparkMaxAlternateEncoder enc) : enc(enc) {};
-            rev::SparkMaxAlternateEncoder enc;
-        };
-        AltHolder *alt;
+        rev::SparkMaxAlternateEncoder *altEnc;
 };
 
 #include <frc/motorcontrol/PWMSparkMax.h>
@@ -543,7 +539,7 @@ ThunderSMCANImpl::ThunderSMCANImpl(int canid) : ThunderSparkMaxImpl("CAN SparkMa
         enc(spark.GetEncoder()),
         smpid(spark.GetPIDController()),
         pid(&smpid),
-        alt(NULL)
+        altEnc(NULL)
 {
 }
 
@@ -570,8 +566,8 @@ double ThunderSMCANImpl::GetEncoder()
 
 double ThunderSMCANImpl::GetAlternateEncoder()
 {
-    if (alt)
-        return alt->enc.GetPosition();
+    if (altEnc)
+        return altEnc->GetPosition();
     else 
         return 0;
 }
@@ -587,8 +583,8 @@ void ThunderSMCANImpl::SetEncoder(double rotations)
 
 void ThunderSMCANImpl::SetAlternateEncoder(double rotations)
 {
-    if (alt)
-        alt->enc.SetPosition(rotations);
+    if (altEnc)
+        altEnc->SetPosition(rotations);
 }
 
 void ThunderSMCANImpl::SetIdleMode(IdleMode idleMode)
@@ -614,9 +610,11 @@ void ThunderSMCANImpl::Follow(ThunderSparkMax *leader, bool invertOutput)
 
 void ThunderSMCANImpl::ConfigAlternateEncoder(int cpr)
 {
-    if (alt)
-        delete alt;
-    alt = new AltHolder(spark.GetAlternateEncoder(cpr));
+    if (altEnc) {
+        delete altEnc;
+        altEnc = nullptr;
+    }
+    altEnc = new rev::SparkMaxAlternateEncoder(spark.GetAlternateEncoder(cpr));
 }
 
 
