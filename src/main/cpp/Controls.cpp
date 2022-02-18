@@ -76,8 +76,8 @@ void Controls::resetToMode(MatchMode mode) {
             break;
         case MODE_TELEOP:
         case MODE_TEST:
-            controllerDrive.SetRumble(frc::GenericHID::RumbleType::kLeftRumble,  .3);
-            controllerDrive.SetRumble(frc::GenericHID::RumbleType::kRightRumble, .3);
+            controllerDrive.SetRumble(frc::GenericHID::RumbleType::kLeftRumble,  1);
+            controllerDrive.SetRumble(frc::GenericHID::RumbleType::kRightRumble, 1);
             break;
     }
 }
@@ -278,7 +278,7 @@ void Controls::doAux() {
             if (dPadValue == 180) {
                 gamEpiece->setManualIntakePosition(true);
             }
-            else if (dPadValue == 0) {
+            else if (dPadValue == 0 ) {
                 gamEpiece->setManualIntakePosition(false);
             }
 
@@ -289,10 +289,21 @@ void Controls::doAux() {
                 gamEpiece->setManualIntakeSpeed(0);
             }
 
-            if (dPadValue == 90 && lastDPadValue == -1) {
-                gamEpiece->changeShooterSpeed(true);
-            } else if (dPadValue == 270 && lastDPadValue == -1) {            
+            if (dPadValue == 90) {
+                gamEpiece->setManualHoodSpeed(1);
+            }else if (dPadValue == 270) {            
+                gamEpiece->setManualHoodSpeed(-1);
+            }
+            else{
+                gamEpiece->setManualHoodSpeed(0);
+            }
+
+
+            if(controllerAux.GetRawButtonPressed(SHARE_BUTTON)){
                 gamEpiece->changeShooterSpeed(false);
+            }
+            if(controllerAux.GetRawButtonPressed(OPTIONS_BUTTON)){
+                gamEpiece->changeShooterSpeed(true);
             }
 
 
