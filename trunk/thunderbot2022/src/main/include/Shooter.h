@@ -85,6 +85,9 @@ private:
     // right and left shooter PID controllers
     ThunderSparkMaxCANPIDController *shooterLeftPID;
     ThunderSparkMaxCANPIDController *shooterRightPID;
+
+    // reads the potentiometer value, returns 0-1
+    double readPotentiometer();
     
     frc::Servo hoodServo {PWM_SHOOTER_HOOD_SERVO};
     frc::AnalogPotentiometer hoodPotentiometer {ANALOG_SHOOTER_HOOD_POTENTIOMETER};

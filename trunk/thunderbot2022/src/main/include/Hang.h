@@ -58,7 +58,7 @@ private:
     //reads encoder
     double readEncoder();
     //sets encoder
-    double setEncoder();
+    void resetEncoder();
     //retract function if sensors broke
     void brokenRetract();
     //extend function if sensors broke

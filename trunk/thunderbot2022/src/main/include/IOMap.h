@@ -14,7 +14,7 @@
 extern bool isCraterMode;
 
 // #define HOMER // Comment out if not homer
-#define TEST_BOARD // Enable for testing on test board
+// #define TEST_BOARD // Enable for testing on test board
 
 //CAN
 #define CAN_HANG_WINCH_MOTOR 2

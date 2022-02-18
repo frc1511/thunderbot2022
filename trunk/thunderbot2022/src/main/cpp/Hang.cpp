@@ -53,7 +53,7 @@ void Hang::resetToMode(MatchMode mode){
     retractStep = 0;
     extendStep = 0;
     brokenStep = 0;
-    winchEncoder.Reset();
+    resetEncoder();
     stringServo.Set(kServoStopped);
     ratchetServo.Set(0);
     autoDone = false;
@@ -67,7 +67,6 @@ void Hang::resetToMode(MatchMode mode){
 
 void Hang::sendFeedback(){
     std::string targetString = "";
-    int hangBar = 0;
     switch (targetStage){
         case MID:
             targetString = "going to/on mid";
@@ -267,6 +266,7 @@ void Hang::process(){
                 {
                     pivot(false);
                 }
+                break;
             case REVERSE_PIVOT:
                 reversePivot();
                 break;
@@ -486,7 +486,7 @@ void Hang::brokenExtendALittle()
 }
 
 void Hang::commandAuto()
-{
+{   
     switch(targetStage)
     {
         case NOT_ON_BAR:
@@ -522,8 +522,10 @@ double Hang::readEncoder(){
     #endif
 }
 
-/*double Hang::setEncoder(){
+void Hang::resetEncoder(){
     #ifdef TEST_BOARD
     return winchEncoder.Set();
+    #else
+    //something
     #endif
-}*/
+}

@@ -16,7 +16,7 @@
 #define HOOD_MAX_POS (HOOD_MIN_POS + .486)
 
 // The maximum RPM of the shooter wheels.
-#define SHOOTER_MAX_RPM 100 // 5700
+#define SHOOTER_MAX_RPM 200 // 5700
 
 // The tolerance of the hood position.
 #define HOOD_TOLERANCE .05
@@ -102,7 +102,7 @@ void Shooter::process() {
             // TODO Align the hood to high hub and set shooter speed using
             // either limelight or the position of the robot on the field.
             distance = limelight->getDistance();
-            for(int i = 0; i <= xVarsHood.size(); i++){
+            for(unsigned int i = 0; i <= xVarsHood.size(); i++){
                 if(distance >= xVarsHood[i]){
                     goodNumber = i;
                     break;
@@ -132,12 +132,12 @@ void Shooter::process() {
     shooterRightPID->SetReference(targetRPM, rev::CANSparkMax::ControlType::kVelocity);
 
     // gets the position of the hood potentiometer
-    double hoodPosition = hoodPotentiometer.Get();
+    double hoodPosition = readPotentiometer();
     // 🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲🗲
     double servoSpeed = HOOD_SPEED_STOPPED;
 
     // If servo is given a speed to go to
-    if (hoodSpeedManual != 0) {
+    if (shooterMode == MANUAL) {
         servoSpeed = hoodSpeedManual;
     }
     // If hood position is within the tolerance level to the target position.
@@ -183,11 +183,12 @@ void Shooter::setShooterSpinup(bool shouldShoot) {
 bool Shooter::isShooterReady() {
     return (shooterLeftMotor->GetVelocity() > targetRPM - SHOOTER_TOLERANCE) && // if left is speedy enough :D
            (shooterRightMotor->GetVelocity() > targetRPM - SHOOTER_TOLERANCE) && // if right is speedy enough :D
-           (fabs(hoodPotentiometer.Get() - targetHoodPosition) < HOOD_TOLERANCE); // if hood is in the right place
+           (fabs(readPotentiometer() - targetHoodPosition) < HOOD_TOLERANCE); // if hood is in the right place
 }
 // allows manual control of the hood speed
 void Shooter::setHoodManual(double speed) {
     hoodSpeedManual = speed;
+    shooterMode = MANUAL;
 
 }
 
@@ -202,10 +203,15 @@ void Shooter::changeManualSpeed(bool increaseOrDecrease){
     else if(increaseOrDecrease == false && manualRPM > 0){
         manualRPM -= 100;
     }
+    shooterMode = MANUAL;
 }
 
 double Shooter::interpolation(double firstX, double firstY, double lastX,  double lastY, double distance){
     return (((lastY-firstY)/(lastX-firstX))*distance)+firstY-(firstX*((lastY-firstY)/(lastX-firstX)));
+}
+
+double Shooter::readPotentiometer(){
+    return hoodPotentiometer.Get();
 }
 
 void Shooter::sendFeedback() {
@@ -228,12 +234,14 @@ void Shooter::sendFeedback() {
     Feedback::sendString("shooter", "Mode", modeString.c_str());
     Feedback::sendDouble("shooter", "Left velocity (RPM)", shooterLeftMotor->GetVelocity());
     Feedback::sendDouble("shooter", "Right velocity (RPM)", shooterRightMotor->GetVelocity());
-    Feedback::sendDouble("shooter", "Hood position", hoodPotentiometer.Get());
+    Feedback::sendDouble("shooter", "Hood position", readPotentiometer());
 
     Feedback::sendBoolean("shooter", "A. Want to shoot", wantToShoot);
     Feedback::sendDouble("shooter", "Hood speed manual", hoodSpeedManual);
     Feedback::sendDouble("shooter", "Target RPM", targetRPM);
     Feedback::sendDouble("shooter", "Target hood position", targetHoodPosition);
+    Feedback::sendDouble("shotoer", "manual RPM", manualRPM);
+    Feedback::sendDouble("shooter", "manual hood speed", hoodSpeedManual);
 
-    Feedback::sendDouble("thunderdashboard", "shooter_hood", hoodPotentiometer.Get());
+    Feedback::sendDouble("thunderdashboard", "shooter_hood", (readPotentiometer() * 100));
 }
