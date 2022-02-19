@@ -75,8 +75,8 @@ void Shooter::configureMotors() {
     // Make sure the motors don't draw more than 40A.
     shooterLeftMotor->SetSmartCurrentLimit(SHOOTER_MAX_AMPS);
     shooterRightMotor->SetSmartCurrentLimit(SHOOTER_MAX_AMPS);
-    // Inverted?
-    shooterLeftMotor->SetInverted(false);
+    // One is inverted.
+    shooterLeftMotor->SetInverted(true);
     shooterRightMotor->SetInverted(false);
     // PID values.
     shooterLeftPID->SetP(SHOOTER_P_VALUE, 0);
@@ -140,7 +140,7 @@ void Shooter::process() {
     }
     
     shooterLeftPID->SetReference(targetRPM, rev::CANSparkMax::ControlType::kVelocity);
-    shooterRightPID->SetReference(-targetRPM, rev::CANSparkMax::ControlType::kVelocity);
+    shooterRightPID->SetReference(targetRPM, rev::CANSparkMax::ControlType::kVelocity);
 
     // gets the position of the hood potentiometer
     double hoodPosition = readPotentiometer();
