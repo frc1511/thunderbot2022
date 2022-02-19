@@ -1,5 +1,8 @@
 #pragma once
 
+#include <map>
+#include <optional>
+
 // The amazing thing that is 
 
 /**
