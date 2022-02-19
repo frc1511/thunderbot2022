@@ -138,7 +138,7 @@ void Shooter::process() {
     }
     
     shooterLeftPID->SetReference(targetRPM, rev::CANSparkMax::ControlType::kVelocity);
-    shooterRightPID->SetReference(targetRPM, rev::CANSparkMax::ControlType::kVelocity);
+    shooterRightPID->SetReference(-targetRPM, rev::CANSparkMax::ControlType::kVelocity);
 
     // gets the position of the hood potentiometer
     double hoodPosition = readPotentiometer();
