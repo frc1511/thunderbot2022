@@ -16,7 +16,7 @@
 #define HOOD_MAX_POS (HOOD_MIN_POS + .486)
 
 // The maximum RPM of the shooter wheels.
-#define SHOOTER_MAX_RPM 200 // 5700
+#define SHOOTER_MAX_RPM 5700 // 5700
 
 // The tolerance of the hood position.
 #define HOOD_TOLERANCE .05
@@ -32,19 +32,19 @@
 
 // The hood position and shooter RPM when the robot is right next to the hub.
 #define HUB_HOOD_POS .6
-#define HUB_SHOOTER_RPM 60 // 4000?????? 
+#define HUB_SHOOTER_RPM 3500 // 4000?????? 
 
 // The hood position and shooter RPM when the robot is at the far wall.
 #define WALL_HOOD_POS 0.6
-#define WALL_SHOOTER_RPM 60 // 4000
+#define WALL_SHOOTER_RPM 5500 // 5500
 
 // The hood position and shooter RPM when the robot is at the launch pad.
 #define LAUNCH_PAD_HOOD_POS 0.6
-#define LAUNCH_PAD_SHOOTER_RPM 60 //3500
+#define LAUNCH_PAD_SHOOTER_RPM 4000 //
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
 #define TARMAC_LINE_HOOD_POS 0.6
-#define TARMAC_LINE_SHOOTER_RPM 60 //3250
+#define TARMAC_LINE_SHOOTER_RPM 3750 //3250
 
 Shooter::Shooter(Limelight* limelight)
   : limelight(limelight),
@@ -53,6 +53,8 @@ Shooter::Shooter(Limelight* limelight)
     shooterLeftPID(shooterLeftMotor->GetPIDController()),
     shooterRightPID(shooterRightMotor->GetPIDController())
 {
+    shooterLeftMotor->ConfigAlternateEncoder(2048);
+    shooterRightMotor->ConfigAlternateEncoder(2048);
     configureMotors();
 }
 
@@ -251,6 +253,9 @@ void Shooter::sendFeedback() {
     Feedback::sendDouble("shooter", "Target hood position", targetHoodPosition);
     Feedback::sendDouble("shotoer", "manual RPM", manualRPM);
     Feedback::sendDouble("shooter", "manual hood speed", hoodSpeedManual);
+
+    Feedback::sendDouble("shooter", "left encoder", shooterLeftMotor->GetAlternateEncoder());
+    Feedback::sendDouble("shooter", "right encoder", shooterRightMotor->GetAlternateEncoder());
 
     Feedback::sendDouble("thunderdashboard", "shooter_hood", (readPotentiometer() * 100));
 }

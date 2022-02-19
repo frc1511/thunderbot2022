@@ -43,7 +43,7 @@
 #define TURN_MAX_AMPERAGE 30
 
 // The number of seconds for the drive motors to ramp from idle to full trottle.
-#define DRIVE_RAMP_TIME 0.5
+#define DRIVE_RAMP_TIME 1
 
 // The maximum speed during alignment using vision.
 #define DRIVE_VISION_MAX_SPEED .1_mps

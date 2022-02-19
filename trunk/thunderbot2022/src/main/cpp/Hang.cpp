@@ -531,7 +531,7 @@ double Hang::readEncoder(){
 
 void Hang::resetEncoder(){
     #ifdef TEST_BOARD
-    return winchEncoder.Set();
+        winchEncoder.Reset();
     #else
     //something
     #endif

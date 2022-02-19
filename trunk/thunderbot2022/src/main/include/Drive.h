@@ -36,7 +36,7 @@
 // The maximum speed of the chassis during manual drive.
 #define DRIVE_MANUAL_MAX_SPEED 4_mps
 // The maximum angular speed of the chassis during manual drive.
-#define DRIVE_MANUAL_MAX_ANGULAR_SPEED 3.14_rad_per_s
+#define DRIVE_MANUAL_MAX_ANGULAR_SPEED 3.14_rad_per_s * 1.7
 
 // The maximum speed of the chassis during a drive command.
 #define DRIVE_CMD_MAX_SPEED 0.1_mps
