@@ -49,13 +49,13 @@
 #define DRIVE_VISION_MAX_SPEED .1_mps
 
 // The maximum angular speed during alignment using vision.
-#define DRIVE_VISION_MAX_ANGULAR_SPEED 5_deg_per_s
+#define DRIVE_VISION_MAX_ANGULAR_SPEED 25_deg_per_s
 
 // The allowable tolerance of the vision alignment.
 #define VISION_TOLERANCE 0.05
 
 // The allowable tolerance of the horizontal limelight angle.
-#define LIMELIGHT_TOLERANCE 2_deg
+#define LIMELIGHT_TOLERANCE 5_deg
 
 // --- PID values ---
 
@@ -268,8 +268,10 @@ Drive::Drive(Camera* camera, Limelight* limelight)
 
     // Zero the IMU.
     resetIMU();
+#ifdef HOMER
     // Calibrate the IMU.
     calibrateIMU();
+#endif
 
     // Read encoder offsets from the file and apply them to the swerve modules.
     if (readOffsetsFile()) {
@@ -313,6 +315,8 @@ void Drive::resetToMode(MatchMode mode) {
 }
 
 void Drive::sendFeedback() {
+    Feedback::sendDouble("thunderdashboard", "gyro", !imuCalibrated);
+
     Feedback::sendDouble("drive", "imu angle (degrees)", imu ? imu->GetAngle().value() : 0);
 
     const char* buffer = "";
@@ -428,11 +432,17 @@ void Drive::zeroRotation() {
 }
 
 void Drive::calibrateIMU() {
-    if (imu)
+    if (imu) {
         imu->Calibrate();
+        imuCalibrated = true;
+    }
 }
 
 void Drive::configMagneticEncoders() {
+    if (!isCraterMode) {
+        return;
+    }
+
     // Apply the current rotation of the swerve modules to the offsets.
     for (unsigned i = 0; i < swerveModules.size(); i++) {
         units::radian_t angle(swerveModules.at(i)->getState().angle.Radians());
@@ -518,6 +528,7 @@ bool Drive::cmdAlignToHighHub() {
 
     driveMode = COMMAND;
     cmd.type = SwerveCommand::ALIGN_TO_HIGH_HUB;
+    cmd.alignmentData.position = SwerveCommand::AlignmentData::UNKNOWN;
     
     return true;
 }
@@ -573,7 +584,8 @@ bool Drive::cmdIsFinished() {
             }
             return false;
         case SwerveCommand::ALIGN_TO_HIGH_HUB:
-            if (units::math::abs(limelight->getAngleHorizontal()) <= LIMELIGHT_TOLERANCE) {
+            if (cmd.alignmentData.position == SwerveCommand::AlignmentData::CENTER) {
+                cmd.alignmentData.position = SwerveCommand::AlignmentData::UNKNOWN;
                 return true;
             }
             return false;
@@ -700,21 +712,31 @@ void Drive::exeAlignWithCargo() {
 }
 
 void Drive::exeAlignWithHighHub() {
-    units::radian_t angle = limelight->getAngleHorizontal();
+    if (limelight->hasTarget()) {
+        units::radian_t angle = limelight->getAngleHorizontal();
 
-    // The robot is aligned with the high hub.
-    if (units::math::abs(angle) <= LIMELIGHT_TOLERANCE) {
-        // We all good now.
+        if (units::math::abs(angle) <= LIMELIGHT_TOLERANCE) {
+            cmd.alignmentData.position = SwerveCommand::AlignmentData::CENTER;
+        }
+        else if (angle > LIMELIGHT_TOLERANCE) {
+            cmd.alignmentData.position = SwerveCommand::AlignmentData::RIGHT;
+        }
+        else if (angle < -LIMELIGHT_TOLERANCE) {
+            cmd.alignmentData.position = SwerveCommand::AlignmentData::LEFT;
+        }
     }
-    // The high hub is to the right of the robot.
-    else if (angle > LIMELIGHT_TOLERANCE) {
-        // Begin rotating to the right.
-        setModuleStates({ 0_mps, 0_mps, +DRIVE_VISION_MAX_ANGULAR_SPEED });
-    }
-    // The high hub is to the left of the robot.
-    else if (angle < -LIMELIGHT_TOLERANCE) {
-        // Begin rotating to the left.
-        setModuleStates({ 0_mps, 0_mps, -DRIVE_VISION_MAX_ANGULAR_SPEED });
+
+    switch (cmd.alignmentData.position) {
+        case SwerveCommand::AlignmentData::UNKNOWN:
+            break;
+        case SwerveCommand::AlignmentData::CENTER:
+            break;
+        case SwerveCommand::AlignmentData::RIGHT:
+            setModuleStates({ 0_mps, 0_mps, -DRIVE_VISION_MAX_ANGULAR_SPEED });
+            break;
+        case SwerveCommand::AlignmentData::LEFT:
+            setModuleStates({ 0_mps, 0_mps, +DRIVE_VISION_MAX_ANGULAR_SPEED });
+            break;
     }
 }
 

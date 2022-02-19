@@ -134,4 +134,4 @@ extern bool isCraterMode;
 #endif
 
 //USB
-#define USB_INTAKE_CAMERA 1
+#define USB_INTAKE_CAMERA 0

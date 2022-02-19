@@ -37,6 +37,7 @@ private:
     bool hangActive = false;
     bool hangManual = false;
     bool gamePieceManual = false;
+    bool robotCentric = false;
 
 //Normal Aux Variables
     Shooter::ShooterMode lastPressedMode = Shooter::TARMAC_LINE;
