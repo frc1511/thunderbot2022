@@ -109,7 +109,7 @@ void Hang::sendFeedback(){
 }
 
 void Hang::process(){
-   
+#ifdef TEST_BOARD
     switch (targetStage){
         case STOP:
             retractStep = 100;
@@ -287,6 +287,7 @@ void Hang::process(){
                 break;
         }
     }
+#endif
 }
 
 void Hang::pivot(bool armsForward)
