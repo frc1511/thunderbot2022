@@ -74,6 +74,8 @@ private:
     // The target position of the hood.
     double targetHoodPosition = 0;
 
+    
+
     // 
     double manualRPM = 0;
 
@@ -82,7 +84,7 @@ private:
     // right and left shooter motors
     ThunderSparkMax *shooterLeftMotor;
     ThunderSparkMax *shooterRightMotor;
-
+    
     // right and left shooter PID controllers
     ThunderSparkMaxCANPIDController *shooterLeftPID;
     ThunderSparkMaxCANPIDController *shooterRightPID;

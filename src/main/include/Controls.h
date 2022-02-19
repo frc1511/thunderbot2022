@@ -16,6 +16,7 @@ public:
 
     void resetToMode(MatchMode mode);
     void process() override;
+    void sendFeedback() override;
     bool getShouldPersistConfig();
 
 private:
@@ -32,6 +33,9 @@ private:
     frc::Joystick controllerDrive{0};
     frc::Joystick controllerAux{1};
     frc::Joystick switchPanel{2};
+
+    // false is limelight, true is camera
+    bool whichCamera = true;
 
 //switchPanel Variables
     bool hangActive = false;

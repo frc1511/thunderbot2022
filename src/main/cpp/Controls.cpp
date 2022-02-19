@@ -93,7 +93,7 @@ void Controls::process() {
 void Controls::doDrive() {
     bool brickDrive = controllerDrive.GetRawButton(CROSS_BUTTON);
     bool alignWithHighHub = controllerDrive.GetRawButton(CIRCLE_BUTTON);
-    bool toggleCamera = controllerDrive.GetRawButton(SQUARE_BUTTON);
+    bool toggleCamera = controllerDrive.GetRawButtonPressed(SQUARE_BUTTON);
 
     double xDriveVelocity = controllerDrive.GetRawAxis(LEFT_X_AXIS);
     double yDriveVelocity = controllerDrive.GetRawAxis(LEFT_Y_AXIS);
@@ -130,8 +130,8 @@ void Controls::doDrive() {
         drive->cmdAlignToHighHub();
     }
 
-    if (toggleCamera && !cameraWasToggled) {
-        // TODO: Toggle the camera.
+    if (toggleCamera) {
+        whichCamera = !whichCamera;
     }
     cameraWasToggled = toggleCamera;
 
@@ -354,4 +354,8 @@ bool Controls::getShouldPersistConfig() {
             controllerDrive.GetPOV() == 180 &&
             controllerAux.GetRawButton(CROSS_BUTTON) &&
             controllerAux.GetPOV() == 0;
+}
+
+void Controls::sendFeedback(){
+    Feedback::sendDouble("thunderdashboard", "frontcamera", whichCamera);
 }
