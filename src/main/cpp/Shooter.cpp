@@ -53,8 +53,6 @@ Shooter::Shooter(Limelight* limelight)
     shooterLeftPID(shooterLeftMotor->GetPIDController()),
     shooterRightPID(shooterRightMotor->GetPIDController())
 {
-    shooterLeftMotor->ConfigAlternateEncoder(2048);
-    shooterRightMotor->ConfigAlternateEncoder(2048);
     configureMotors();
 }
 
@@ -240,9 +238,6 @@ void Shooter::sendFeedback() {
     Feedback::sendDouble("shooter", "Target hood position", targetHoodPosition);
     Feedback::sendDouble("shotoer", "manual RPM", manualRPM);
     Feedback::sendDouble("shooter", "manual hood speed", hoodSpeedManual);
-
-    Feedback::sendDouble("shooter", "left encoder", shooterLeftMotor->GetAlternateEncoder());
-    Feedback::sendDouble("shooter", "right encoder", shooterRightMotor->GetAlternateEncoder());
 
     Feedback::sendDouble("thunderdashboard", "shooter_hood", (readPotentiometer() * 100));
 }
