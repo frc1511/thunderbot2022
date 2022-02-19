@@ -1,6 +1,8 @@
 #include "Mechanism.h"
 #include <frc/DriverStation.h>
 
+void Mechanism::doPersistentConfiguration() {}
+
 void Mechanism::resetToMode(MatchMode mode) {}
 
 void Mechanism::sendFeedback() {}

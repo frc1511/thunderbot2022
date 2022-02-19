@@ -38,6 +38,11 @@ void Robot::DisabledPeriodic() {
 }
 
 void Robot::TestInit() {
+    if (controls.getShouldPersistConfig()) {
+        for (int i = 0; i < nMechanisms; ++i) {
+            allMechanisms[i]->doPersistentConfiguration();
+        }
+    }
     reset(Mechanism::MODE_TEST);
 }
 

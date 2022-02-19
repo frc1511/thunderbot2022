@@ -14,6 +14,7 @@ public:
     Shooter(Limelight* limelight);
     ~Shooter();
 
+    void doPersistentConfiguration() override;
     void resetToMode(MatchMode mode) override;
     void sendFeedback() override;
     void process() override;
@@ -88,6 +89,9 @@ private:
 
     // reads the potentiometer value, returns 0-1
     double readPotentiometer();
+
+    // Do configuration of motor controllers to "power on" state
+    void configureMotors();
     
     frc::Servo hoodServo {PWM_SHOOTER_HOOD_SERVO};
     frc::AnalogPotentiometer hoodPotentiometer {ANALOG_SHOOTER_HOOD_POTENTIOMETER};

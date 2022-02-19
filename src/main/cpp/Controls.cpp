@@ -353,3 +353,11 @@ void Controls::doSwitchPanel() {
     }
     isCraterMode = switchPanel.GetRawButton(10);
 }
+
+bool Controls::getShouldPersistConfig() {
+    doSwitchPanel();
+    return isCraterMode && controllerDrive.GetRawButton(TRIANGLE_BUTTON) &&
+            controllerDrive.GetPOV() == 180 &&
+            controllerAux.GetRawButton(CROSS_BUTTON) &&
+            controllerAux.GetPOV() == 0;
+}

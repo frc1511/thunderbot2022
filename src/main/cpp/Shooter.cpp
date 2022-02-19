@@ -53,7 +53,14 @@ Shooter::Shooter(Limelight* limelight)
     shooterLeftPID(shooterLeftMotor->GetPIDController()),
     shooterRightPID(shooterRightMotor->GetPIDController())
 {
+    configureMotors();
+}
 
+Shooter::~Shooter() {
+
+}
+
+void Shooter::configureMotors() {
     // --- Shooting motor config ---
     shooterLeftMotor->RestoreFactoryDefaults();
     shooterRightMotor->RestoreFactoryDefaults();
@@ -82,8 +89,10 @@ Shooter::Shooter(Limelight* limelight)
     shooterRightPID->SetFF(SHOOTER_FF_VALUE, 0);
 }
 
-Shooter::~Shooter() {
-
+void Shooter::doPersistentConfiguration() {
+    configureMotors();
+    shooterRightMotor->BurnFlash();
+    shooterLeftMotor->BurnFlash();
 }
 
 void Shooter::resetToMode(MatchMode mode) {

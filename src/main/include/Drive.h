@@ -108,6 +108,11 @@ public:
      */
     void setIdleMode(IdleMode mode);
 
+    /**
+     * Persist configuration for all motors
+     */
+    void doPersistentConfiguration();
+
 private:
     /**
      * Returns the current velocity of the drive motor (meters per second).
@@ -123,6 +128,11 @@ private:
      * Returns the absolute rotation of the module (CANCoder encoder value).
      */
     frc::Rotation2d getAbsoluteRotation();
+
+    /**
+     * Configure motors to power-on states
+     */
+    void configureMotors();
 
     // The drive motor (NEO Brushless motor).
     ThunderSparkMax *driveMotor;
@@ -150,6 +160,7 @@ public:
     Drive(Camera* camera, Limelight* limelight);
     ~Drive();
 
+    void doPersistentConfiguration() override;
     void resetToMode(MatchMode mode) override;
     void sendFeedback() override;
     void process() override;

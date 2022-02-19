@@ -80,6 +80,20 @@ SwerveModule::SwerveModule(ThunderSparkMax::MotorID driveID, ThunderSparkMax::Mo
     turningPID(turningMotor->GetPIDController()),
     turningAbsEncoder(ThunderCANCoder::create(canCoderCANID)) {
     
+    configureMotors();
+    
+    // --- CANCoder config ---
+    
+    turningAbsEncoder->ConfigFactoryDefault();
+    // Set the range of the CANCoder to -180 to +180 instead of 0 to 360.
+    turningAbsEncoder->ConfigAbsoluteSensorRange(ctre::phoenix::sensors::AbsoluteSensorRange::Signed_PlusMinus180);
+}
+
+SwerveModule::~SwerveModule() {
+
+}
+
+void SwerveModule::configureMotors() {
     // --- Drive motor config ---
     
     driveMotor->RestoreFactoryDefaults();
@@ -127,16 +141,12 @@ SwerveModule::SwerveModule(ThunderSparkMax::MotorID driveID, ThunderSparkMax::Mo
     turningPID->SetD(ROT_D_VALUE, 0);
     turningPID->SetIZone(ROT_I_ZONE_VALUE, 0);
     turningPID->SetFF(ROT_FF_VALUE, 0);
-    
-    // --- CANCoder config ---
-    
-    turningAbsEncoder->ConfigFactoryDefault();
-    // Set the range of the CANCoder to -180 to +180 instead of 0 to 360.
-    turningAbsEncoder->ConfigAbsoluteSensorRange(ctre::phoenix::sensors::AbsoluteSensorRange::Signed_PlusMinus180);
 }
 
-SwerveModule::~SwerveModule() {
-
+void SwerveModule::doPersistentConfiguration() {
+    configureMotors();
+    driveMotor->BurnFlash();
+    turningMotor->BurnFlash();
 }
 
 void SwerveModule::setState(frc::SwerveModuleState targetState) {
@@ -273,6 +283,11 @@ Drive::~Drive() {
         delete module;
     }
     delete imu;
+}
+
+void Drive::doPersistentConfiguration() {
+    for (SwerveModule* module : swerveModules)
+        module->doPersistentConfiguration();
 }
 
 void Drive::resetToMode(MatchMode mode) {

@@ -17,6 +17,8 @@ class Intake : public Mechanism
 public:
     Intake();
     ~Intake();
+
+    void doPersistentConfiguration() override;
     void resetToMode(MatchMode mode) override;
     void sendFeedback() override;
     void process() override;
@@ -51,6 +53,7 @@ private:
     void ballCountIntake(bool currentSensorOneInput, bool currentSensorTwoInput);
     void ballCountOuttake(bool currentSensorOneInput, bool currentSensorTwoInput);
     bool checkSensor(frc::DigitalInput* sensor);
+    void configureMotors();
     enum States // States for what intake should do
     {
         STATE_INTAKE_TWO_BALL,

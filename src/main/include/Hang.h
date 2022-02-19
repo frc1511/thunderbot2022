@@ -154,6 +154,7 @@ private:
 
 //functions
     //sendFeedback should be named debug. 
+    void doPersistentConfiguration() override;
     void resetToMode(MatchMode mode) override;
     void sendFeedback() override;
     void process() override;

@@ -41,6 +41,13 @@ Hang::Hang() : winchMotor(ThunderSparkMax::create(ThunderSparkMax::MotorID::Hang
 }
 Hang::~Hang() {}
 
+void Hang::doPersistentConfiguration(){
+    winchMotor->RestoreFactoryDefaults();
+    // brake? coast?
+    //winchMotor->SetIdleMode(ThunderSparkMax::IdleMode::BRAKE);
+    winchMotor->BurnFlash();
+}
+
 void Hang::resetToMode(MatchMode mode){
     step = 0;
     targetStage = NOT_ON_BAR;
