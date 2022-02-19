@@ -7,7 +7,7 @@
 #define HUB_HEIGHT 12 // inches
 
 Limelight::Limelight() {
-    table = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
+    table = nt::NetworkTableInstance::GetDefault().GetTable("limelight-homer");
 }
 
 Limelight::~Limelight() {

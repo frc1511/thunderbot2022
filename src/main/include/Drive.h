@@ -378,6 +378,9 @@ private:
      */
     frc::ADIS16470_IMU *imu;
 
+    // Whether the IMU is calibrated.
+    bool imuCalibrated = false;
+
     enum DriveMode {
         STOPPED,
         MANUAL,
@@ -412,7 +415,14 @@ private:
         };
 
         struct AlignmentData {
+            enum Position {
+                UNKNOWN,
+                CENTER,
+                LEFT,
+                RIGHT,
+            };
 
+            Position position = UNKNOWN;
         };
         
         // Data regarding the current trajectory command.

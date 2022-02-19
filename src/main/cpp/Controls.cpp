@@ -119,10 +119,6 @@ void Controls::doDrive() {
     bool configOffsets = false;
 #endif
 
-    // TODO: Broken switches.
-
-    bool fieldCentricBroken = false;
-
     bool driveDisabled = false;
 
     if (brickDrive) {
@@ -148,13 +144,6 @@ void Controls::doDrive() {
     }
     offsetsWereConfigured = configOffsets;
 
-    if (fieldCentricBroken) {
-        drive->setControlMode(Drive::ROBOT_CENTRIC);
-    }
-    else {
-        drive->setControlMode(Drive::FIELD_CENTRIC);
-    }
-
     double finalXVelocity = 0.0;
     double finalYVelocity = 0.0;
     double finalRotateVelocity = 0.0;
@@ -176,8 +165,6 @@ void Controls::doDrive() {
     else if (rightSlowRotateVelocity != 0) {
         finalRotateVelocity += rightSlowRotateVelocity * SLOW_ROTATE_FACTOR;
     }
-
-    std::cout << "x slow drive " << xSlowDriveVelocity << " y slow drive " << ySlowDriveVelocity << '\n'; 
 
     // If driving regular.
     if (fabs(xDriveVelocity) > AXIS_DEADZONE || fabs(yDriveVelocity) > AXIS_DEADZONE) {
@@ -352,6 +339,13 @@ void Controls::doSwitchPanel() {
         hangManual = switchPanel.GetRawButton(2);
     }
     isCraterMode = switchPanel.GetRawButton(10);
+    robotCentric = switchPanel.GetRawButton(5);
+    if (robotCentric) {
+        drive->setControlMode(Drive::ROBOT_CENTRIC);
+    }
+    else {
+        drive->setControlMode(Drive::FIELD_CENTRIC);
+    }
 }
 
 bool Controls::getShouldPersistConfig() {
