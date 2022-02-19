@@ -4,6 +4,7 @@
 #include "Mechanism.h"
 #include "Feedback.h"
 #include "Limelight.h"
+#include "Interpolation.h"
 #include "ThunderSparkMax.h"
 #include <frc/Servo.h>
 #include <frc/AnalogPotentiometer.h>
@@ -53,15 +54,6 @@ public:
 private:
     Limelight* limelight;
 
-    // find a and b in y=ax+b, something the ti84+CE can already do but peter doesnt like calculators
-    double distance;
-    int goodNumber;
-    std::vector<double> xVarsHood = {};
-    std::vector<double> yVarsHood = {};
-    std::vector<double> xVarsSpeed = {};
-    std::vector<double> yVarsSpeed = {};
-    double interpolation(double firstX, double firstY, double lastX,  double lastY, double distance);
-
     // Whether the shooter wheels should spin up to speed.
     bool wantToShoot = false;
 
@@ -97,6 +89,9 @@ private:
     
     frc::Servo hoodServo {PWM_SHOOTER_HOOD_SERVO};
     frc::AnalogPotentiometer hoodPotentiometer {ANALOG_SHOOTER_HOOD_POTENTIOMETER};
+
+    InterpolatingTreeMap<units::radian_t, double> hoodInterpolation { {} };
+    InterpolatingTreeMap<units::radian_t, double> rpmInterpolation  { {} };
 
 //hi jeff :D
 // trevor's weird comments below
