@@ -38,6 +38,7 @@ const double kServoForward = 1;
 const double kServoStopped = .5;
 
 Hang::Hang() : winchMotor(ThunderSparkMax::create(ThunderSparkMax::MotorID::Hang)) {
+    winchMotor->ConfigAlternateEncoder(2048);
 }
 Hang::~Hang() {}
 
@@ -526,7 +527,7 @@ double Hang::readEncoder(){
     #ifdef TEST_BOARD
     return winchEncoder.Get()/256.0;
     #else
-    return 0;
+    return winchMotor->GetAlternateEncoder();
     #endif
 }
 
@@ -535,5 +536,6 @@ void Hang::resetEncoder(){
         winchEncoder.Reset();
     #else
     //something
+    winchMotor->SetAlternateEncoder(0);
     #endif
 }
