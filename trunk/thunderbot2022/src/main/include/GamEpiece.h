@@ -98,6 +98,9 @@ public:
     // changes the manual speed by 100, great for testing, true will increase, false will decrease.
     void changeShooterSpeed(bool increaseOrDecrease);
 
+    // cancels the process of shooting, use when something goes wrong and it tries to shoot whne it shouldnt, has absolute control, very powerful
+    void cancelShot();
+
 
 private:
     Limelight* limelight;
