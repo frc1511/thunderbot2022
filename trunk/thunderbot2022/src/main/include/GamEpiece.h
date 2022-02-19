@@ -44,6 +44,7 @@ public:
     GamEpiece(Limelight* limelight);
     ~GamEpiece();
     
+    void doPersistentConfiguration() override;
     void resetToMode(MatchMode mode) override;
     void sendFeedback() override;
     void process() override;

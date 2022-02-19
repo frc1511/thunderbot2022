@@ -16,7 +16,7 @@ public:
 
     void resetToMode(MatchMode mode);
     void process() override;
-
+    bool getShouldPersistConfig();
 
 private:
 

@@ -9,17 +9,31 @@ const double kReverseSpeedStageTwo = -.7;
 Intake::Intake() : intakeMotorStageOne(ThunderSparkMax::create(ThunderSparkMax::MotorID::StorageStage1)),
                    intakeMotorStageTwo(ThunderSparkMax::create(ThunderSparkMax::MotorID::StorageStage2))
 {
+    configureMotors();
+}
+
+Intake::~Intake()
+{
+}
+
+void Intake::configureMotors()
+{
+    intakeMotorStageOne->RestoreFactoryDefaults();
+    intakeMotorStageTwo->RestoreFactoryDefaults();
+
     intakeMotorStageOne->SetIdleMode(ThunderSparkMax::IdleMode::BRAKE);
     intakeMotorStageTwo->SetIdleMode(ThunderSparkMax::IdleMode::BRAKE);
 
     // Inverted?
     intakeMotorStageOne->SetInverted(false);
     intakeMotorStageTwo->SetInverted(false);
-
 }
 
-Intake::~Intake()
+void Intake::doPersistentConfiguration()
 {
+    configureMotors();
+    intakeMotorStageOne->BurnFlash();
+    intakeMotorStageTwo->BurnFlash();
 }
 
 void Intake::resetToMode(MatchMode mode)

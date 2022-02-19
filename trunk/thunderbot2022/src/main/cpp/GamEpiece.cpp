@@ -8,6 +8,11 @@ GamEpiece::~GamEpiece() {
 
 }
 
+void GamEpiece::doPersistentConfiguration() {
+    intake.doPersistentConfiguration();
+    shooter.doPersistentConfiguration();
+}
+
 void GamEpiece::resetToMode(MatchMode mode) {
     intake.resetToMode(mode);
     shooter.resetToMode(mode);
