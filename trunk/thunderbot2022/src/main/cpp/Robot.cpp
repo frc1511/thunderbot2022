@@ -39,9 +39,11 @@ void Robot::DisabledPeriodic() {
 
 void Robot::TestInit() {
     if (controls.getShouldPersistConfig()) {
+        printf("*** Persistent configuration activating...\n");
         for (int i = 0; i < nMechanisms; ++i) {
             allMechanisms[i]->doPersistentConfiguration();
         }
+        printf("*** Persistent configuration complete!\n");
     }
     reset(Mechanism::MODE_TEST);
 }
