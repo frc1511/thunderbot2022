@@ -66,7 +66,13 @@ private:
     // The target position of the hood.
     double targetHoodPosition = 0;
 
-    
+    double interpolation(double firstX, double firstY, double lastX,  double lastY, double distance);
+    int goodNumber;
+    double distance;
+    std::vector<double> xVarsHood = {};
+    std::vector<double> yVarsHood = {};
+    std::vector<double> xVarsSpeed = {};
+    std::vector<double> yVarsSpeed = {};
 
     // 
     double manualRPM = 0;

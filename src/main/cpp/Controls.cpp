@@ -178,36 +178,7 @@ void Controls::doDrive() {
 
 void Controls::doAux() {
     // Normal Aux Controls
-    if (controllerAux.GetRawButton(1)) {
-        lastPressedMode = Shooter::TARMAC_LINE;
-    }
-    else if (controllerAux.GetRawButton(3)) {
-        lastPressedMode = Shooter::LAUNCH_PAD;
-    }
-    else if (controllerAux.GetRawButton(2)) {
-        lastPressedMode = Shooter::ODOMETRY;
-    }
-
-    if (controllerAux.GetRawButton(8)) {
-        gamEpiece->setShooterWarmUpEnabled(lastPressedMode, true);
-    }
-    else if (controllerAux.GetRawButton(8) == false) {
-        gamEpiece->setShooterWarmUpEnabled(lastPressedMode, false);
-    }
-
-    if (controllerAux.GetRawButton(6)) {
-        gamEpiece->shootABall(lastPressedMode);
-    }
-
-    if (controllerAux.GetRawButton(7)) {
-        gamEpiece->setIntakeDirection(GamEpiece::IntakeDirection::INTAKE);
-    }
-    else if (controllerAux.GetRawButton(5)) {
-        gamEpiece->setIntakeDirection(GamEpiece::IntakeDirection::OUTTAKE);
-    }
-    else {
-        gamEpiece->setIntakeDirection(GamEpiece::IntakeDirection::NOTTAKE);
-    }
+    
 
     int dPadValue = controllerAux.GetPOV();
 
@@ -251,7 +222,27 @@ void Controls::doAux() {
         }
     }
     else {
+        
+        // Manual and Normal Aux Controls
+        if (controllerAux.GetRawButton(SQUARE_BUTTON)) {
+            lastPressedMode = Shooter::TARMAC_LINE;
+        }
+        else if (controllerAux.GetRawButton(CIRCLE_BUTTON)) {
+            lastPressedMode = Shooter::LAUNCH_PAD;
+        }
+        else if (controllerAux.GetRawButton(CROSS_BUTTON)) {
+            lastPressedMode = Shooter::ODOMETRY;
+        }
 
+        if (controllerAux.GetRawButton(RIGHT_TRIGGER_BUTTON)) {
+            gamEpiece->setShooterWarmUpEnabled(lastPressedMode, true);
+        }
+        else{
+            gamEpiece->setShooterWarmUpEnabled(lastPressedMode, false);
+        }
+        if(controllerAux.GetRawButton(PLAYSTATION_BUTTON)){
+            gamEpiece->cancelShot();
+        }
         // Manual Aux Controls
         if (gamePieceManual == true) {
             gamEpiece->setIntakeDirection(GamEpiece::IntakeDirection::MANUAL);
@@ -290,27 +281,9 @@ void Controls::doAux() {
 
         }
         else if (gamePieceManual == false) {
-            if (controllerAux.GetRawButton(SQUARE_BUTTON)) {
-                lastPressedMode = Shooter::TARMAC_LINE;
-            }
-            else if (controllerAux.GetRawButton(CIRCLE_BUTTON)) {
-                lastPressedMode = Shooter::LAUNCH_PAD;
-            }
-            else if (controllerAux.GetRawButton(CROSS_BUTTON)) {
-                lastPressedMode = Shooter::ODOMETRY;
-            }
-
-            if (controllerAux.GetRawButton(RIGHT_TRIGGER_BUTTON)) {
-                gamEpiece->setShooterWarmUpEnabled(lastPressedMode, true);
-            }
-            else {
-                gamEpiece->setShooterWarmUpEnabled(lastPressedMode, false);
-            }
-
             if (controllerAux.GetRawButton(RIGHT_BUMPER)) {
                 gamEpiece->shootABall(lastPressedMode);
             }
-
             if (controllerAux.GetRawButton(LEFT_TRIGGER_BUTTON)) {
                 gamEpiece->setIntakeDirection(GamEpiece::IntakeDirection::INTAKE);
             }

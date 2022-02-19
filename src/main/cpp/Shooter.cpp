@@ -108,8 +108,17 @@ void Shooter::resetToMode(MatchMode mode) {
 void Shooter::process() {
     switch (shooterMode) {
         case ODOMETRY:
-            targetHoodPosition = hoodInterpolation[limelight->getAngleVertical()].value();
-            targetRPM = rpmInterpolation[limelight->getAngleVertical()].value();
+            //targetHoodPosition = hoodInterpolation[limelight->getAngleVertical()].value();
+            //targetRPM = rpmInterpolation[limelight->getAngleVertical()].value();
+            distance = limelight->getDistance();
+            for(unsigned int i = 0; i <= xVarsHood.size(); i++){
+                if(distance >= xVarsHood[i]){
+                    goodNumber = i;
+                    break;
+                }
+            }
+            targetHoodPosition = interpolation(xVarsHood[goodNumber], yVarsHood[goodNumber], xVarsHood[goodNumber+1], yVarsHood[goodNumber+1], distance);
+            targetRPM = interpolation(xVarsSpeed[goodNumber], yVarsSpeed[goodNumber], xVarsSpeed[goodNumber+1], yVarsSpeed[goodNumber+1], distance);
             break;
         case LAUNCH_PAD:
             targetHoodPosition = LAUNCH_PAD_HOOD_POS;
@@ -197,13 +206,17 @@ void Shooter::setShooterMode(ShooterMode targetMode) {
 }
 
 void Shooter::changeManualSpeed(bool increaseOrDecrease){
-    if(increaseOrDecrease && manualRPM < SHOOTER_MAX_RPM){
+    if(increaseOrDecrease && manualRPM < SHOOTER_MAX_RPM){ // dont let it go faster than intended
         manualRPM += 100;
     }
-    else if(increaseOrDecrease == false && manualRPM > 0){
+    else if(increaseOrDecrease == false && manualRPM > 0){ // dont let it shoot backwards cause thats bad
         manualRPM -= 100;
     }
     shooterMode = MANUAL;
+}
+
+double Shooter::interpolation(double firstX, double firstY, double lastX,  double lastY, double distance){
+    return (((lastY-firstY)/(lastX-firstX))*distance)+firstY-(firstX*((lastY-firstY)/(lastX-firstX)));
 }
 
 double Shooter::readPotentiometer(){
