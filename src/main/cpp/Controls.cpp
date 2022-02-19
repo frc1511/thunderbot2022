@@ -111,13 +111,7 @@ void Controls::doDrive() {
     double rightSlowRotateVelocity = controllerDrive.GetRawButton(RIGHT_BUMPER);
 
     bool zeroRotation = controllerDrive.GetRawButton(OPTIONS_BUTTON);
-
-    // Disable configue offsets because we don't want the drivers to mess it up.
-#ifdef DRIVE_DEBUG
-    bool configOffsets = controllerDrive.GetRawButton(SHARE_BUTTON);
-#else
-    bool configOffsets = false;
-#endif
+    bool calibrateGyro = controllerDrive.GetRawButton(SHARE_BUTTON);
 
     bool driveDisabled = false;
 
@@ -139,10 +133,10 @@ void Controls::doDrive() {
         drive->zeroRotation();
     }
 
-    if (configOffsets && !offsetsWereConfigured) {
-        drive->configMagneticEncoders();
+    if (calibrateGyro) {
+        drive->calibrateIMU();
+        drive->zeroRotation();
     }
-    offsetsWereConfigured = configOffsets;
 
     double finalXVelocity = 0.0;
     double finalYVelocity = 0.0;

@@ -259,11 +259,11 @@ Drive::Drive(Camera* camera, Limelight* limelight)
     // Configure the calibration time of the IMU to 4 seconds.
     imu->ConfigCalTime(frc::ADIS16470_IMU::CalibrationTime::_4s);
     // Set the default axis for the IMU's gyro to take.
-#   ifdef HOMER
-    imu->SetYawAxis(frc::ADIS16470_IMU::IMUAxis::kZ);
-#   else
+#ifdef HOMER
+    imu->SetYawAxis(frc::ADIS16470_IMU::IMUAxis::kX);
+#else
     imu->SetYawAxis(frc::ADIS16470_IMU::IMUAxis::kY);
-#   endif
+#endif
 #endif
 
     // Zero the IMU.
@@ -290,6 +290,8 @@ Drive::~Drive() {
 void Drive::doPersistentConfiguration() {
     for (SwerveModule* module : swerveModules)
         module->doPersistentConfiguration();
+
+    configMagneticEncoders();
 }
 
 void Drive::resetToMode(MatchMode mode) {

@@ -181,14 +181,6 @@ public:
      * beginning of the match when the robot is not moving).
      */
     void calibrateIMU();
-
-    /**
-     * Applies the current rotation of the swerve modules as the offset of the
-     * magnetic encoders. *** IMPORTANT *** Should only be called after
-     * replacing a swerve module and when all the swerve modules are rotated
-     * towards the front of the robot!
-     */
-    void configMagneticEncoders();
     
     /**
      * Manually control the robot using percentages of the max drive velocities.
@@ -314,6 +306,12 @@ private:
      * Executes the current align with high hub command.
      */
     void exeAlignWithHighHub();
+
+    /**
+     * Applies the current rotation of the swerve modules as the offset of the
+     * magnetic encoders.
+     */
+    void configMagneticEncoders();
 
     /**
      * Reads the magnetic encoder offsets file.
