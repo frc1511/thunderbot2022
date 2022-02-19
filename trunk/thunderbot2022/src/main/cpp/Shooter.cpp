@@ -110,17 +110,8 @@ void Shooter::resetToMode(MatchMode mode) {
 void Shooter::process() {
     switch (shooterMode) {
         case ODOMETRY:
-            // TODO Align the hood to high hub and set shooter speed using
-            // either limelight or the position of the robot on the field.
-            distance = limelight->getDistance();
-            for(unsigned int i = 0; i <= xVarsHood.size(); i++){
-                if(distance >= xVarsHood[i]){
-                    goodNumber = i;
-                    break;
-                }
-            }
-            targetHoodPosition = interpolation(xVarsHood[goodNumber], yVarsHood[goodNumber], xVarsHood[goodNumber+1], yVarsHood[goodNumber+1], distance);
-            targetRPM = interpolation(xVarsSpeed[goodNumber], yVarsSpeed[goodNumber], xVarsSpeed[goodNumber+1], yVarsSpeed[goodNumber+1], distance);
+            targetHoodPosition = hoodInterpolation[limelight->getAngleVertical()].value();
+            targetRPM = rpmInterpolation[limelight->getAngleVertical()].value();
             break;
         case LAUNCH_PAD:
             targetHoodPosition = LAUNCH_PAD_HOOD_POS;
@@ -215,10 +206,6 @@ void Shooter::changeManualSpeed(bool increaseOrDecrease){
         manualRPM -= 100;
     }
     shooterMode = MANUAL;
-}
-
-double Shooter::interpolation(double firstX, double firstY, double lastX,  double lastY, double distance){
-    return (((lastY-firstY)/(lastX-firstX))*distance)+firstY-(firstX*((lastY-firstY)/(lastX-firstX)));
 }
 
 double Shooter::readPotentiometer(){

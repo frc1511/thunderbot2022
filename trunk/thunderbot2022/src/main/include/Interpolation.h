@@ -15,7 +15,7 @@ template<typename K, typename V>
 class InterpolatingTreeMap {
 public:
     InterpolatingTreeMap()
-    : map() { }
+    : map({}) { }
     
     InterpolatingTreeMap(std::map<K, V> _map)
     : map(_map) { }
