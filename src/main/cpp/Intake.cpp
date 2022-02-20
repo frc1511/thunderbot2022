@@ -1,43 +1,48 @@
 #include "Intake.h"
 
-const double kSpeedStageOne = .7;
-const double kSpeedStageTwo = .7;
-const double kSpeedStageTwoSlow = .3;
-const double kReverseSpeedStageOne = -.7;
-const double kReverseSpeedStageTwo = -.7;
+#define INTAKE_MAX_VOLTAGE 12
+#define INTAKE_MAX_AMPERAGE 30
+
+const double kSpeedStageOne = .4; // used for intaking
+const double kSpeedStageTwo = .3; // used for shooting
+const double kSpeedStageTwoSlow = .3; // used for intaking into stage two
+const double kReverseSpeedStageOne = -.4; // used for outtaking
+const double kReverseSpeedStageTwo = -.3; // used for outtaking
 
 Intake::Intake() : intakeMotorStageOne(ThunderSparkMax::create(ThunderSparkMax::MotorID::StorageStage1)),
-                   intakeMotorStageTwo(ThunderSparkMax::create(ThunderSparkMax::MotorID::StorageStage2))
-{
+                   intakeMotorStageTwo(ThunderSparkMax::create(ThunderSparkMax::MotorID::StorageStage2)){
     configureMotors();
 }
 
-Intake::~Intake()
-{
+Intake::~Intake(){
 }
 
-void Intake::configureMotors()
-{
+void Intake::configureMotors(){
     intakeMotorStageOne->RestoreFactoryDefaults();
     intakeMotorStageTwo->RestoreFactoryDefaults();
 
     intakeMotorStageOne->SetIdleMode(ThunderSparkMax::IdleMode::BRAKE);
     intakeMotorStageTwo->SetIdleMode(ThunderSparkMax::IdleMode::BRAKE);
+    
+    // Voltage limit.
+    intakeMotorStageOne->EnableVoltageCompensation(INTAKE_MAX_VOLTAGE);
+    intakeMotorStageOne->EnableVoltageCompensation(INTAKE_MAX_VOLTAGE);
+    // Amperage limit.
+    intakeMotorStageOne->SetSmartCurrentLimit(INTAKE_MAX_AMPERAGE);
+    intakeMotorStageOne->SetSmartCurrentLimit(INTAKE_MAX_AMPERAGE);
 
-    // Inverted?
-    intakeMotorStageOne->SetInverted(false);
-    intakeMotorStageTwo->SetInverted(false);
+    // Inverted!!! :D
+    intakeMotorStageOne->SetInverted(true);
+    intakeMotorStageTwo->SetInverted(true);
 }
 
-void Intake::doPersistentConfiguration()
-{
+void Intake::doPersistentConfiguration(){
     configureMotors();
     intakeMotorStageOne->BurnFlash();
     intakeMotorStageTwo->BurnFlash();
 }
 
-void Intake::resetToMode(MatchMode mode)
-{
+void Intake::resetToMode(MatchMode mode){
     if (mode != MatchMode::MODE_DISABLED) {
         intakeMotorStageOne->SetIdleMode(ThunderSparkMax::IdleMode::BRAKE);
         intakeMotorStageTwo->SetIdleMode(ThunderSparkMax::IdleMode::BRAKE);
@@ -59,30 +64,24 @@ void Intake::resetToMode(MatchMode mode)
     targetDirection = NOTTAKE;
     
 }
-void Intake::ballCountIntake(bool currentSensorOneInput, bool currentSensorTwoInput)
-{
-    if (stageOneSensorPrevious == false && currentSensorOneInput == true)
-    {
+void Intake::ballCountIntake(bool currentSensorOneInput, bool currentSensorTwoInput){
+    if (stageOneSensorPrevious == false && currentSensorOneInput == true){
         ballCount ++;
     }
 
-    if (stageTwoSensorPrevious == true && currentSensorTwoInput == false)
-    {
+    if (stageTwoSensorPrevious == true && currentSensorTwoInput == false){
         stageTwoOccupied = true;
     }
     stageOneSensorPrevious = currentSensorOneInput;
     stageTwoSensorPrevious = currentSensorTwoInput;
 }
-void Intake::ballCountOuttake(bool currentSensorOneInput, bool currentSensorTwoInput)
-{
+void Intake::ballCountOuttake(bool currentSensorOneInput, bool currentSensorTwoInput){
 
-    if (stageOneSensorPrevious == true && currentSensorOneInput == false)
-    {
+    if (stageOneSensorPrevious == true && currentSensorOneInput == false){
         ballCount --;
     }
 
-    if (stageTwoSensorPrevious == false && currentSensorTwoInput == true)
-    {
+    if (stageTwoSensorPrevious == false && currentSensorTwoInput == true){
         stageTwoOccupied = false;
     }
     stageOneSensorPrevious = currentSensorOneInput;
@@ -90,8 +89,7 @@ void Intake::ballCountOuttake(bool currentSensorOneInput, bool currentSensorTwoI
 }
 void Intake::switchStates() // command switches
 {
-    switch (targetDirection)
-    {
+    switch (targetDirection){
     case INTAKE:
         if (ballCount == 2)
         {
@@ -122,15 +120,13 @@ void Intake::switchStates() // command switches
         break;
     }
 }
-void Intake::process()
-{
+void Intake::process(){
 
     bool currentSensorOneInput = checkSensor(&stageOneFlag);
     bool currentSensorTwoInput = checkSensor(&stageTwoFlag);
     bool currentShooterSensorInput = checkSensor(&shooterFlag);
     // the desired actions of the intake motors
-    switch (currentState)
-    { // extend piston to retract intake, retract piston to extend/deploy intake
+    switch (currentState){ // extend piston to retract intake, retract piston to extend/deploy intake
     case STATE_INTAKE_ONE_BALL:
         horizontalIntake.Set(frc::DoubleSolenoid::Value::kForward); // deploy intake, forward is forward
         intakeMotorStageOne->Set(kSpeedStageOne);                   // stage 1 go
@@ -215,32 +211,27 @@ void Intake::process()
     stageTwoSensorPrevious = currentSensorTwoInput;
 }
 // connects to gamEpiece
-void Intake::setIntakeDirection(IntakeDirection intakeDirection)
-{
+void Intake::setIntakeDirection(IntakeDirection intakeDirection){
     // make sure you arent shooting when you try to tell intake what to do
     targetDirection = intakeDirection;
 }
 
-void Intake::setIntakePosition(bool position)
-{
+void Intake::setIntakePosition(bool position){
     intakePosition = position;
 } // true is down, false is up
 
-void Intake::setIntakeSpeed(double speed)
-{
-    intakeSpeed = speed;
+void Intake::setIntakeSpeed(double speed){
+    intakeSpeed = (.7*speed);
 } // positive to intake, negative to outtake
 
 
 // returns the ball count
-int Intake::returnBallCount()
-{
+int Intake::returnBallCount(){
     return ballCount;
 }
 // adds a ball to the counter when the lower storage sensor is tripped
 
-bool Intake::finishedShooting()
-{
+bool Intake::finishedShooting(){
     return currentState == STATE_STOP;
 }
 
@@ -258,11 +249,9 @@ bool Intake::ballAtStageOne(){
     return stageOneSensorPrevious;
 }
 
-void Intake::sendFeedback()
-{ // debug
+void Intake::sendFeedback(){ // debug
     std::string targetIntakeState = "";
-    switch (targetDirection)
-    {
+    switch (targetDirection){
     case (INTAKE):
         targetIntakeState = "Intake";
         break;
@@ -280,8 +269,7 @@ void Intake::sendFeedback()
         break;
     }
     std::string currentstate = "";
-    switch (currentState)
-    {
+    switch (currentState){
     case (STATE_INTAKE_ONE_BALL):
         currentstate = "Intake one ball";
         break;
@@ -308,19 +296,21 @@ void Intake::sendFeedback()
     else{
         intakePositionString = "intake is up";
     }
+
     Feedback::sendString("Intake", "Current target direction", targetIntakeState.c_str());
     Feedback::sendBoolean("Intake", "State of Intake, true = up", intakePosition);
     Feedback::sendDouble("Intake", "Manual speed of intake/storage", intakeSpeed);
     Feedback::sendString("Intake", "current state of the intake", currentstate.c_str());
-    Feedback::sendBoolean("Intake", "sensor stage one, true is tripped", stageOneSensorPrevious);
-    Feedback::sendBoolean("Intake", "sensor stage two true is tripped", stageTwoSensorPrevious);
-    Feedback::sendBoolean("Intake", "sensor shooter true is tripped", shooterSensorPrevious);
+    Feedback::sendBoolean("Intake", "sensor stage one, true is tripped", checkSensor(&stageOneFlag));
+    Feedback::sendBoolean("Intake", "sensor stage two true is tripped", checkSensor(&stageTwoFlag));
+    Feedback::sendBoolean("Intake", "sensor shooter true is tripped", checkSensor(&shooterFlag));
     Feedback::sendBoolean("Intake", "true is stage two is occupied", stageTwoOccupied);
     Feedback::sendDouble("Intake", "ball count", ballCount); 
     Feedback::sendString("Intake", "current manual position of the intake", intakePositionString.c_str());
     Feedback::sendDouble("Intake", "current manual speed of the intake stage one/two", intakeSpeed);
+    Feedback::sendDouble("Intake", "stage 1 temperature (F)", (intakeMotorStageOne->GetMotorTemperature() * 9/5) + 32);
+    Feedback::sendDouble("Intake", "stage 2 temperature (F)", (intakeMotorStageTwo->GetMotorTemperature() * 9/5) + 32);
 
     Feedback::sendDouble("thunderdashboard", "stage1", stageOneSensorPrevious);
     Feedback::sendDouble("thunderdashboard", "stage2", stageTwoOccupied );
-
 }

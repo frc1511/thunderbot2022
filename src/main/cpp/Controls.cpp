@@ -245,8 +245,6 @@ void Controls::doAux() {
         }
         // Manual Aux Controls
         if (gamePieceManual == true) {
-            gamEpiece->setIntakeDirection(GamEpiece::IntakeDirection::MANUAL);
-
             if (dPadValue == 180) {
                 gamEpiece->setManualIntakePosition(true);
             }
@@ -263,8 +261,10 @@ void Controls::doAux() {
 
             if (dPadValue == 90) {
                 gamEpiece->setManualHoodSpeed(1);
+                lastPressedMode = Shooter::MANUAL;
             }else if (dPadValue == 270) {            
                 gamEpiece->setManualHoodSpeed(-1);
+                lastPressedMode = Shooter::MANUAL;
             }
             else{
                 gamEpiece->setManualHoodSpeed(0);
@@ -273,9 +273,11 @@ void Controls::doAux() {
 
             if(controllerAux.GetRawButtonPressed(SHARE_BUTTON)){
                 gamEpiece->changeShooterSpeed(false);
+                lastPressedMode = Shooter::MANUAL;
             }
             if(controllerAux.GetRawButtonPressed(OPTIONS_BUTTON)){
                 gamEpiece->changeShooterSpeed(true);
+                lastPressedMode = Shooter::MANUAL;
             }
 
 
@@ -305,7 +307,7 @@ void Controls::doSwitchPanel() {
     if (hangActive) {
         hangManual = switchPanel.GetRawButton(2);
     }
-    isCraterMode = switchPanel.GetRawButton(10);
+    isCraterMode = switchPanel.GetRawButton(3); // do be 10 tho
     robotCentric = switchPanel.GetRawButton(5);
     if (robotCentric) {
         drive->setControlMode(Drive::ROBOT_CENTRIC);

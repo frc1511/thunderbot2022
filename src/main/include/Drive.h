@@ -73,6 +73,8 @@ public:
     SwerveModule(ThunderSparkMax::MotorID driveID, ThunderSparkMax::MotorID turningID, int canCoderCANID);
     ~SwerveModule();
 
+    void stop();
+
     /**
      * Sets the state of the swerve module (Velocity and angle).
      */
@@ -112,6 +114,11 @@ public:
      * Persist configuration for all motors
      */
     void doPersistentConfiguration();
+
+    /**
+     * Returns the raw rotation of the absolute turning encoder.
+     */
+    units::radian_t getRawRotation();
 
 private:
     /**

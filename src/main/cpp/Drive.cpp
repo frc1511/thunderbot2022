@@ -65,7 +65,7 @@
 #define DRIVE_I_ZONE_VALUE 0
 #define DRIVE_FF_VALUE 0.000187
 
-#define ROT_P_VALUE 0.4
+#define ROT_P_VALUE 0.08
 #define ROT_I_VALUE 0
 #define ROT_D_VALUE 0
 #define ROT_I_ZONE_VALUE 0
@@ -91,6 +91,11 @@ SwerveModule::SwerveModule(ThunderSparkMax::MotorID driveID, ThunderSparkMax::Mo
 
 SwerveModule::~SwerveModule() {
 
+}
+
+void SwerveModule::stop() {
+    turningMotor->Set(0);
+    driveMotor->Set(0);
 }
 
 void SwerveModule::configureMotors() {
@@ -149,13 +154,24 @@ void SwerveModule::doPersistentConfiguration() {
     turningMotor->BurnFlash();
 }
 
+units::radian_t SwerveModule::getRawRotation() {
+    return units::degree_t(turningAbsEncoder->GetAbsolutePosition());
+}
+
+
 void SwerveModule::setState(frc::SwerveModuleState targetState) {
     frc::SwerveModuleState currentState = getState();
   
     // Optimize the target state by flipping motor directions and adjusting
     // rotations in order to turn the least amount of distance possible.
-    frc::SwerveModuleState optimizedState = frc::SwerveModuleState::Optimize(targetState, currentState.angle);
-    
+    frc::SwerveModuleState optimizedState;
+    if (isCraterMode) {
+        optimizedState = targetState;
+    }
+    else {
+        optimizedState = frc::SwerveModuleState::Optimize(targetState, currentState.angle);
+    }
+
     // Only handle turning when we are actually driving (Stops the modules from
     // snapping back to 0 when we come to a stop).
     if(units::math::abs(optimizedState.speed) > 0.01_mps) {
@@ -191,7 +207,7 @@ void SwerveModule::setTurningMotor(units::radian_t angle) {
     
     // Add the current relative rotation.
     output += getRelativeRotation();
-    
+
     // Set PID controller reference.
     turningPID->SetReference(output, rev::CANSparkMax::ControlType::kPosition);
 }
@@ -219,6 +235,7 @@ void SwerveModule::setIdleMode(IdleMode mode) {
 
     // Set the idle mode of the drive motor.
     driveMotor->SetIdleMode(idleMode);
+    turningMotor->SetIdleMode(idleMode);
 }
 
 units::meters_per_second_t SwerveModule::getDriveVelocity() {
@@ -238,10 +255,6 @@ frc::Rotation2d SwerveModule::getAbsoluteRotation() {
 
     // Subtract the offset from the angle.
     angle -= canCoderOffset;
-
-    // Add 90 degrees from the angle because the kinematics thinks that
-    // forward is to the right for some reason.
-    angle += 90_deg;
 
     return angle;
 }
@@ -301,6 +314,10 @@ void Drive::resetToMode(MatchMode mode) {
     driveMode = STOPPED;
     cmd = {};
     manualData = {};
+
+    for(SwerveModule* module : swerveModules) {
+      module->stop();
+    }
     
     if (mode == MODE_DISABLED) {
         // Set the drive motors to coast when disabled so they can try to push
@@ -372,6 +389,16 @@ void Drive::sendFeedback() {
     Feedback::sendDouble("drive", "wheel 1 rotation (degrees)", swerveModules.at(1)->getState().angle.Degrees().value());
     Feedback::sendDouble("drive", "wheel 2 rotation (degrees)", swerveModules.at(2)->getState().angle.Degrees().value());
     Feedback::sendDouble("drive", "wheel 3 rotation (degrees)", swerveModules.at(3)->getState().angle.Degrees().value());
+
+    Feedback::sendDouble("drive", "wheel 0 rotation without offsets (radians)", swerveModules.at(0)->getState().angle.Radians().value() + offsets.at(0).value());
+    Feedback::sendDouble("drive", "wheel 1 rotation without offsets (radians)", swerveModules.at(1)->getState().angle.Radians().value() + offsets.at(1).value());
+    Feedback::sendDouble("drive", "wheel 2 rotation without offsets (radians)", swerveModules.at(2)->getState().angle.Radians().value() + offsets.at(2).value());
+    Feedback::sendDouble("drive", "wheel 3 rotation without offsets (radians)", swerveModules.at(3)->getState().angle.Radians().value() + offsets.at(3).value());
+
+    Feedback::sendDouble("drive", "wheel 0 offset", offsets.at(0).value());
+    Feedback::sendDouble("drive", "wheel 1 offset", offsets.at(1).value());
+    Feedback::sendDouble("drive", "wheel 2 offset", offsets.at(2).value());
+    Feedback::sendDouble("drive", "wheel 3 offset", offsets.at(3).value());
     
     //hi josh
 
@@ -436,6 +463,7 @@ void Drive::zeroRotation() {
 void Drive::calibrateIMU() {
     if (imu) {
         imu->Calibrate();
+        sleep(4);
         imuCalibrated = true;
     }
 }
@@ -447,13 +475,10 @@ void Drive::configMagneticEncoders() {
 
     // Apply the current rotation of the swerve modules to the offsets.
     for (unsigned i = 0; i < swerveModules.size(); i++) {
-        units::radian_t angle(swerveModules.at(i)->getState().angle.Radians());
-        
-        // Add the 90 degree offset.
-        angle += 90_deg;
-        
+        units::radian_t angle(swerveModules.at(i)->getRawRotation());
+
         // Add the angle of the module to the offset that is already applied.
-        offsets.at(i) += angle;
+        offsets.at(i) = angle;
     }
     
     // Write the new offsets to the offsets file.
@@ -650,6 +675,10 @@ frc::Rotation2d Drive::getRotation() {
 }
 
 void Drive::exeManual() {
+    if (!imuCalibrated) {
+        calibrateIMU();
+    }
+
     // Calculate the velocities.
     units::meters_per_second_t xVel    = manualData.xPct   * DRIVE_MANUAL_MAX_SPEED;
     units::meters_per_second_t yVel    = manualData.yPct   * DRIVE_MANUAL_MAX_SPEED;
@@ -785,7 +814,7 @@ void Drive::writeOffsetsFile() {
 
 void Drive::applyOffsets() {
     for (unsigned i = 0; i < swerveModules.size(); i++) {
-        swerveModules.at(i)->setOffset(offsets.at(i));
+        swerveModules.at(i)->setOffset(offsets.at(i) - 90_deg);
     }
 }
 
