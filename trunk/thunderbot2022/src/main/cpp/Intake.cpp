@@ -308,8 +308,8 @@ void Intake::sendFeedback(){ // debug
     Feedback::sendDouble("Intake", "ball count", ballCount); 
     Feedback::sendString("Intake", "current manual position of the intake", intakePositionString.c_str());
     Feedback::sendDouble("Intake", "current manual speed of the intake stage one/two", intakeSpeed);
-    Feedback::sendDouble("Intake", "stage 1 temperature (F)", (intakeMotorStageOne->GetMotorTemperature() * 9/5) + 32);
-    Feedback::sendDouble("Intake", "stage 2 temperature (F)", (intakeMotorStageTwo->GetMotorTemperature() * 9/5) + 32);
+    Feedback::sendDouble("Intake", "stage 1 temperature (F)", intakeMotorStageOne->GetMotorTemperatureFarenheit());
+    Feedback::sendDouble("Intake", "stage 2 temperature (F)", intakeMotorStageTwo->GetMotorTemperatureFarenheit());
 
     Feedback::sendDouble("thunderdashboard", "stage1", stageOneSensorPrevious);
     Feedback::sendDouble("thunderdashboard", "stage2", stageTwoOccupied );
