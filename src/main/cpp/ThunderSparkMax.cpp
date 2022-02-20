@@ -11,7 +11,8 @@ class ThunderSparkMaxImpl : public ThunderSparkMax {
         virtual void SetOpenLoopRampRate(double rate);
         virtual void SetClosedLoopRampRate(double rate);
 
-        virtual double GetMotorTemperature() { return 42; }
+        virtual double GetMotorTemperature();
+        virtual double GetMotorTemperatureFarenheit();
 
         // Returns rotations of encoder
         virtual double GetEncoder() ;
@@ -54,6 +55,7 @@ class ThunderSparkMaxImpl : public ThunderSparkMax {
         bool printedVcompWarning;
         bool printedCurrentLimitWarning;
         bool printedFlashWarning;
+        bool printedTempWarning;
 
         static ThunderSparkMaxCANPIDController fakePIDController;
 };
@@ -73,7 +75,8 @@ ThunderSparkMaxImpl::ThunderSparkMaxImpl(const char *implName, int id) :
         printedVelocityWarning(false),
         printedVcompWarning(false),
         printedCurrentLimitWarning(false),
-        printedFlashWarning(false)
+        printedFlashWarning(false),
+        printedTempWarning(false)
 {
     
 }
@@ -106,6 +109,18 @@ void ThunderSparkMaxImpl::SetClosedLoopRampRate(double rate)
     printWarning(&printedRampWarning, "Output Ramping");
 }
         
+double ThunderSparkMaxImpl::GetMotorTemperature()
+{
+    printWarning(&printedTempWarning, "Temperature monitoring");
+    return -1;
+}
+
+double ThunderSparkMaxImpl::GetMotorTemperatureFarenheit()
+{
+    double c = GetMotorTemperature();
+    return (c * 9/5) + 32;
+}
+
 double ThunderSparkMaxImpl::GetEncoder()
 {
     printWarning(&printedEncoderWarning, "Encoder");
@@ -252,9 +267,7 @@ class ThunderSMCANImpl : public ThunderSparkMaxImpl {
         virtual void SetOpenLoopRampRate(double rate);
         virtual void SetClosedLoopRampRate(double rate);
 
-        virtual double GetMotorTemperature() {
-            return spark.GetMotorTemperature();
-        }
+        virtual double GetMotorTemperature() { return spark.GetMotorTemperature(); }
 
         virtual double GetEncoder();
         virtual double GetAlternateEncoder();

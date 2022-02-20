@@ -60,7 +60,9 @@ class ThunderSparkMax {
         virtual void SetOpenLoopRampRate(double rate) = 0;
         virtual void SetClosedLoopRampRate(double rate) = 0;
 
+        // In degrees celsius
         virtual double GetMotorTemperature() = 0;
+        virtual double GetMotorTemperatureFarenheit() = 0;
 
         virtual void Follow(ThunderSparkMax *leader, bool invertOutput = false) = 0;
         virtual void SetSmartCurrentLimit(unsigned int limitAmps) = 0;

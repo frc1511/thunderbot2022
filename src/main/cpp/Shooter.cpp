@@ -252,8 +252,8 @@ void Shooter::sendFeedback() {
     Feedback::sendDouble("shooter", "Target hood position", targetHoodPosition);
     Feedback::sendDouble("shotoer", "manual RPM", manualRPM);
     Feedback::sendDouble("shooter", "manual hood speed", hoodSpeedManual);
-    Feedback::sendDouble("shooter", "left temperature (F)", (shooterLeftMotor->GetMotorTemperature() * 9/5) + 32);
-    Feedback::sendDouble("shooter", "right temperature (F)", (shooterRightMotor->GetMotorTemperature() * 9/5) + 32);
+    Feedback::sendDouble("shooter", "left temperature (F)", shooterLeftMotor->GetMotorTemperatureFarenheit());
+    Feedback::sendDouble("shooter", "right temperature (F)", shooterRightMotor->GetMotorTemperatureFarenheit());
 
     Feedback::sendDouble("thunderdashboard", "shooter_hood", (readPotentiometer() * 100));
 }
