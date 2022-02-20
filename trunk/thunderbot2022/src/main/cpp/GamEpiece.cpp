@@ -191,6 +191,6 @@ void GamEpiece::sendFeedback() {
     Feedback::sendString("gamEpiece", "intakeDirection", intakeStateString.c_str());
     Feedback::sendString("gamEpiece", "shooterState", shooterStateString.c_str());
 
-    Feedback::sendDouble("thunderdashboard","match_remaining", frc::DriverStation::GetMatchTime() == -1 ? 350 : frc::DriverStation::GetMatchTime());
+    Feedback::sendDouble("thunderdashboard","match_remaining", frc::DriverStation::GetMatchTime());
     Feedback::sendDouble("thunderdashboard", "inpitmode", isCraterMode);
 }
