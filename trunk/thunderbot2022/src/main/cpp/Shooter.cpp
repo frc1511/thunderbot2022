@@ -12,14 +12,14 @@
 #define SHOOTER_FF_VALUE .000187
 
 // Minimum / maximum hood servo positions.
-#define HOOD_MIN_POS .48
-#define HOOD_MAX_POS (HOOD_MIN_POS + .486)
+#define HOOD_MIN_POS .01768
+#define HOOD_MAX_POS (HOOD_MIN_POS + .15782) //.1755
 
 // The maximum RPM of the shooter wheels.
-#define SHOOTER_MAX_RPM 5700 // 5700
+#define SHOOTER_MAX_RPM 5000 // 5700
 
 // The tolerance of the hood position.
-#define HOOD_TOLERANCE .05
+#define HOOD_TOLERANCE .02
 
 // Speeds of the hood servo.
 #define HOOD_SPEED_STOPPED 0
@@ -31,20 +31,20 @@
 // --- Preset values ---
 
 // The hood position and shooter RPM when the robot is right next to the hub.
-#define HUB_HOOD_POS .6
-#define HUB_SHOOTER_RPM 3500 // 4000?????? 
+#define HUB_HOOD_POS (HOOD_MIN_POS + .01)
+#define HUB_SHOOTER_RPM 3500 // 4000
 
 // The hood position and shooter RPM when the robot is at the far wall.
-#define WALL_HOOD_POS 0.6
-#define WALL_SHOOTER_RPM 5500 // 5500
+#define WALL_HOOD_POS (HOOD_MIN_POS + .14)
+#define WALL_SHOOTER_RPM 5000 // 5500
 
 // The hood position and shooter RPM when the robot is at the launch pad.
-#define LAUNCH_PAD_HOOD_POS 0.6
-#define LAUNCH_PAD_SHOOTER_RPM 4000 //
+#define LAUNCH_PAD_HOOD_POS (HOOD_MIN_POS + .11)
+#define LAUNCH_PAD_SHOOTER_RPM 4000 
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
-#define TARMAC_LINE_HOOD_POS 0.6
-#define TARMAC_LINE_SHOOTER_RPM 3750 //3250
+#define TARMAC_LINE_HOOD_POS (HOOD_MIN_POS + .07)
+#define TARMAC_LINE_SHOOTER_RPM 3750 // 3250
 
 Shooter::Shooter(Limelight* limelight)
   : limelight(limelight),
@@ -74,8 +74,8 @@ void Shooter::configureMotors() {
     shooterLeftMotor->SetSmartCurrentLimit(SHOOTER_MAX_AMPS);
     shooterRightMotor->SetSmartCurrentLimit(SHOOTER_MAX_AMPS);
     // One is inverted.
-    shooterLeftMotor->SetInverted(true);
-    shooterRightMotor->SetInverted(false);
+    shooterLeftMotor->SetInverted(false);
+    shooterRightMotor->SetInverted(true);
     // PID values.
     shooterLeftPID->SetP(SHOOTER_P_VALUE, 0);
     shooterRightPID->SetP(SHOOTER_P_VALUE, 0);
@@ -98,6 +98,7 @@ void Shooter::doPersistentConfiguration() {
 void Shooter::resetToMode(MatchMode mode) {
     shooterLeftMotor->Set(0);
     shooterRightMotor->Set(0);
+    hoodServo.Set(.5);
     hoodSpeedManual = 0;
     wantToShoot = false;
     shooterMode = TARMAC_LINE;
@@ -174,10 +175,10 @@ void Shooter::process() {
     // Set the speed of the servo.
     if(fabs(servoSpeed) >= .05){
         if(servoSpeed > 0){
-            hoodServo.Set(1); //might need to reverse
+            hoodServo.Set(0); //might need to reverse
         }
         else{
-            hoodServo.Set(0);
+            hoodServo.Set(1);
         }
     }
     else{
@@ -251,6 +252,8 @@ void Shooter::sendFeedback() {
     Feedback::sendDouble("shooter", "Target hood position", targetHoodPosition);
     Feedback::sendDouble("shotoer", "manual RPM", manualRPM);
     Feedback::sendDouble("shooter", "manual hood speed", hoodSpeedManual);
+    Feedback::sendDouble("shooter", "left temperature (F)", (shooterLeftMotor->GetMotorTemperature() * 9/5) + 32);
+    Feedback::sendDouble("shooter", "right temperature (F)", (shooterRightMotor->GetMotorTemperature() * 9/5) + 32);
 
     Feedback::sendDouble("thunderdashboard", "shooter_hood", (readPotentiometer() * 100));
 }

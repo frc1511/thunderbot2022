@@ -11,6 +11,8 @@ class ThunderSparkMaxImpl : public ThunderSparkMax {
         virtual void SetOpenLoopRampRate(double rate);
         virtual void SetClosedLoopRampRate(double rate);
 
+        virtual double GetMotorTemperature() { return 42; }
+
         // Returns rotations of encoder
         virtual double GetEncoder() ;
         virtual void SetEncoder(double rotations);
@@ -249,6 +251,10 @@ class ThunderSMCANImpl : public ThunderSparkMaxImpl {
         
         virtual void SetOpenLoopRampRate(double rate);
         virtual void SetClosedLoopRampRate(double rate);
+
+        virtual double GetMotorTemperature() {
+            return spark.GetMotorTemperature();
+        }
 
         virtual double GetEncoder();
         virtual double GetAlternateEncoder();
