@@ -444,11 +444,11 @@ void Drive::process() {
                     break;
                 case SwerveCommand::ALIGN_TO_CARGO:
                     // Execute the align with cargo command.
-                    exeAlignWithCargo();
+                    exeAlignToCargo();
                     break;
                 case SwerveCommand::ALIGN_TO_HIGH_HUB:
                     // Execute the align with high hub command.
-                    exeAlignWithHighHub();
+                    exeAlignToHighHub();
                     break;
             }
             break;
@@ -502,7 +502,7 @@ void Drive::manualDrive(double xPct, double yPct, double rotPct) {
         driveMode = MANUAL;
     }
 
-    manualData = { xPct, yPct, rotPct };
+    manualData = { xPct, yPct, rotPct, manualData.viceGrip };
 }
 
 void Drive::setControlMode(ControlMode mode) {
@@ -525,6 +525,10 @@ void Drive::makeBrick() {
         // Turn the swerve module to point towards the center of the robot.
         swerveModules.at(i)->setTurningMotor(angle);
     }
+}
+
+void Drive::setViceGrip(bool viceGrip) {
+    manualData.viceGrip = viceGrip;
 }
 
 frc::TrajectoryConfig Drive::getTrajectoryConfig() {
@@ -559,7 +563,7 @@ bool Drive::cmdAlignToHighHub() {
 
     driveMode = COMMAND;
     cmd.type = SwerveCommand::ALIGN_TO_HIGH_HUB;
-    cmd.alignmentData.position = SwerveCommand::AlignmentData::UNKNOWN;
+    alignmentData.position = AlignmentData::UNKNOWN;
     
     return true;
 }
@@ -615,8 +619,8 @@ bool Drive::cmdIsFinished() {
             }
             return false;
         case SwerveCommand::ALIGN_TO_HIGH_HUB:
-            if (cmd.alignmentData.position == SwerveCommand::AlignmentData::CENTER) {
-                cmd.alignmentData.position = SwerveCommand::AlignmentData::UNKNOWN;
+            if (alignmentData.position == AlignmentData::CENTER) {
+                alignmentData.position = AlignmentData::UNKNOWN;
                 return true;
             }
             return false;
@@ -686,8 +690,15 @@ void Drive::exeManual() {
     // Calculate the velocities.
     units::meters_per_second_t xVel    = manualData.xPct   * DRIVE_MANUAL_MAX_SPEED;
     units::meters_per_second_t yVel    = manualData.yPct   * DRIVE_MANUAL_MAX_SPEED;
-    units::radians_per_second_t rotVel = manualData.rotPct * DRIVE_MANUAL_MAX_ANGULAR_SPEED;
+    units::radians_per_second_t rotVel;
     
+    if (manualData.viceGrip) {
+        rotVel = getAlignVelocity();
+    }
+    else {
+        rotVel = manualData.rotPct * DRIVE_MANUAL_MAX_ANGULAR_SPEED;
+    }
+
     frc::ChassisSpeeds chassisVelocities;
 
     // Generate chassis speeds depending on the control mode.
@@ -726,7 +737,7 @@ void Drive::exeFollowTrajectory() {
     //hi josh
 }
 
-void Drive::exeAlignWithCargo() {
+void Drive::exeAlignToCargo() {
     switch (camera->getTargetSector()) {
         case Camera::UNKNOWN:
             // Not found.
@@ -746,33 +757,8 @@ void Drive::exeAlignWithCargo() {
     }
 }
 
-void Drive::exeAlignWithHighHub() {
-    if (limelight->hasTarget()) {
-        units::radian_t angle = limelight->getAngleHorizontal();
-
-        if (units::math::abs(angle) <= LIMELIGHT_TOLERANCE) {
-            cmd.alignmentData.position = SwerveCommand::AlignmentData::CENTER;
-        }
-        else if (angle > LIMELIGHT_TOLERANCE) {
-            cmd.alignmentData.position = SwerveCommand::AlignmentData::RIGHT;
-        }
-        else if (angle < -LIMELIGHT_TOLERANCE) {
-            cmd.alignmentData.position = SwerveCommand::AlignmentData::LEFT;
-        }
-    }
-
-    switch (cmd.alignmentData.position) {
-        case SwerveCommand::AlignmentData::UNKNOWN:
-            break;
-        case SwerveCommand::AlignmentData::CENTER:
-            break;
-        case SwerveCommand::AlignmentData::RIGHT:
-            setModuleStates({ 0_mps, 0_mps, -DRIVE_VISION_MAX_ANGULAR_SPEED });
-            break;
-        case SwerveCommand::AlignmentData::LEFT:
-            setModuleStates({ 0_mps, 0_mps, +DRIVE_VISION_MAX_ANGULAR_SPEED });
-            break;
-    }
+void Drive::exeAlignToHighHub() {
+    setModuleStates({0_mps, 0_mps, getAlignVelocity() });
 }
 
 bool Drive::readOffsetsFile() {
@@ -825,5 +811,32 @@ void Drive::applyOffsets() {
 void Drive::setIdleMode(SwerveModule::IdleMode mode) {
     for (SwerveModule* module : swerveModules) {
         module->setIdleMode(mode);
+    }
+}
+
+units::radians_per_second_t Drive::getAlignVelocity() {
+    if (limelight->hasTarget()) {
+        units::radian_t angle = limelight->getAngleHorizontal();
+
+        if (units::math::abs(angle) <= LIMELIGHT_TOLERANCE) {
+            alignmentData.position = AlignmentData::CENTER;
+        }
+        else if (angle > LIMELIGHT_TOLERANCE) {
+            alignmentData.position = AlignmentData::RIGHT;
+        }
+        else if (angle < -LIMELIGHT_TOLERANCE) {
+            alignmentData.position = AlignmentData::LEFT;
+        }
+    }
+
+    switch (alignmentData.position) {
+        case AlignmentData::UNKNOWN:
+            return 0_rad_per_s;
+        case AlignmentData::CENTER:
+            return 0_rad_per_s;
+        case AlignmentData::RIGHT:
+            return -DRIVE_VISION_MAX_ANGULAR_SPEED;
+        case AlignmentData::LEFT:
+            return +DRIVE_VISION_MAX_ANGULAR_SPEED;
     }
 }

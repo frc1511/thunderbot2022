@@ -211,6 +211,11 @@ public:
      * to reduce pushing by other robots (aka making the robot into a brick).
      */
     void makeBrick();
+
+    /**
+     * Locks the rotation of the robot to the high hub.
+     */
+    void setViceGrip(bool viceGrip);
     
     /**
      * Resets the position and rotation on the field.
@@ -307,12 +312,12 @@ private:
     /**
      * Executes the current align with cargo command.
      */
-    void exeAlignWithCargo();
+    void exeAlignToCargo();
 
     /**
      * Executes the current align with high hub command.
      */
-    void exeAlignWithHighHub();
+    void exeAlignToHighHub();
 
     /**
      * Applies the current rotation of the swerve modules as the offset of the
@@ -339,6 +344,11 @@ private:
      * Sets the idle mode of the drive motors.
      */
     void setIdleMode(SwerveModule::IdleMode mode);
+
+    /**
+     * Returns the velocity required to align to the high hub.
+     */
+    units::radians_per_second_t getAlignVelocity();
 
     // The forward-facing camera.
     Camera* camera;
@@ -398,6 +408,20 @@ private:
     // The control mode of the robot.
     ControlMode controlMode = FIELD_CENTRIC;
 
+    struct AlignmentData {
+        enum Position {
+            UNKNOWN,
+            CENTER,
+            LEFT,
+            RIGHT,
+        };
+
+        Position position = UNKNOWN;
+    };
+    
+    // Data regarding alignment.
+    AlignmentData alignmentData {};
+
     /**
      * Represents a command for the drivetrain to execute over a period of time.
      */
@@ -418,23 +442,9 @@ private:
             // The timer of the trajectory.
             frc::Timer timer;
         };
-
-        struct AlignmentData {
-            enum Position {
-                UNKNOWN,
-                CENTER,
-                LEFT,
-                RIGHT,
-            };
-
-            Position position = UNKNOWN;
-        };
         
         // Data regarding the current trajectory command.
         TrajectoryData trajectoryData {};
-
-        // Data regarding the current alignment command.
-        AlignmentData alignmentData {};
     };
 
     // The current command.
@@ -447,6 +457,7 @@ private:
         double xPct = 0;
         double yPct = 0;
         double rotPct = 0;
+        bool viceGrip = false;
     };
 
     // The data for manual drive.
