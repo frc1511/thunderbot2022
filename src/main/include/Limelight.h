@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Mechanism.h"
+#include "Feedback.h"
 #include <frc/smartdashboard/Smartdashboard.h>
 #include <networktables/NetworkTable.h>
 #include <networktables/NetworkTableInstance.h>
@@ -14,6 +15,9 @@ class Limelight : public Mechanism {
 public:
     Limelight();
     ~Limelight();
+
+    void resetToMode(MatchMode mode) override;
+    void sendFeedback() override;
 
     /**
      * Returns whether the limelight has any valid targets.

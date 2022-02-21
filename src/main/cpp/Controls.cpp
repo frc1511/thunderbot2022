@@ -237,12 +237,33 @@ void Controls::doAux() {
         if (controllerAux.GetRawButton(RIGHT_TRIGGER_BUTTON)) {
             gamEpiece->setShooterWarmUpEnabled(lastPressedMode, true);
         }
-        else{
+        else {
             gamEpiece->setShooterWarmUpEnabled(lastPressedMode, false);
         }
         if(controllerAux.GetRawButton(PLAYSTATION_BUTTON)){
             gamEpiece->cancelShot();
         }
+        if (dPadValue == 90) {
+            gamEpiece->setManualHoodSpeed(1);
+            lastPressedMode = Shooter::MANUAL;
+        }
+        else if (dPadValue == 270) {            
+            gamEpiece->setManualHoodSpeed(-1);
+            lastPressedMode = Shooter::MANUAL;
+        }
+        else {
+            gamEpiece->setManualHoodSpeed(0);
+        }
+        if(controllerAux.GetRawButtonPressed(SHARE_BUTTON)){
+            gamEpiece->changeShooterSpeed(false);
+            lastPressedMode = Shooter::MANUAL;
+        }
+        if(controllerAux.GetRawButtonPressed(OPTIONS_BUTTON)){
+            gamEpiece->changeShooterSpeed(true);
+            lastPressedMode = Shooter::MANUAL;
+        }
+
+
         // Manual Aux Controls
         if (gamePieceManual == true) {
             if (dPadValue == 180) {
@@ -259,28 +280,7 @@ void Controls::doAux() {
                 gamEpiece->setManualIntakeSpeed(0);
             }
 
-            if (dPadValue == 90) {
-                gamEpiece->setManualHoodSpeed(1);
-                lastPressedMode = Shooter::MANUAL;
-            }else if (dPadValue == 270) {            
-                gamEpiece->setManualHoodSpeed(-1);
-                lastPressedMode = Shooter::MANUAL;
-            }
-            else{
-                gamEpiece->setManualHoodSpeed(0);
-            }
-
-
-            if(controllerAux.GetRawButtonPressed(SHARE_BUTTON)){
-                gamEpiece->changeShooterSpeed(false);
-                lastPressedMode = Shooter::MANUAL;
-            }
-            if(controllerAux.GetRawButtonPressed(OPTIONS_BUTTON)){
-                gamEpiece->changeShooterSpeed(true);
-                lastPressedMode = Shooter::MANUAL;
-            }
-
-
+            
         }
         else if (gamePieceManual == false) {
             if (controllerAux.GetRawButton(RIGHT_BUMPER)) {
@@ -326,5 +326,20 @@ bool Controls::getShouldPersistConfig() {
 }
 
 void Controls::sendFeedback(){
+    std::string mode = "";
+    switch(lastPressedMode){
+        case(Shooter::TARMAC_LINE):
+            mode = "tarmac line";
+            break;
+        case(Shooter::LAUNCH_PAD):
+            mode = "launch pad";
+            break;
+        case(Shooter::ODOMETRY):
+            mode = "odometry";
+            break;
+        case(Shooter::MANUAL):
+            mode = "manual";
+            break;
+    }
     Feedback::sendDouble("thunderdashboard", "frontcamera", whichCamera);
 }
