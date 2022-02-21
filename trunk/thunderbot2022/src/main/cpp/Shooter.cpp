@@ -31,20 +31,20 @@
 // --- Preset values ---
 
 // The hood position and shooter RPM when the robot is right next to the hub.
-#define HUB_HOOD_POS (HOOD_MIN_POS + .01)
-#define HUB_SHOOTER_RPM 3500 // 4000
+#define HUB_HOOD_POS (HOOD_MIN_POS + .0187)
+#define HUB_SHOOTER_RPM 2000
 
 // The hood position and shooter RPM when the robot is at the far wall.
-#define WALL_HOOD_POS (HOOD_MIN_POS + .14)
-#define WALL_SHOOTER_RPM 5000 // 5500
+#define WALL_HOOD_POS (HOOD_MIN_POS + .1551)
+#define WALL_SHOOTER_RPM 2600
 
 // The hood position and shooter RPM when the robot is at the launch pad.
-#define LAUNCH_PAD_HOOD_POS (HOOD_MIN_POS + .11)
-#define LAUNCH_PAD_SHOOTER_RPM 4000 
+#define LAUNCH_PAD_HOOD_POS (HOOD_MIN_POS + .1311)
+#define LAUNCH_PAD_SHOOTER_RPM 2200
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
-#define TARMAC_LINE_HOOD_POS (HOOD_MIN_POS + .07)
-#define TARMAC_LINE_SHOOTER_RPM 3750 // 3250
+#define TARMAC_LINE_HOOD_POS (HOOD_MIN_POS + .1038)
+#define TARMAC_LINE_SHOOTER_RPM 2000
 
 Shooter::Shooter(Limelight* limelight)
   : limelight(limelight),

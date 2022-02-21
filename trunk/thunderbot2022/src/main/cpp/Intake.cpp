@@ -5,7 +5,7 @@
 
 const double kSpeedStageOne = .4; // used for intaking
 const double kSpeedStageTwo = .3; // used for shooting
-const double kSpeedStageTwoSlow = .3; // used for intaking into stage two
+const double kSpeedStageTwoSlow = .2; // used for intaking into stage two
 const double kReverseSpeedStageOne = -.4; // used for outtaking
 const double kReverseSpeedStageTwo = -.3; // used for outtaking
 
@@ -147,7 +147,7 @@ void Intake::process(){
         ballCountIntake(currentSensorOneInput, currentSensorTwoInput);
         break;
     case STATE_OUTTAKE:
-        horizontalIntake.Set(frc::DoubleSolenoid::Value::kOff); // leave intake as is
+        horizontalIntake.Set(frc::DoubleSolenoid::Value::kForward); // change this to off // leave intake as is
         intakeMotorStageOne->Set(kReverseSpeedStageOne);        // stage 1 go reverse
         intakeMotorStageTwo->Set(kReverseSpeedStageTwo);        // stage 2 go reverse
         switchStates();

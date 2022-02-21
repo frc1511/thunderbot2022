@@ -14,6 +14,24 @@ Limelight::~Limelight() {
 
 }
 
+void Limelight::resetToMode(MatchMode mode) {
+    switch (mode) {
+        case MODE_DISABLED:
+        case MODE_TEST:
+            setLEDMode(LEDMode::OFF);
+            break;
+        case MODE_AUTO:
+        case MODE_TELEOP:
+            setLEDMode(LEDMode::ON);
+            break;
+        }
+}
+
+void Limelight::sendFeedback() {
+    Feedback::sendDouble("limelight", "distance (in?)", getDistance());
+    Feedback::sendDouble("limelight", "vertical angle", getAngleVertical().value());
+}
+
 bool Limelight::hasTarget() {
     return table->GetNumber("tv", 0.0);
 }
