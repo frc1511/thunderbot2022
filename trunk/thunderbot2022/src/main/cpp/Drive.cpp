@@ -263,6 +263,60 @@ frc::Rotation2d SwerveModule::getAbsoluteRotation() {
     return angle;
 }
 
+// --- Drive commands ---
+
+#define POSE_X_THRESHOLD 1_in
+#define POSE_Y_THRESHOLD 1_in
+#define POSE_ROT_THRESHOLD 1_deg
+
+PetersDriveController::PetersDriveController()
+  : xError(6, 0, 6/100), 
+    yError(6, 0, 6/100),
+    thetaError(2.5, 0, 0, frc::TrapezoidProfile<units::radians>::Constraints(DRIVE_CMD_MAX_ANGULAR_SPEED, DRIVE_CMD_MAX_ANGULAR_ACCELERATION)) {
+
+}
+
+PetersDriveController::~PetersDriveController() {
+
+}
+
+void PetersDriveController::begin(PetersTrajectory _trajectory) {
+    trajectory = _trajectory;
+    finished = false;
+}
+
+void PetersDriveController::cancel() {
+    finished = true;
+}
+
+bool PetersDriveController::isFinished() {
+    return finished;
+}
+
+frc::ChassisSpeeds PetersDriveController::getVelocities(frc::Pose2d currentPose) {
+    if (units::math::abs(trajectory.target.X() - currentPose.X()) <= POSE_X_THRESHOLD
+        && units::math::abs(trajectory.target.Y() - currentPose.Y()) <= POSE_Y_THRESHOLD
+        && units::math::abs(trajectory.target.Rotation().Degrees() - currentPose.Rotation().Degrees()) <= POSE_ROT_THRESHOLD) {
+        finished = true;
+        return { 0_mps, 0_mps, 0_rad_per_s };
+    }
+
+    units::meters_per_second_t x = 0_mps, y = 0_mps;
+    units::radians_per_second_t rot = 0_rad_per_s;
+
+    if (units::math::abs(trajectory.target.X() - currentPose.X()) > POSE_X_THRESHOLD) {
+        x = DRIVE_CMD_MAX_SPEED;
+    }
+    if (units::math::abs(trajectory.target.Y() - currentPose.Y()) > POSE_Y_THRESHOLD) {
+        y = DRIVE_CMD_MAX_SPEED;
+    }
+    if (units::math::abs(trajectory.target.Rotation().Degrees() - currentPose.Rotation().Degrees()) > POSE_ROT_THRESHOLD) {
+        rot = DRIVE_CMD_MAX_ANGULAR_SPEED;
+    }
+
+    return { x, y, rot };
+}
+
 // --- Drivetrain ---
 
 Drive::Drive(Camera* camera, Limelight* limelight)
@@ -493,7 +547,7 @@ void Drive::configMagneticEncoders() {
 }
 
 void Drive::manualDrive(double xPct, double yPct, double rotPct) {
-    if (xPct == 0 && yPct == 0 && rotPct == 0) {
+    if (xPct == 0 && yPct == 0 && rotPct == 0 && !manualData.viceGrip) {
         if (driveMode != COMMAND) {
             driveMode = STOPPED;
         }
@@ -502,7 +556,9 @@ void Drive::manualDrive(double xPct, double yPct, double rotPct) {
         driveMode = MANUAL;
     }
 
-    manualData = { xPct, yPct, rotPct, manualData.viceGrip };
+    bool vg = manualData.viceGrip;
+
+    manualData = { xPct, yPct, rotPct, vg };
 }
 
 void Drive::setControlMode(ControlMode mode) {
@@ -694,6 +750,7 @@ void Drive::exeManual() {
     
     if (manualData.viceGrip) {
         rotVel = getAlignVelocity();
+        std::cout << "we are vice gripped at " << rotVel.value() << '\n';
     }
     else {
         rotVel = manualData.rotPct * DRIVE_MANUAL_MAX_ANGULAR_SPEED;
@@ -711,6 +768,7 @@ void Drive::exeManual() {
             break;
     }
     
+    std::cout << "aaaaaaaaaaaaaaaaaaaaaaaarrrggggghhhhhh" << rotVel.value() << '\n';
     // Set the modules to drive based on the velocities.
     setModuleStates(chassisVelocities);
 }
