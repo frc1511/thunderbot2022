@@ -269,52 +269,73 @@ frc::Rotation2d SwerveModule::getAbsoluteRotation() {
 #define POSE_Y_THRESHOLD 1_in
 #define POSE_ROT_THRESHOLD 1_deg
 
-PetersDriveController::PetersDriveController()
-  : xError(6, 0, 6/100), 
-    yError(6, 0, 6/100),
-    thetaError(2.5, 0, 0, frc::TrapezoidProfile<units::radians>::Constraints(DRIVE_CMD_MAX_ANGULAR_SPEED, DRIVE_CMD_MAX_ANGULAR_ACCELERATION)) {
+PetersTrajectoryController::PetersTrajectoryController() {
 
 }
 
-PetersDriveController::~PetersDriveController() {
+PetersTrajectoryController::~PetersTrajectoryController() {
 
 }
 
-void PetersDriveController::begin(PetersTrajectory _trajectory) {
-    trajectory = _trajectory;
-    finished = false;
-}
+void PetersTrajectoryController::setTrajectory(frc::Pose2d currentPose, std::vector<frc::Translation2d> waypoints, frc::Pose2d endPose, PetersTrajectoryConfig config) {
+    trajectoryData = {};
 
-void PetersDriveController::cancel() {
-    finished = true;
-}
+    trajectoryData.start = currentPose;
+    trajectoryData.end = { currentPose.X() + endPose.X(), currentPose.Y() + endPose.Y(), endPose.Rotation() };
+    trajectoryData.waypoints = waypoints;
+    for (frc::Translation2d waypoint : waypoints) {
+        trajectoryData.waypoints.push_back({ currentPose.X() + waypoint.X(), currentPose.Y() + waypoint.Y() });
+    }
+    trajectoryData.config = config;
 
-bool PetersDriveController::isFinished() {
-    return finished;
-}
-
-frc::ChassisSpeeds PetersDriveController::getVelocities(frc::Pose2d currentPose) {
-    if (units::math::abs(trajectory.target.X() - currentPose.X()) <= POSE_X_THRESHOLD
-        && units::math::abs(trajectory.target.Y() - currentPose.Y()) <= POSE_Y_THRESHOLD
-        && units::math::abs(trajectory.target.Rotation().Degrees() - currentPose.Rotation().Degrees()) <= POSE_ROT_THRESHOLD) {
-        finished = true;
-        return { 0_mps, 0_mps, 0_rad_per_s };
+    trajectoryData.accelerationDistanceX = (config.maxVelocity * config.maxVelocity) / (2 * config.maxAcceleration);
+    trajectoryData.constantDistanceX = trajectoryData.end.X() - (2 * trajectoryData.accelerationDistanceX);
+    
+    if (trajectoryData.constantDistanceX < 0_m) {
+        trajectoryData.accelerationDistanceX -= -trajectoryData.constantDistanceX / 2;
+        trajectoryData.constantDistanceX = 0_m;
     }
 
-    units::meters_per_second_t x = 0_mps, y = 0_mps;
-    units::radians_per_second_t rot = 0_rad_per_s;
+    trajectoryData.accelerationDistanceY = (config.maxVelocity * config.maxVelocity) / (2 * config.maxAcceleration);
+    trajectoryData.constantDistanceY = trajectoryData.end.Y() - (2 * trajectoryData.accelerationDistanceY);
 
-    if (units::math::abs(trajectory.target.X() - currentPose.X()) > POSE_X_THRESHOLD) {
-        x = DRIVE_CMD_MAX_SPEED;
+    if (trajectoryData.constantDistanceY < 0_m) {
+        trajectoryData.accelerationDistanceY -= -trajectoryData.constantDistanceY / 2;
+        trajectoryData.constantDistanceY = 0_m;
     }
-    if (units::math::abs(trajectory.target.Y() - currentPose.Y()) > POSE_Y_THRESHOLD) {
-        y = DRIVE_CMD_MAX_SPEED;
-    }
-    if (units::math::abs(trajectory.target.Rotation().Degrees() - currentPose.Rotation().Degrees()) > POSE_ROT_THRESHOLD) {
-        rot = DRIVE_CMD_MAX_ANGULAR_SPEED;
-    }
+}
 
-    return { x, y, rot };
+bool PetersTrajectoryController::atReference(frc::Pose2d currentPose) {
+    // if (target != trajectory.getCheckpoints().end()) {
+    //     return false;
+    // }
+    
+    // if (units::math::abs(trajectory.end.X() - currentPose.X()) <= POSE_X_THRESHOLD &&
+    //     units::math::abs(trajectory.end.Y() - currentPose.Y()) <= POSE_Y_THRESHOLD &&
+    //     units::math::abs(trajectory.end.Rotation().Degrees() - currentPose.Rotation().Degrees()) <= POSE_ROT_THRESHOLD) {
+    //     return true;
+    // }
+}
+
+frc::ChassisSpeeds PetersTrajectoryController::getVelocities(frc::Pose2d currentPose) {
+    // if (atReference(currentPose)) {
+    //     return { 0_mps, 0_mps, 0_mps };
+    // }
+
+    // units::meters_per_second_t x = 0_mps, y = 0_mps;
+    // units::radians_per_second_t rot = 0_rad_per_s;
+
+    // if (units::math::abs(trajectory.end.X() - currentPose.X()) > POSE_X_THRESHOLD) {
+    //     x = DRIVE_CMD_MAX_SPEED;
+    // }
+    // if (units::math::abs(trajectory.end.Y() - currentPose.Y()) > POSE_Y_THRESHOLD) {
+    //     y = DRIVE_CMD_MAX_SPEED;
+    // }
+    // if (units::math::abs(trajectory.end.Rotation().Degrees() - currentPose.Rotation().Degrees()) > POSE_ROT_THRESHOLD) {
+    //     rot = DRIVE_CMD_MAX_ANGULAR_SPEED;
+    // }
+
+    // return { x, y, rot };
 }
 
 // --- Drivetrain ---
@@ -589,11 +610,11 @@ void Drive::setViceGrip(bool viceGrip) {
 
 frc::TrajectoryConfig Drive::getTrajectoryConfig() {
     // Generate a configuration with speed and acceleration limits.
-    frc::TrajectoryConfig trajectoryConfig { DRIVE_CMD_MAX_SPEED, DRIVE_CMD_MAX_ACCELERATION };
+    frc::TrajectoryConfig trajectoryConfig { DRIVE_CMD_MAX_VELOCITY, DRIVE_CMD_MAX_ACCELERATION };
 
     // Add a constraint to the configuration to make the trajectory better
     // suited for a swerve drive.
-    trajectoryConfig.AddConstraint(frc::SwerveDriveKinematicsConstraint<4>(kinematics, DRIVE_CMD_MAX_SPEED));
+    trajectoryConfig.AddConstraint(frc::SwerveDriveKinematicsConstraint<4>(kinematics, DRIVE_CMD_MAX_VELOCITY));
 
     // Stupid class does not like copy constructors for some reason.
     return std::move(trajectoryConfig);
@@ -695,7 +716,7 @@ void Drive::setModuleStates(frc::ChassisSpeeds chassisSpeeds) {
     wpi::array<frc::SwerveModuleState, 4> moduleStates = kinematics.ToSwerveModuleStates(chassisSpeeds);
     
     // Recalculate the wheel velocities relative to the max speed.
-    kinematics.DesaturateWheelSpeeds(&moduleStates, DRIVE_MANUAL_MAX_SPEED);
+    kinematics.DesaturateWheelSpeeds(&moduleStates, DRIVE_MANUAL_MAX_VELOCITY);
     
     // Set the module states.
     for(unsigned i = 0; i < swerveModules.size(); i++) {
@@ -744,16 +765,15 @@ void Drive::exeManual() {
     }
 
     // Calculate the velocities.
-    units::meters_per_second_t xVel    = manualData.xPct   * DRIVE_MANUAL_MAX_SPEED;
-    units::meters_per_second_t yVel    = manualData.yPct   * DRIVE_MANUAL_MAX_SPEED;
+    units::meters_per_second_t xVel    = manualData.xPct   * DRIVE_MANUAL_MAX_VELOCITY;
+    units::meters_per_second_t yVel    = manualData.yPct   * DRIVE_MANUAL_MAX_VELOCITY;
     units::radians_per_second_t rotVel;
     
     if (manualData.viceGrip) {
         rotVel = getAlignVelocity();
-        std::cout << "we are vice gripped at " << rotVel.value() << '\n';
     }
     else {
-        rotVel = manualData.rotPct * DRIVE_MANUAL_MAX_ANGULAR_SPEED;
+        rotVel = manualData.rotPct * DRIVE_MANUAL_MAX_ANGULAR_VELOCITY;
     }
 
     frc::ChassisSpeeds chassisVelocities;
@@ -768,7 +788,6 @@ void Drive::exeManual() {
             break;
     }
     
-    std::cout << "aaaaaaaaaaaaaaaaaaaaaaaarrrggggghhhhhh" << rotVel.value() << '\n';
     // Set the modules to drive based on the velocities.
     setModuleStates(chassisVelocities);
 }

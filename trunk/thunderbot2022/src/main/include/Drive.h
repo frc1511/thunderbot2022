@@ -34,16 +34,16 @@
 // #define DRIVE_DEBUG // Un-comment to enable debug drive functionality.
 
 // The maximum speed of the chassis during manual drive.
-#define DRIVE_MANUAL_MAX_SPEED 4_mps
+#define DRIVE_MANUAL_MAX_VELOCITY 4_mps
 // The maximum angular speed of the chassis during manual drive.
-#define DRIVE_MANUAL_MAX_ANGULAR_SPEED 3.14_rad_per_s * 1.7
+#define DRIVE_MANUAL_MAX_ANGULAR_VELOCITY 3.14_rad_per_s * 1.7
 
 // The maximum speed of the chassis during a drive command.
-#define DRIVE_CMD_MAX_SPEED 0.1_mps
+#define DRIVE_CMD_MAX_VELOCITY 0.1_mps
 // The maximum acceleration of the chassis during a drive command.
 #define DRIVE_CMD_MAX_ACCELERATION 0.4_mps_sq
 // The maximum angular speed of the chassis during a drive command.
-#define DRIVE_CMD_MAX_ANGULAR_SPEED 0.1_rad_per_s
+#define DRIVE_CMD_MAX_ANGULAR_VELOCITY 0.1_rad_per_s
 // The maximum angular acceleration of the chassis during a drive command.
 #define DRIVE_CMD_MAX_ANGULAR_ACCELERATION (3.14_rad_per_s / 1_s)
 
@@ -158,40 +158,64 @@ private:
 
 // --- Drive trajectories ---
 
-/**
- * Represents a trajectory for the robot to follow. I am not using the
- * frc::Trajectory because it doesn't work right and we need something to work
- * for FLR.
- * :D
- * 
- * hi Dave.
- * hi Homer 2.0
- */
-struct PetersTrajectory {
-    frc::Pose2d target;
-    units::meters_per_second_t velocity;
-    units::radians_per_second_t angularVelocity;
+struct PetersTrajectoryConfig {
+    units::meters_per_second_t maxVelocity = DRIVE_CMD_MAX_VELOCITY;
+    units::meters_per_second_squared_t maxAcceleration = DRIVE_CMD_MAX_ACCELERATION;
+    units::radians_per_second_t maxAngularVelocity = DRIVE_CMD_MAX_ANGULAR_VELOCITY;
 };
 
-class PetersDriveController {
+/**
+ * Represents a trajectory controller for the robot to utilize when following
+ * trajectories. I am not using the frc::Trajectory class because it doesn't
+ * work right and everything is very sad when we use it. Nuf said. :D
+ */
+class PetersTrajectoryController {
 public:
-    PetersDriveController();
-    ~PetersDriveController();
+    PetersTrajectoryController();
+    ~PetersTrajectoryController();
 
-    void begin(PetersTrajectory trajectory);
-    void cancel();
-    bool isFinished();
+    /**
+     * Sets the trajectory for the controller to reference.
+     */
+    void setTrajectory(frc::Pose2d currentPose, std::vector<frc::Translation2d> waypoints, frc::Pose2d endPose, PetersTrajectoryConfig config = {});
+    
+    /**
+     * Returns whether the robot is at the final state of the trajectory.
+     */
+    bool atReference(frc::Pose2d currentPose);
 
+    /**
+     * Returns the velocities of the chassis that are required to drive the
+     * robot along the reference trajectory.
+     */
     frc::ChassisSpeeds getVelocities(frc::Pose2d currentPose);
 
 private:
-    PetersTrajectory trajectory {};
+    enum TrajectoryState {
+        UNKNOWN,
+        ACCELERATING,
+        CONSTANT,
+        DECELERATING,
+    };
+    
+    // The state of the controller.
+    TrajectoryState trajectoryState = TrajectoryState::UNKNOWN;
 
-    frc2::PIDController xError;
-    frc2::PIDController yError;
-    frc::ProfiledPIDController<units::radians> thetaError;
+    struct TrajectoryData {
+        frc::Pose2d start {};
+        frc::Pose2d end {};
+        std::vector<frc::Translation2d> waypoints {};
+        
+        units::meter_t accelerationDistanceX = 0_m;
+        units::meter_t accelerationDistanceY = 0_m;
+        units::meter_t constantDistanceX = 0_m;
+        units::meter_t constantDistanceY = 0_m;
 
-    bool finished = false;
+        PetersTrajectoryConfig config {};
+    };
+
+    // The data representing the current trajectory.
+    TrajectoryData trajectoryData {};
 };
 
 // --- Drivetrain ---
@@ -293,7 +317,7 @@ public:
      */
     void cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle,
                   std::vector<frc::Translation2d> waypoints,
-                  units::meters_per_second_t speed = DRIVE_CMD_MAX_SPEED);
+                  units::meters_per_second_t speed = DRIVE_CMD_MAX_VELOCITY);
     
     /**
      * Begins a command to follow a specified trajectory.
@@ -505,7 +529,7 @@ private:
     frc2::PIDController cmdYController { 6, 0, 6/100 };
     frc::ProfiledPIDController<units::radians> cmdThetaController {
         2.5, 0, 0,
-        frc::TrapezoidProfile<units::radians>::Constraints(DRIVE_CMD_MAX_ANGULAR_SPEED, DRIVE_CMD_MAX_ANGULAR_ACCELERATION)
+        frc::TrapezoidProfile<units::radians>::Constraints(DRIVE_CMD_MAX_ANGULAR_VELOCITY, DRIVE_CMD_MAX_ANGULAR_ACCELERATION)
     };
 
     /**
