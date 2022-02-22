@@ -92,8 +92,9 @@ void Controls::process() {
 
 void Controls::doDrive() {
     bool brickDrive = controllerDrive.GetRawButton(CROSS_BUTTON);
-    bool alignWithHighHub = controllerDrive.GetRawButton(CIRCLE_BUTTON);
+    bool viceGrip = controllerDrive.GetRawButton(CIRCLE_BUTTON);
     bool toggleCamera = controllerDrive.GetRawButtonPressed(SQUARE_BUTTON);
+    bool alignWithHighHub = controllerDrive.GetRawButton(TRIANGLE_BUTTON);
 
     double xDriveVelocity = controllerDrive.GetRawAxis(LEFT_X_AXIS);
     double yDriveVelocity = controllerDrive.GetRawAxis(LEFT_Y_AXIS);
@@ -120,14 +121,21 @@ void Controls::doDrive() {
         driveDisabled = true;
     }
 
-    if (alignWithHighHub) {
-        drive->cmdAlignToHighHub();
+    if (viceGrip) {
+        drive->setViceGrip(true);
+    }
+    else {
+        drive->setViceGrip(false);
     }
 
     if (toggleCamera) {
         whichCamera = !whichCamera;
     }
     cameraWasToggled = toggleCamera;
+
+    if (alignWithHighHub && !viceGrip) {
+        drive->cmdAlignToHighHub();
+    }
 
     if (zeroRotation) {
         drive->zeroRotation();

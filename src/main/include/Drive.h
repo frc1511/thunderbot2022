@@ -156,6 +156,44 @@ private:
     units::radian_t canCoderOffset = 0_rad;
 };
 
+// --- Drive trajectories ---
+
+/**
+ * Represents a trajectory for the robot to follow. I am not using the
+ * frc::Trajectory because it doesn't work right and we need something to work
+ * for FLR.
+ * :D
+ * 
+ * hi Dave.
+ * hi Homer 2.0
+ */
+struct PetersTrajectory {
+    frc::Pose2d target;
+    units::meters_per_second_t velocity;
+    units::radians_per_second_t angularVelocity;
+};
+
+class PetersDriveController {
+public:
+    PetersDriveController();
+    ~PetersDriveController();
+
+    void begin(PetersTrajectory trajectory);
+    void cancel();
+    bool isFinished();
+
+    frc::ChassisSpeeds getVelocities(frc::Pose2d currentPose);
+
+private:
+    PetersTrajectory trajectory {};
+
+    frc2::PIDController xError;
+    frc2::PIDController yError;
+    frc::ProfiledPIDController<units::radians> thetaError;
+
+    bool finished = false;
+};
+
 // --- Drivetrain ---
 
 /**
