@@ -52,9 +52,7 @@ void GamEpiece::process() {
 
             break;
     }
-    /*if(currentBallCount == 0 && (shooterState == WANT_TO_SHOOT || shooterState == SHOOTING)){
-        shooterState = NOT_SHOOTING; // dont try to shoot if you dont have a ball
-    }*/
+
     if(shooterState == NOT_SHOOTING){ // stage two is needed to intake and to shoot, so if you are trying to shoot dont let it intake
         switch(intakeDirection){
             case(INTAKE):
