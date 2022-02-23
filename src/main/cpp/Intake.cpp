@@ -5,7 +5,7 @@
 
 const double kSpeedStageOne = .7; // used for intaking
 const double kSpeedStageTwo = .9; // used for shooting
-const double kSpeedStageTwoSlow = .15; // used for intaking into stage two
+const double kSpeedStageTwoSlow = .2; // used for intaking into stage two
 const double kReverseSpeedStageOne = -.4; // used for outtaking
 const double kReverseSpeedStageTwo = -.3; // used for outtaking
 

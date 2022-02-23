@@ -52,9 +52,9 @@ void GamEpiece::process() {
 
             break;
     }
-    if(currentBallCount == 0){
+    /*if(currentBallCount == 0 && (shooterState == WANT_TO_SHOOT || shooterState == SHOOTING)){
         shooterState = NOT_SHOOTING; // dont try to shoot if you dont have a ball
-    }
+    }*/
     if(shooterState == NOT_SHOOTING){ // stage two is needed to intake and to shoot, so if you are trying to shoot dont let it intake
         switch(intakeDirection){
             case(INTAKE):
@@ -87,9 +87,14 @@ void GamEpiece::process() {
             }
             break;
         case(SHOOTING):
-            if(intake.finishedShooting()){ // intake shot a ball so it is done 
+            if(intake.finishedShooting() && waitingForTimer == false){ // intake shot a ball so it is done 
+                shotTimer.Reset();
+                shotTimer.Start();
+            }
+            if(shotTimer.Get().value() > 1){
                 intake.setIntakeDirection(Intake::NOTTAKE);
                 shooterState = WARMUP_SHOOTER;
+                shotTimer.Stop();
             }
             break;
     }
@@ -190,6 +195,7 @@ void GamEpiece::sendFeedback() {
     }
     Feedback::sendString("gamEpiece", "intakeDirection", intakeStateString.c_str());
     Feedback::sendString("gamEpiece", "shooterState", shooterStateString.c_str());
+    Feedback::sendDouble("gamEpiece", "shot timer", shotTimer.Get().value());
 
     Feedback::sendDouble("thunderdashboard","match_remaining", frc::DriverStation::GetMatchTime());
     Feedback::sendDouble("thunderdashboard", "inpitmode", isCraterMode);

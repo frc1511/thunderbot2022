@@ -37,11 +37,15 @@ private:
     // false is limelight, true is camera
     bool whichCamera = true;
 
+    bool shoot = false;
+
 //switchPanel Variables
     bool hangActive = false;
     bool hangManual = false;
     bool gamePieceManual = false;
     bool robotCentric = false;
+    bool highLowShot = false;
+    bool highOrLow = false; //true = high hub shot, false = low hub shot
 
 //Normal Aux Variables
     Shooter::ShooterMode lastPressedMode = Shooter::TARMAC_LINE;
