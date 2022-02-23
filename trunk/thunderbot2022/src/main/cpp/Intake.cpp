@@ -3,9 +3,9 @@
 #define INTAKE_MAX_VOLTAGE 12
 #define INTAKE_MAX_AMPERAGE 30
 
-const double kSpeedStageOne = .4; // used for intaking
-const double kSpeedStageTwo = .3; // used for shooting
-const double kSpeedStageTwoSlow = .2; // used for intaking into stage two
+const double kSpeedStageOne = .7; // used for intaking
+const double kSpeedStageTwo = .9; // used for shooting
+const double kSpeedStageTwoSlow = .15; // used for intaking into stage two
 const double kReverseSpeedStageOne = -.4; // used for outtaking
 const double kReverseSpeedStageTwo = -.3; // used for outtaking
 
@@ -56,6 +56,7 @@ void Intake::resetToMode(MatchMode mode){
     intakePosition = false;
     intakeSpeed = 0;
     ballCount = 0;        // set the ball count to zero
+    stageTwoOccupied = false;
     stageOneSensorPrevious = checkSensor(&stageOneFlag); 
     stageTwoSensorPrevious = checkSensor(&stageTwoFlag); 
     shooterSensorPrevious = checkSensor(&shooterFlag);
@@ -78,8 +79,9 @@ void Intake::ballCountIntake(bool currentSensorOneInput, bool currentSensorTwoIn
 void Intake::ballCountOuttake(bool currentSensorOneInput, bool currentSensorTwoInput){
 
     if (stageOneSensorPrevious == true && currentSensorOneInput == false){
-        ballCount --;
-    }
+        ballCount = 0;
+        stageTwoOccupied = false;
+    }//bc the sensor doesn't see a break in between the balls so if outtaking just set to zero bc unlikely to remove only 1 ball of 2
 
     if (stageTwoSensorPrevious == false && currentSensorTwoInput == true){
         stageTwoOccupied = false;
