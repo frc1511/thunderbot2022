@@ -349,5 +349,6 @@ void Controls::sendFeedback(){
             mode = "manual";
             break;
     }
+    Feedback::sendString("controls", "last pressed shooter mode", mode.c_str());
     Feedback::sendDouble("thunderdashboard", "frontcamera", whichCamera);
 }

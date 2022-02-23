@@ -12,14 +12,14 @@
 #define SHOOTER_FF_VALUE .000187
 
 // Minimum / maximum hood servo positions.
-#define HOOD_MIN_POS .01768
-#define HOOD_MAX_POS (HOOD_MIN_POS + .15782) //.1755
+#define HOOD_MIN_POS 0.433 //0.433
+#define HOOD_MAX_POS (HOOD_MIN_POS + .189) //0.622
 
 // The maximum RPM of the shooter wheels.
 #define SHOOTER_MAX_RPM 5000 // 5700
 
 // The tolerance of the hood position.
-#define HOOD_TOLERANCE .02
+#define HOOD_TOLERANCE .01
 
 // Speeds of the hood servo.
 #define HOOD_SPEED_STOPPED 0
@@ -198,7 +198,9 @@ bool Shooter::isShooterReady() {
 // allows manual control of the hood speed
 void Shooter::setHoodManual(double speed) {
     hoodSpeedManual = speed;
-    shooterMode = MANUAL;
+    if(speed){
+        shooterMode = MANUAL;
+    }
 
 }
 
