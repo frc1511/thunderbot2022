@@ -34,9 +34,9 @@
 // #define DRIVE_DEBUG // Un-comment to enable debug drive functionality.
 
 // The maximum speed of the chassis during manual drive.
-#define DRIVE_MANUAL_MAX_VELOCITY 4_mps
+#define DRIVE_MANUAL_MAX_VELOCITY 6_mps
 // The maximum angular speed of the chassis during manual drive.
-#define DRIVE_MANUAL_MAX_ANGULAR_VELOCITY 3.14_rad_per_s * 1.7
+#define DRIVE_MANUAL_MAX_ANGULAR_VELOCITY 3.14_rad_per_s * 2
 
 // The maximum speed of the chassis during a drive command.
 #define DRIVE_CMD_MAX_VELOCITY 0.1_mps
