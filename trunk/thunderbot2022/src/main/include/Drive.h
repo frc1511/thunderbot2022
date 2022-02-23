@@ -162,6 +162,7 @@ struct PetersTrajectoryConfig {
     units::meters_per_second_t maxVelocity = DRIVE_CMD_MAX_VELOCITY;
     units::meters_per_second_squared_t maxAcceleration = DRIVE_CMD_MAX_ACCELERATION;
     units::radians_per_second_t maxAngularVelocity = DRIVE_CMD_MAX_ANGULAR_VELOCITY;
+    units::meters_per_second_t endVelocity = 0_mps;
 };
 
 /**
@@ -177,7 +178,7 @@ public:
     /**
      * Sets the trajectory for the controller to reference.
      */
-    void setTrajectory(frc::Pose2d currentPose, std::vector<frc::Translation2d> waypoints, frc::Pose2d endPose, PetersTrajectoryConfig config = {});
+    void setTrajectory(frc::Pose2d currentPose, frc::Pose2d endPose, PetersTrajectoryConfig config = {});
     
     /**
      * Returns whether the robot is at the final state of the trajectory.
@@ -202,20 +203,25 @@ private:
     TrajectoryState trajectoryState = TrajectoryState::UNKNOWN;
 
     struct TrajectoryData {
+        frc::Timer timer {};
+        
         frc::Pose2d start {};
         frc::Pose2d end {};
-        std::vector<frc::Translation2d> waypoints {};
+
+        units::meter_t distanceTraveled = 0_m;
         
-        units::meter_t accelerationDistanceX = 0_m;
-        units::meter_t accelerationDistanceY = 0_m;
-        units::meter_t constantDistanceX = 0_m;
-        units::meter_t constantDistanceY = 0_m;
+        units::meter_t totalDistance = 0_m;
+        units::degree_t heading = 0_deg;
+        
+        units::meter_t accelerateDistance = 0_m;
+        units::meter_t decelerateDistance = 0_m;
+        units::meter_t constantDistance = 0_m;
 
         PetersTrajectoryConfig config {};
     };
 
     // The data representing the current trajectory.
-    TrajectoryData trajectoryData {};
+    TrajectoryData trajectory {};
 };
 
 // --- Drivetrain ---
