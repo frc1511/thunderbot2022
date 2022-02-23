@@ -277,65 +277,106 @@ PetersTrajectoryController::~PetersTrajectoryController() {
 
 }
 
-void PetersTrajectoryController::setTrajectory(frc::Pose2d currentPose, std::vector<frc::Translation2d> waypoints, frc::Pose2d endPose, PetersTrajectoryConfig config) {
-    trajectoryData = {};
+void PetersTrajectoryController::setTrajectory(frc::Pose2d currentPose, frc::Pose2d endPose, PetersTrajectoryConfig config) {
+    trajectory = {};
 
-    trajectoryData.start = currentPose;
-    trajectoryData.end = { currentPose.X() + endPose.X(), currentPose.Y() + endPose.Y(), endPose.Rotation() };
-    trajectoryData.waypoints = waypoints;
-    for (frc::Translation2d waypoint : waypoints) {
-        trajectoryData.waypoints.push_back({ currentPose.X() + waypoint.X(), currentPose.Y() + waypoint.Y() });
+    trajectory.start = currentPose;
+    trajectory.end = { currentPose.X() + endPose.X(), currentPose.Y() + endPose.Y(), endPose.Rotation() };
+    trajectory.config = config;
+
+    units::meter_t xDistance = trajectory.end.X() - trajectory.start.X();
+    units::meter_t yDistance = trajectory.end.Y() - trajectory.start.Y();
+
+    // Get the total distance to travel (a^2 + b^2 = c^2).
+    trajectory.totalDistance = units::math::sqrt(units::math::pow<2>(xDistance) + units::math::pow<2>(yDistance));
+
+    // Get the distance to accelerate to max velocity (Vf^2 = Vi^2 + 2ad).
+    trajectory.accelerateDistance = units::math::pow<2>(trajectory.config.maxVelocity) / (2 * trajectory.config.maxAcceleration);
+    // Get the distance to decelerate to final velocity (Vf^2 = Vi^2 + 2ad).
+    trajectory.decelerateDistance = (units::math::pow<2>(trajectory.config.endVelocity) - units::math::pow<2>(trajectory.config.maxVelocity)) / (2 * trajectory.config.maxAcceleration);
+    // Get the remaining distance in between during which the robot is at max velocity.
+    trajectory.constantDistance = trajectory.totalDistance - trajectory.accelerateDistance - trajectory.decelerateDistance;
+
+    if (trajectory.constantDistance < 0_m) {
+        // Do something here!
+        trajectory.constantDistance = 0_m;
     }
-    trajectoryData.config = config;
 
-    trajectoryData.accelerationDistanceX = (config.maxVelocity * config.maxVelocity) / (2 * config.maxAcceleration);
-    trajectoryData.constantDistanceX = trajectoryData.end.X() - (2 * trajectoryData.accelerationDistanceX);
-    
-    if (trajectoryData.constantDistanceX < 0_m) {
-        trajectoryData.accelerationDistanceX -= -trajectoryData.constantDistanceX / 2;
-        trajectoryData.constantDistanceX = 0_m;
-    }
-
-    trajectoryData.accelerationDistanceY = (config.maxVelocity * config.maxVelocity) / (2 * config.maxAcceleration);
-    trajectoryData.constantDistanceY = trajectoryData.end.Y() - (2 * trajectoryData.accelerationDistanceY);
-
-    if (trajectoryData.constantDistanceY < 0_m) {
-        trajectoryData.accelerationDistanceY -= -trajectoryData.constantDistanceY / 2;
-        trajectoryData.constantDistanceY = 0_m;
-    }
+    // Get the angle the robot will be moving.
+    trajectory.heading = units::math::atan(yDistance / xDistance);
 }
 
 bool PetersTrajectoryController::atReference(frc::Pose2d currentPose) {
-    // if (target != trajectory.getCheckpoints().end()) {
-    //     return false;
-    // }
+    if (trajectoryState == UNKNOWN) {
+        return true;
+    }
     
-    // if (units::math::abs(trajectory.end.X() - currentPose.X()) <= POSE_X_THRESHOLD &&
-    //     units::math::abs(trajectory.end.Y() - currentPose.Y()) <= POSE_Y_THRESHOLD &&
-    //     units::math::abs(trajectory.end.Rotation().Degrees() - currentPose.Rotation().Degrees()) <= POSE_ROT_THRESHOLD) {
-    //     return true;
-    // }
+    if (units::math::abs(trajectory.end.X() - currentPose.X()) <= POSE_X_THRESHOLD &&
+        units::math::abs(trajectory.end.Y() - currentPose.Y()) <= POSE_Y_THRESHOLD &&
+        units::math::abs(trajectory.end.Rotation().Degrees() - currentPose.Rotation().Degrees()) <= POSE_ROT_THRESHOLD) {
+        return true;
+    }
 }
 
 frc::ChassisSpeeds PetersTrajectoryController::getVelocities(frc::Pose2d currentPose) {
-    // if (atReference(currentPose)) {
-    //     return { 0_mps, 0_mps, 0_mps };
-    // }
+    if (atReference(currentPose)) {
+        return { 0_mps, 0_mps, 0_rad_per_s };
+    }
 
-    // units::meters_per_second_t x = 0_mps, y = 0_mps;
-    // units::radians_per_second_t rot = 0_rad_per_s;
+    units::meter_t xDistance = currentPose.X() - trajectory.start.X();
+    units::meter_t yDistance = currentPose.Y() - trajectory.start.Y();
 
-    // if (units::math::abs(trajectory.end.X() - currentPose.X()) > POSE_X_THRESHOLD) {
-    //     x = DRIVE_CMD_MAX_SPEED;
-    // }
-    // if (units::math::abs(trajectory.end.Y() - currentPose.Y()) > POSE_Y_THRESHOLD) {
-    //     y = DRIVE_CMD_MAX_SPEED;
-    // }
-    // if (units::math::abs(trajectory.end.Rotation().Degrees() - currentPose.Rotation().Degrees()) > POSE_ROT_THRESHOLD) {
-    //     rot = DRIVE_CMD_MAX_ANGULAR_SPEED;
-    // }
+    // Get the total distance traveled (a^2 + b^2 = c^2).
+    trajectory.distanceTraveled = units::math::sqrt(units::math::pow<2>(xDistance) + units::math::pow<2>(yDistance));
 
-    // return { x, y, rot };
+    TrajectoryState lastState = trajectoryState;
+
+    if (trajectory.distanceTraveled <= trajectory.accelerateDistance) {
+        trajectoryState = ACCELERATING;
+    }
+    else if (trajectory.distanceTraveled <= trajectory.accelerateDistance + trajectory.constantDistance) {
+        trajectoryState = CONSTANT;
+    }
+    else {
+        trajectoryState = DECELERATING;
+    }
+
+    if (trajectoryState != lastState) {
+        trajectory.timer.Reset();
+        trajectory.timer.Start();
+    }
+
+    units::meters_per_second_t vel = 0_mps;
+    units::radians_per_second_t angVel = 0_rad_per_s;
+    
+    if (trajectory.end.Rotation().Degrees() - currentPose.Rotation().Degrees() > POSE_ROT_THRESHOLD) {
+        angVel = DRIVE_CMD_MAX_ANGULAR_VELOCITY;
+    }
+    else if (trajectory.end.Rotation().Degrees() - currentPose.Rotation().Degrees() < POSE_ROT_THRESHOLD) {
+        angVel = -DRIVE_CMD_MAX_ANGULAR_VELOCITY;
+    }
+
+    switch (trajectoryState) {
+        case UNKNOWN:
+            vel = 0_mps;
+            angVel = 0_rad_per_s;
+            break;
+        case ACCELERATING:
+            vel = trajectory.config.maxAcceleration * trajectory.timer.Get() * (std::signbit(trajectory.totalDistance.value()) ? -1 : 1);
+            break;
+        case CONSTANT:
+            vel = trajectory.config.maxVelocity * (std::signbit(trajectory.totalDistance.value()) ? -1 : 1);
+            break;
+        case DECELERATING:
+            vel = (trajectory.config.maxVelocity - (trajectory.config.maxAcceleration * trajectory.timer.Get())) * (std::signbit(trajectory.totalDistance.value()) ? -1 : 1);
+            if (vel < 0_mps) vel = 0_mps;
+            break;
+    }
+
+    units::meters_per_second_t xVel = vel * units::math::cos(trajectory.heading);
+    units::meters_per_second_t yVel = vel * units::math::sin(trajectory.heading);
+
+    return { xVel, yVel, angVel };
 }
 
 // --- Drivetrain ---
@@ -916,4 +957,6 @@ units::radians_per_second_t Drive::getAlignVelocity() {
         case AlignmentData::LEFT:
             return +DRIVE_VISION_MAX_ANGULAR_SPEED;
     }
+
+    return 0_rad_per_s;
 }
