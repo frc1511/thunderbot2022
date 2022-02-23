@@ -114,8 +114,8 @@ private:
     bool ballCounterBroken; // used for if the sensor that counts the balls entering or leaving doesnt work
 
     bool ballJustShot;
-
-    frc::Timer brokenShotTimer; //used for timing the shot between balls if our ball counter is broken
+    bool waitingForTimer = false;
+    frc::Timer shotTimer; //used for timing the shot between balls if our ball counter is broken
 
 
     

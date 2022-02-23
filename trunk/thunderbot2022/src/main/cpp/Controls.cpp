@@ -241,12 +241,22 @@ void Controls::doAux() {
         else if (controllerAux.GetRawButton(CROSS_BUTTON)) {
             lastPressedMode = Shooter::ODOMETRY;
         }
+        else if(controllerAux.GetRawButton(TRIANGLE_BUTTON)) {
+            if(highOrLow){
+                lastPressedMode = Shooter::HIGH_HUB_SHOT;
+            }
+            else{
+                lastPressedMode = Shooter::LOW_HUB_SHOT;
+            }
+        }
 
         if (controllerAux.GetRawButton(RIGHT_TRIGGER_BUTTON)) {
             gamEpiece->setShooterWarmUpEnabled(lastPressedMode, true);
+            shoot = true;
         }
         else {
             gamEpiece->setShooterWarmUpEnabled(lastPressedMode, false);
+            shoot = false;
         }
         if(controllerAux.GetRawButton(PLAYSTATION_BUTTON)){
             gamEpiece->cancelShot();
@@ -323,6 +333,13 @@ void Controls::doSwitchPanel() {
     else {
         drive->setControlMode(Drive::FIELD_CENTRIC);
     }
+    highLowShot = switchPanel.GetRawButton(7);
+    if (highLowShot){
+        highOrLow = true;
+    }
+    else {
+        highOrLow = false;
+    }
 }
 
 bool Controls::getShouldPersistConfig() {
@@ -342,6 +359,12 @@ void Controls::sendFeedback(){
         case(Shooter::LAUNCH_PAD):
             mode = "launch pad";
             break;
+        case(Shooter::HIGH_HUB_SHOT):
+            mode = "high hub shot";
+            break;
+        case(Shooter::LOW_HUB_SHOT):
+            mode = "low hub shot";
+            break;
         case(Shooter::ODOMETRY):
             mode = "odometry";
             break;
@@ -351,4 +374,5 @@ void Controls::sendFeedback(){
     }
     Feedback::sendString("controls", "last pressed shooter mode", mode.c_str());
     Feedback::sendDouble("thunderdashboard", "frontcamera", whichCamera);
+    Feedback::sendBoolean("controls", "warmup, true = yes", shoot);
 }

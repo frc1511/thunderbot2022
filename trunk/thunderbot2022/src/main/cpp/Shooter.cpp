@@ -12,8 +12,8 @@
 #define SHOOTER_FF_VALUE .000187
 
 // Minimum / maximum hood servo positions.
-#define HOOD_MIN_POS 0.433 //0.433
-#define HOOD_MAX_POS (HOOD_MIN_POS + .189) //0.622
+#define HOOD_MIN_POS 0.53 //0.433
+#define HOOD_MAX_POS (HOOD_MIN_POS + .18) //0.7
 
 // The maximum RPM of the shooter wheels.
 #define SHOOTER_MAX_RPM 5000 // 5700
@@ -26,7 +26,7 @@
 #define HOOD_SPEED_FORWARD .5
 #define HOOD_SPEED_BACKWARD -.5
 
-#define SHOOTER_TOLERANCE 30
+#define SHOOTER_TOLERANCE 200
 
 // --- Preset values ---
 
@@ -45,6 +45,14 @@
 // The hood position and shooter RPM when the robot is at the tarmac line.
 #define TARMAC_LINE_HOOD_POS (HOOD_MIN_POS + .1038)
 #define TARMAC_LINE_SHOOTER_RPM 2000
+
+// The hood position and shooter RPM when the robot is at the tarmac line.
+#define HIGH_HUB_SHOT_HOOD_POS (HOOD_MIN_POS + .003) //.533
+#define HIGH_HUB_SHOT_SHOOTER_RPM 1800
+
+// The hood position and shooter RPM when the robot is at the tarmac line.
+#define LOW_HUB_SHOT_HOOD_POS (HOOD_MIN_POS + .111) // .641
+#define LOW_HUB_SHOT_SHOOTER_RPM 1100
 
 Shooter::Shooter(Limelight* limelight)
   : limelight(limelight),
@@ -129,6 +137,14 @@ void Shooter::process() {
             targetHoodPosition = TARMAC_LINE_HOOD_POS;
             targetRPM = TARMAC_LINE_SHOOTER_RPM;
             break;
+        case HIGH_HUB_SHOT:
+            targetHoodPosition = HIGH_HUB_SHOT_HOOD_POS;
+            targetRPM = HIGH_HUB_SHOT_SHOOTER_RPM;
+            break;
+        case LOW_HUB_SHOT:
+            targetHoodPosition = LOW_HUB_SHOT_HOOD_POS;
+            targetRPM = LOW_HUB_SHOT_SHOOTER_RPM;
+            break;
         case MANUAL:
             targetRPM = manualRPM;
             break;
@@ -193,7 +209,7 @@ void Shooter::setShooterSpinup(bool shouldShoot) {
 bool Shooter::isShooterReady() {
     return (shooterLeftMotor->GetVelocity() > targetRPM - SHOOTER_TOLERANCE) && // if left is speedy enough :D
            (shooterRightMotor->GetVelocity() > targetRPM - SHOOTER_TOLERANCE) && // if right is speedy enough :D
-           (fabs(readPotentiometer() - targetHoodPosition) < HOOD_TOLERANCE); // if hood is in the right place
+           ((fabs(readPotentiometer() - targetHoodPosition) < HOOD_TOLERANCE) || shooterMode == MANUAL); // if hood is in the right place
 }
 // allows manual control of the hood speed
 void Shooter::setHoodManual(double speed) {
@@ -237,6 +253,12 @@ void Shooter::sendFeedback() {
             break;
         case TARMAC_LINE:
             modeString = "Tarmac Line";
+            break;
+        case HIGH_HUB_SHOT:
+            modeString = "High Hub Shot";
+            break;
+        case LOW_HUB_SHOT:
+            modeString = "Low Hub Shot";
             break;
         case MANUAL:
             modeString = "Manual";
