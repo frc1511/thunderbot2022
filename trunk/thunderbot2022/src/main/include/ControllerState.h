@@ -49,9 +49,9 @@ class ControllerState{
     std::vector<double> axesTime;
     std::vector<double> axesPos;
     std::vector<bool> buttonsValues = {false, false, false, false, false, false, false, false, false, false, false, false, false, false};
-    std::vector<double> axesValues = {0, 0, 0, 0, 0, 0};
+    std::vector<double> axesValues = {0, 0, 0, 0, 0, 0, 0};
     std::vector<bool> buttons = {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,};
-    std::vector<double> axes = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    std::vector<double> axes = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     int nextButtonsButton;
     double nextButtonsTime;
