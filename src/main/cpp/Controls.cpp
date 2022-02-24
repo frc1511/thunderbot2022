@@ -1,5 +1,5 @@
 #include "Controls.h"
-
+#include <iostream>
 // #define XBOX_CONTROLLER
 
 #ifdef XBOX_CONTROLLER
@@ -68,21 +68,23 @@ Controls::~Controls() {
 }
 
 void Controls::resetToMode(MatchMode mode) {
+    auxController.reset();
+    driveController.reset();
     switch (mode) {
         case MODE_DISABLED:
         case MODE_AUTO:
-            controllerDrive.SetRumble(frc::GenericHID::RumbleType::kLeftRumble,  0);
-            controllerDrive.SetRumble(frc::GenericHID::RumbleType::kRightRumble, 0);
+            
             break;
         case MODE_TELEOP:
         case MODE_TEST:
-            controllerDrive.SetRumble(frc::GenericHID::RumbleType::kLeftRumble,  1);
-            controllerDrive.SetRumble(frc::GenericHID::RumbleType::kRightRumble, 1);
+          
             break;
     }
 }
 
 void Controls::process() {
+    auxController.process();
+    driveController.process();
     doSwitchPanel();
     doDrive();
 #ifndef HOMER
@@ -91,31 +93,41 @@ void Controls::process() {
 }
 
 void Controls::doDrive() {
-    bool brickDrive = controllerDrive.GetRawButton(CROSS_BUTTON);
-    bool viceGrip = controllerDrive.GetRawButton(CIRCLE_BUTTON);
-    bool toggleCamera = controllerDrive.GetRawButtonPressed(SQUARE_BUTTON);
-    bool alignWithHighHub = controllerDrive.GetRawButton(TRIANGLE_BUTTON);
+    bool brickDrive = driveController.getRawButton(CROSS_BUTTON);
+    bool viceGrip = driveController.getRawButton(CIRCLE_BUTTON);
+    bool toggleCamera = driveController.getRawButtonPressed(SQUARE_BUTTON);
+    bool alignWithHighHub = driveController.getRawButton(TRIANGLE_BUTTON);
 
-    double xDriveVelocity = controllerDrive.GetRawAxis(LEFT_X_AXIS);
-    double yDriveVelocity = controllerDrive.GetRawAxis(LEFT_Y_AXIS);
+    double xDriveVelocity = driveController.getRawAxis(LEFT_X_AXIS);
+    double yDriveVelocity = driveController.getRawAxis(LEFT_Y_AXIS);
 #ifdef XBOX_CONTROLLER
-    double leftRotateVelocity = controllerDrive.GetRawAxis(LEFT_TRIGGER);
-    double rightRotateVelocity = controllerDrive.GetRawAxis(RIGHT_TRIGGER);
+    double leftRotateVelocity = driveController.getRawAxis(LEFT_TRIGGER);
+    double rightRotateVelocity = driveController.getRawAxis(RIGHT_TRIGGER);
 #else
-    double leftRotateVelocity = (controllerDrive.GetRawAxis(LEFT_TRIGGER) + 1) / 2;
-    double rightRotateVelocity = (controllerDrive.GetRawAxis(RIGHT_TRIGGER) + 1) / 2;
+    double leftRotateVelocity = (driveController.getRawAxis(LEFT_TRIGGER) + 1) / 2;
+    double rightRotateVelocity = (driveController.getRawAxis(RIGHT_TRIGGER) + 1) / 2;
 #endif
 
-    double xSlowDriveVelocity = controllerDrive.GetRawAxis(RIGHT_X_AXIS);
-    double ySlowDriveVelocity = controllerDrive.GetRawAxis(RIGHT_Y_AXIS);
-    double leftSlowRotateVelocity = controllerDrive.GetRawButton(LEFT_BUMPER);
-    double rightSlowRotateVelocity = controllerDrive.GetRawButton(RIGHT_BUMPER);
+    double xSlowDriveVelocity = driveController.getRawAxis(RIGHT_X_AXIS);
+    double ySlowDriveVelocity = driveController.getRawAxis(RIGHT_Y_AXIS);
+    double leftSlowRotateVelocity = driveController.getRawButton(LEFT_BUMPER);
+    double rightSlowRotateVelocity = driveController.getRawButton(RIGHT_BUMPER);
 
-    bool zeroRotation = controllerDrive.GetRawButton(OPTIONS_BUTTON);
-    bool calibrateGyro = controllerDrive.GetRawButton(SHARE_BUTTON);
+    bool zeroRotation = driveController.getRawButton(OPTIONS_BUTTON);
+    bool calibrateGyro = driveController.getRawButton(SHARE_BUTTON);
 
     bool driveDisabled = false;
+    bool recordControllers = driveController.getRawButtonPressed(PLAYSTATION_BUTTON);
+    bool clearAutoForTrevor = driveController.getRawButtonPressed(TOUCHPAD_BUTTON);
 
+    if(recordControllers){
+        driveController.record();
+        auxController.record();
+    }
+    if(clearAutoForTrevor){
+        driveController.clearAuto();
+        auxController.clearAuto();
+    }
     if (brickDrive) {
         drive->makeBrick();
         driveDisabled = true;
@@ -188,27 +200,27 @@ void Controls::doAux() {
     // Normal Aux Controls
     
 
-    int dPadValue = controllerAux.GetPOV();
+    int dPadValue = auxController.getRawAxis(6);
 
     if (hangActive == true) {
         // Turn off gamepiece when hanging
         gamEpiece->setIntakeDirection(GamEpiece::NOTTAKE);
         gamEpiece->setShooterWarmUpEnabled(Shooter::TARMAC_LINE, false);
         if (!hangManual) {
-            if (controllerAux.GetRawButtonPressed(RIGHT_STICK_PRESS)) {   
+            if (auxController.getRawButtonPressed(RIGHT_STICK_PRESS)) {   
                 hang->commandAuto();
             }
         } else {
-            if (controllerAux.GetRawButtonPressed(3)) {
+            if (auxController.getRawButtonPressed(3)) {
                 hang->commandManual(Hang::EXTEND);
             }
-            else if (controllerAux.GetRawButtonPressed(1)) {
+            else if (auxController.getRawButtonPressed(1)) {
                 hang->commandManual(Hang::RETRACT);
             }
-            else if (controllerAux.GetRawButtonPressed(4)) {
+            else if (auxController.getRawButtonPressed(4)) {
                 hang->commandManual(Hang::ENGAGE_BRAKE);
             }
-            else if (controllerAux.GetRawButtonPressed(2)) {
+            else if (auxController.getRawButtonPressed(2)) {
                 hang->commandManual(Hang::EXTEND_A_LITTLE);
             }
             
@@ -224,7 +236,7 @@ void Controls::doAux() {
             else if (lastDPadValue == -1 && dPadValue == 270) {
                 hang->commandManual(Hang::UNWIND_STRING);
             }
-            else if(controllerAux.GetRawButton(SHARE_BUTTON)){
+            else if(auxController.getRawButton(SHARE_BUTTON)){
                 hang->commandManual(Hang::REVERSE_PIVOT);
             }
         }
@@ -232,16 +244,17 @@ void Controls::doAux() {
     else {
         
         // Manual and Normal Aux Controls
-        if (controllerAux.GetRawButton(SQUARE_BUTTON)) {
+        
+        if (auxController.getRawButton(SQUARE_BUTTON)) {
             lastPressedMode = Shooter::TARMAC_LINE;
         }
-        else if (controllerAux.GetRawButton(CIRCLE_BUTTON)) {
+        else if (auxController.getRawButton(CIRCLE_BUTTON)) {
             lastPressedMode = Shooter::LAUNCH_PAD;
         }
-        else if (controllerAux.GetRawButton(CROSS_BUTTON)) {
+        else if (auxController.getRawButton(CROSS_BUTTON)) {
             lastPressedMode = Shooter::ODOMETRY;
         }
-        else if(controllerAux.GetRawButton(TRIANGLE_BUTTON)) {
+        else if(auxController.getRawButton(TRIANGLE_BUTTON)) {
             if(highOrLow){
                 lastPressedMode = Shooter::HIGH_HUB_SHOT;
             }
@@ -249,8 +262,23 @@ void Controls::doAux() {
                 lastPressedMode = Shooter::LOW_HUB_SHOT;
             }
         }
+        /*
+        if(auxController.getRawButtonPressed(SQUARE_BUTTON)){
+            auxController.record();
+            driveController.record();
+        }
+        if(auxController.getRawButtonPressed(TRIANGLE_BUTTON)){
+            auxController.testStuff();
+        }
+        if(auxController.getRawButtonPressed(CIRCLE_BUTTON)){
+            auxController.replayAuto();
+        }
+        if(auxController.getRawButtonPressed(CROSS_BUTTON)){
+            auxController.clearAuto();
+            driveController.clearAuto();
+        }*/
 
-        if (controllerAux.GetRawButton(RIGHT_TRIGGER_BUTTON)) {
+        if (auxController.getRawButton(RIGHT_TRIGGER_BUTTON)) {
             gamEpiece->setShooterWarmUpEnabled(lastPressedMode, true);
             shoot = true;
         }
@@ -258,7 +286,7 @@ void Controls::doAux() {
             gamEpiece->setShooterWarmUpEnabled(lastPressedMode, false);
             shoot = false;
         }
-        if(controllerAux.GetRawButton(PLAYSTATION_BUTTON)){
+        if(auxController.getRawButton(PLAYSTATION_BUTTON)){
             gamEpiece->cancelShot();
         }
         if (dPadValue == 90) {
@@ -272,11 +300,11 @@ void Controls::doAux() {
         else {
             gamEpiece->setManualHoodSpeed(0);
         }
-        if(controllerAux.GetRawButtonPressed(SHARE_BUTTON)){
+        if(auxController.getRawButtonPressed(SHARE_BUTTON)){
             gamEpiece->changeShooterSpeed(false);
             lastPressedMode = Shooter::MANUAL;
         }
-        if(controllerAux.GetRawButtonPressed(OPTIONS_BUTTON)){
+        if(auxController.getRawButtonPressed(OPTIONS_BUTTON)){
             gamEpiece->changeShooterSpeed(true);
             lastPressedMode = Shooter::MANUAL;
         }
@@ -291,7 +319,7 @@ void Controls::doAux() {
                 gamEpiece->setManualIntakePosition(false);
             }
 
-            double v = -1 * controllerAux.GetRawAxis(LEFT_Y_AXIS);
+            double v = -1 * auxController.getRawAxis(LEFT_Y_AXIS);
             if (v > 0.1 || v < -0.1) {
                 gamEpiece->setManualIntakeSpeed(v);
             } else {
@@ -301,13 +329,13 @@ void Controls::doAux() {
             
         }
         else if (gamePieceManual == false) {
-            if (controllerAux.GetRawButton(RIGHT_BUMPER)) {
+            if (auxController.getRawButton(RIGHT_BUMPER)) {
                 gamEpiece->shootABall(lastPressedMode);
             }
-            if (controllerAux.GetRawButton(LEFT_TRIGGER_BUTTON)) {
+            if (auxController.getRawButton(LEFT_TRIGGER_BUTTON)) {
                 gamEpiece->setIntakeDirection(GamEpiece::IntakeDirection::INTAKE);
             }
-            else if (controllerAux.GetRawButton(LEFT_BUMPER)) {
+            else if (auxController.getRawButton(LEFT_BUMPER)) {
                 gamEpiece->setIntakeDirection(GamEpiece::IntakeDirection::OUTTAKE);
             }
             else {
@@ -344,10 +372,28 @@ void Controls::doSwitchPanel() {
 
 bool Controls::getShouldPersistConfig() {
     doSwitchPanel();
-    return isCraterMode && controllerDrive.GetRawButton(TRIANGLE_BUTTON) &&
-            controllerDrive.GetPOV() == 180 &&
-            controllerAux.GetRawButton(CROSS_BUTTON) &&
-            controllerAux.GetPOV() == 0;
+    return isCraterMode && driveController.getRawButton(TRIANGLE_BUTTON) &&
+            driveController.getRawAxis(6) == 180 &&
+            auxController.getRawButton(CROSS_BUTTON) &&
+            auxController.getRawAxis(6) == 0;
+}
+
+void Controls::controllerInDisable(){
+    driveController.process();
+    auxController.process();
+    if(driveController.getRawButton(SHARE_BUTTON)){
+        drive->calibrateIMU();
+        drive->zeroRotation();
+    }
+}
+
+void Controls::autoForTrevor(){
+    //auxController.replayAuto();
+    //driveController.replayAuto();
+    std::cout << "shooting :D\n";
+    lastPressedMode = Shooter::LOW_HUB_SHOT;
+    gamEpiece->setShooterWarmUpEnabled(Shooter::LOW_HUB_SHOT, true);
+    gamEpiece->shootABall(Shooter::LOW_HUB_SHOT);
 }
 
 void Controls::sendFeedback(){

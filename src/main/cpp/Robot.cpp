@@ -12,12 +12,14 @@ void Robot::RobotPeriodic() {
 
 void Robot::AutonomousInit() {
     reset(Mechanism::MODE_AUTO);
+    //controls.autoForTrevor();
 }
 
 void Robot::AutonomousPeriodic() {
     autonomous.process();
     for (int i = 0; i < nMechanisms; ++i)
         allMechanisms[i]->process();
+    controls.process();
 }
 
 void Robot::TeleopInit() {
@@ -35,6 +37,7 @@ void Robot::DisabledInit() {
 }
 
 void Robot::DisabledPeriodic() {
+    controls.controllerInDisable();
 }
 
 void Robot::TestInit() {

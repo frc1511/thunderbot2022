@@ -5,7 +5,7 @@
 
 const double kSpeedStageOne = .7; // used for intaking
 const double kSpeedStageTwo = .9; // used for shooting
-const double kSpeedStageTwoSlow = .2; // used for intaking into stage two
+const double kSpeedStageTwoSlow = .15; // used for intaking into stage two
 const double kReverseSpeedStageOne = -.4; // used for outtaking
 const double kReverseSpeedStageTwo = -.3; // used for outtaking
 
@@ -13,6 +13,8 @@ Intake::Intake() : intakeMotorStageOne(ThunderSparkMax::create(ThunderSparkMax::
                    intakeMotorStageTwo(ThunderSparkMax::create(ThunderSparkMax::MotorID::StorageStage2)){
     configureMotors();
 }
+
+
 
 Intake::~Intake(){
 }
@@ -55,7 +57,7 @@ void Intake::resetToMode(MatchMode mode){
     intakeMotorStageTwo->Set(0);
     intakePosition = false;
     intakeSpeed = 0;
-    ballCount = 0;        // set the ball count to zero
+    ballCount = 1;        // set the ball count to zero
     stageTwoOccupied = false;
     stageOneSensorPrevious = checkSensor(&stageOneFlag); 
     stageTwoSensorPrevious = checkSensor(&stageTwoFlag); 
@@ -149,7 +151,7 @@ void Intake::process(){
         ballCountIntake(currentSensorOneInput, currentSensorTwoInput);
         break;
     case STATE_OUTTAKE:
-        horizontalIntake.Set(frc::DoubleSolenoid::Value::kForward); // change this to off // leave intake as is
+        horizontalIntake.Set(frc::DoubleSolenoid::Value::kOff); // change this to off // leave intake as is
         intakeMotorStageOne->Set(kReverseSpeedStageOne);        // stage 1 go reverse
         intakeMotorStageTwo->Set(kReverseSpeedStageTwo);        // stage 2 go reverse
         switchStates();

@@ -19,13 +19,21 @@ const int kRightStickYAxis = 5; // GetRawAxis() give float
 const int kDPad = 0; // GetPOV() give float
 
 ControllerState::ControllerState(int controllerID):myController(controllerID){
-    
+    whichController = controllerID;
 }
 
 ControllerState::~ControllerState(){
 
 }
 void ControllerState::reset(){
+    if(whichController == 0){
+        autoButtonsFile = "/home/lvuser/autoButtonsDriver.txt";
+        autoAxesFile = "/home/lvuser/autoAxesDriver.txt";
+    }
+    else if(whichController == 1){
+        autoButtonsFile = "/home/lvuser/autoButtonsAux.txt";
+        autoAxesFile = "/home/lvuser/autoAxesAux.txt";
+    }
     normalOrRelay = true;
     std::cout << "reset :D\n";
     recordOrNot = false;
@@ -67,7 +75,6 @@ void ControllerState::process(){
         }
     }
 
-    
     //records when each button is pressed and realeased
     for (int i = 0; i < 14; i++) {
         buttons[(2*i)+1] = buttons[2*i];
@@ -75,7 +82,7 @@ void ControllerState::process(){
             buttons[2*i] = myController.GetRawButton(i+1);
         }
         if(buttons[2*i] != buttons[(2*i)+1] && recordOrNot) { //the button IS pressed and WAS NOT pressed before this loop or the button IS NOT pressed and WAS pressed before this loop
-            //std::cout << "which button:" << i << "pressed?" << buttons[2*i] << "\n";
+            std::cout << "which button:" << i << "pressed?" << buttons[2*i] << "\n";
             if(timerStartedYet == false){
                 autoTimer.Reset();
                 autoTimer.Start();
@@ -89,7 +96,7 @@ void ControllerState::process(){
                 axes[2*i] = myController.GetRawAxis(i);
             }
             if(fabs(axes[2*i]-axes[(2*i)+1]) >=.05 && recordOrNot){
-                //std::cout << "which axis" << i << "where?" << axes[2*i] << "\n";
+                std::cout << "which axis" << i << "where?" << axes[2*i] << "\n";
                 if(timerStartedYet == false){
                     autoTimer.Reset();
                     autoTimer.Start();
@@ -102,10 +109,10 @@ void ControllerState::process(){
         else if(i == 6){
             axes[(2*i)+1] = axes[2*i];
             if(normalOrRelay){
-                axes[2*i] = myController.GetPOV(i);
+                axes[2*i] = myController.GetPOV();
             }
             if(axes[2*i] != axes[(2*i)+1] && recordOrNot){
-                //std::cout << "which axis" << i << "where?" << axes[2*i] << "\n";
+                std::cout << "which axis" << i << "where?" << axes[2*i] << "\n";
                 if(timerStartedYet == false){
                     autoTimer.Reset();
                     autoTimer.Start();
@@ -116,7 +123,7 @@ void ControllerState::process(){
             }
         }
     }
-
+    //std::cout << std::string(autoButtonsFile) << autoTimer.Get().value() << "\n";
 }
 
 bool ControllerState::getRawButton(int buttonID){
@@ -148,7 +155,7 @@ void ControllerState::setRawAxis(int axisID){
 void ControllerState::recordButton(int whichButton, double time){
     if(whichButton != 1){   
     std::ofstream AutoButtonsFile;
-    AutoButtonsFile.open("/home/lvuser/autobuttons.txt", std::fstream::app);
+    AutoButtonsFile.open(autoButtonsFile, std::fstream::app);
     AutoButtonsFile << std::to_string(whichButton) << ", " << std::to_string(time) << "\n";
     AutoButtonsFile.close();
     }
@@ -156,7 +163,7 @@ void ControllerState::recordButton(int whichButton, double time){
 
 void ControllerState::recordAxis(int whichAxis, double time, double position){
     std::ofstream AutoAxesFile;
-    AutoAxesFile.open("/home/lvuser/autoaxes.txt", std::fstream::app);
+    AutoAxesFile.open(autoAxesFile, std::fstream::app);
     AutoAxesFile << std::to_string(whichAxis) << ", " << std::to_string(time) << ", " << std::to_string(position) << "\n";
     AutoAxesFile.close();
 }
@@ -164,7 +171,7 @@ void ControllerState::recordAxis(int whichAxis, double time, double position){
 void ControllerState::testStuff(){
     std::string testString = "";
     std::ifstream AutoAxesFile;
-    AutoAxesFile.open("/home/lvuser/autoaxes.txt");
+    AutoAxesFile.open(autoAxesFile);
     if(!AutoAxesFile){
         std::cout << "errorrrrrrrrrrrrrrrrrrrrrrr\n";
     }
@@ -176,11 +183,11 @@ void ControllerState::testStuff(){
     AutoAxesFile.close();
     testString = "";
     std::ifstream AutoButtonsFile;
-    AutoAxesFile.open("/home/lvuser/autobuttons.txt");
+    AutoAxesFile.open(autoButtonsFile);
     if(!AutoAxesFile){
         std::cout << "errorrrrrrrrrrrrrrrrrrrrrrr\n";
     }
-    std::cout << "AutoButtons\n";
+    std::cout << "AutoButtons:\n";
     while(getline(AutoAxesFile, testString)){
         
         std::cout << testString << "\n";
@@ -189,10 +196,10 @@ void ControllerState::testStuff(){
 }
 
 void ControllerState::clearAuto(){
-    std::ofstream AutoButtonsFile("/home/lvuser/autobuttons.txt");
+    std::ofstream AutoButtonsFile(autoButtonsFile);
     AutoButtonsFile << "";
     AutoButtonsFile.close();
-    std::ofstream AutoAxesFile("/home/lvuser/autoaxes.txt");
+    std::ofstream AutoAxesFile(autoAxesFile);
     AutoAxesFile << "";
     AutoAxesFile.close();
     std::cout << "cleared :D\n";
@@ -200,14 +207,14 @@ void ControllerState::clearAuto(){
 
 void ControllerState::replayAuto(){
     std::string buttonsString;
-    std::ifstream AutoButtonsFile("/home/lvuser/autobuttons.txt");
+    std::ifstream AutoButtonsFile(autoButtonsFile);
     while(getline(AutoButtonsFile, buttonsString)){
         buttonsInt.push_back(std::atoi(buttonsString.substr(0,1).c_str()));
         buttonsTime.push_back(std::atof(buttonsString.substr(3,8).c_str()));    
         }
     AutoButtonsFile.close();
     std::string axesString;
-    std::ifstream AutoAxesFile("/home/lvuser/autoaxes.txt");
+    std::ifstream AutoAxesFile(autoAxesFile);
     
     while(getline(AutoAxesFile, axesString)){
         axesInt.push_back(std::atoi(axesString.substr(0,1).c_str()));
@@ -227,7 +234,7 @@ void ControllerState::record(){
     recordOrNot = !recordOrNot;
     if(recordOrNot){
         timerStartedYet = false;
-        std::cout << "recording :D";
+        std::cout << "recording :D\n";
     }
 }
 
