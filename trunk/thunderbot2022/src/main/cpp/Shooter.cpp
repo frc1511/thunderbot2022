@@ -5,7 +5,7 @@
 #define SHOOTER_MAX_AMPS 40
 
 // PID values of the shooter wheels.
-#define SHOOTER_P_VALUE .00008
+#define SHOOTER_P_VALUE .0015
 #define SHOOTER_I_VALUE 0
 #define SHOOTER_D_VALUE 0
 #define SHOOTER_I_ZONE_VALUE 0
@@ -26,7 +26,7 @@
 #define HOOD_SPEED_FORWARD .5
 #define HOOD_SPEED_BACKWARD -.5
 
-#define SHOOTER_TOLERANCE 200
+#define SHOOTER_TOLERANCE 50
 
 // --- Preset values ---
 
@@ -84,6 +84,8 @@ void Shooter::configureMotors() {
     // One is inverted.
     shooterLeftMotor->SetInverted(false);
     shooterRightMotor->SetInverted(true);
+
+    
     // PID values.
     shooterLeftPID->SetP(SHOOTER_P_VALUE, 0);
     shooterRightPID->SetP(SHOOTER_P_VALUE, 0);
@@ -95,6 +97,8 @@ void Shooter::configureMotors() {
     shooterRightPID->SetIZone(SHOOTER_I_ZONE_VALUE, 0);
     shooterLeftPID->SetFF(SHOOTER_FF_VALUE, 0);
     shooterRightPID->SetFF(SHOOTER_FF_VALUE, 0);
+    shooterLeftPID->SetOutputRange(0,SHOOTER_MAX_RPM);
+    shooterRightPID->SetOutputRange(0,SHOOTER_MAX_RPM);
 }
 
 void Shooter::doPersistentConfiguration() {
@@ -209,7 +213,8 @@ void Shooter::setShooterSpinup(bool shouldShoot) {
 bool Shooter::isShooterReady() {
     return (shooterLeftMotor->GetVelocity() > targetRPM - SHOOTER_TOLERANCE) && // if left is speedy enough :D
            (shooterRightMotor->GetVelocity() > targetRPM - SHOOTER_TOLERANCE) && // if right is speedy enough :D
-           ((fabs(readPotentiometer() - targetHoodPosition) < HOOD_TOLERANCE) || shooterMode == MANUAL); // if hood is in the right place
+           ((fabs(readPotentiometer() - targetHoodPosition) < HOOD_TOLERANCE) || shooterMode == MANUAL) &&
+           (targetRPM != 0); // if hood is in the right place
 }
 // allows manual control of the hood speed
 void Shooter::setHoodManual(double speed) {
@@ -278,6 +283,7 @@ void Shooter::sendFeedback() {
     Feedback::sendDouble("shooter", "manual hood speed", hoodSpeedManual);
     Feedback::sendDouble("shooter", "left temperature (F)", shooterLeftMotor->GetMotorTemperatureFarenheit());
     Feedback::sendDouble("shooter", "right temperature (F)", shooterRightMotor->GetMotorTemperatureFarenheit());
+    Feedback::sendBoolean("shooter", "ready to shoot", isShooterReady());
 
     Feedback::sendDouble("thunderdashboard", "shooter_hood", (readPotentiometer() * 100));
 }

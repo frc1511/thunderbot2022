@@ -6,6 +6,7 @@
 #include "GamEpiece.h"
 #include "Hang.h"
 #include "Limelight.h"
+#include "ControllerState.h"
 #include <frc/Joystick.h>
 
 class Controls : public Mechanism {
@@ -18,6 +19,10 @@ public:
     void process() override;
     void sendFeedback() override;
     bool getShouldPersistConfig();
+    // :D
+    void autoForTrevor();
+
+    void controllerInDisable();
 
 private:
 
@@ -30,8 +35,6 @@ private:
     bool cameraWasToggled = false;
     bool offsetsWereConfigured = false;
 
-    frc::Joystick controllerDrive{0};
-    frc::Joystick controllerAux{1};
     frc::Joystick switchPanel{2};
 
     // false is limelight, true is camera
@@ -52,4 +55,7 @@ private:
 //Manual Aux Variables
     int lastDPadValue = -1;
     // Something here...
+    ControllerState driveController{0};
+    ControllerState auxController{1};
+
 };

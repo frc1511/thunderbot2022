@@ -1,4 +1,5 @@
 #include "GamEpiece.h"
+#include <iostream>
 
 GamEpiece::GamEpiece(Limelight* limelight)
   : limelight(limelight) {
@@ -49,8 +50,11 @@ void GamEpiece::process() {
             }
             break;
         case(SHOOTING): // it will never desire itself to be in shooting it just moves directly there, this just prevents a warning
-
+            // hi peter
             break;
+    }
+    if(currentBallCount == 0){
+        shooterState = NOT_SHOOTING;
     }
 
     if(shooterState == NOT_SHOOTING){ // stage two is needed to intake and to shoot, so if you are trying to shoot dont let it intake
@@ -85,7 +89,8 @@ void GamEpiece::process() {
             }
             break;
         case(SHOOTING):
-            if(intake.finishedShooting() && waitingForTimer == false){ // intake shot a ball so it is done 
+        //shot timer
+           /* if(intake.finishedShooting() && waitingForTimer == false){ // intake shot a ball so it is done 
                 shotTimer.Reset();
                 shotTimer.Start();
             }
@@ -93,6 +98,10 @@ void GamEpiece::process() {
                 intake.setIntakeDirection(Intake::NOTTAKE);
                 shooterState = WARMUP_SHOOTER;
                 shotTimer.Stop();
+            }*/
+            if(intake.finishedShooting()){ // intake shot a ball so it is done 
+                intake.setIntakeDirection(Intake::NOTTAKE);
+                shooterState = WARMUP_SHOOTER;
             }
             break;
     }
@@ -112,6 +121,7 @@ void GamEpiece::setShooterWarmUpEnabled(Shooter::ShooterMode shooterMode, bool e
 }
 
 void GamEpiece::shootABall(Shooter::ShooterMode shooterMode){
+    std::cout << "shooting part 2\n";
     shooter.setShooterMode(shooterMode); // tells the shooter where to go
     desiredShooterState = WANT_TO_SHOOT; 
 }

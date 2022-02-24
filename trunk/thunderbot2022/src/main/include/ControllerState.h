@@ -38,11 +38,12 @@ class ControllerState{
     void record();
 
     private:
-    
+    const char* autoButtonsFile = "";
+    const char* autoAxesFile = "";
     bool normalOrRelay = true; // normal controller controls is true, relay mode is false
 
     frc::Joystick myController;
-
+    
     std::vector<int> buttonsInt;
     std::vector<double> buttonsTime;
     std::vector<int> axesInt;
@@ -70,7 +71,7 @@ class ControllerState{
     bool recordOrNot;
 
     
-
+    int whichController;
     frc::Timer autoTimer;
 
 
