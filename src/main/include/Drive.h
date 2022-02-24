@@ -162,6 +162,7 @@ struct PetersTrajectoryConfig {
     units::meters_per_second_t maxVelocity = DRIVE_CMD_MAX_VELOCITY;
     units::meters_per_second_squared_t maxAcceleration = DRIVE_CMD_MAX_ACCELERATION;
     units::radians_per_second_t maxAngularVelocity = DRIVE_CMD_MAX_ANGULAR_VELOCITY;
+    units::meters_per_second_t startVelocity = 0_mps;
     units::meters_per_second_t endVelocity = 0_mps;
 };
 
@@ -197,6 +198,7 @@ private:
         ACCELERATING,
         CONSTANT,
         DECELERATING,
+        ERROR_CORRECTION,
     };
     
     // The state of the controller.
@@ -208,6 +210,8 @@ private:
         frc::Pose2d start {};
         frc::Pose2d end {};
 
+        units::meters_per_second_t maxVelocity = 0_mps;
+
         units::meter_t distanceTraveled = 0_m;
         
         units::meter_t totalDistance = 0_m;
@@ -218,6 +222,10 @@ private:
         units::meter_t constantDistance = 0_m;
 
         PetersTrajectoryConfig config {};
+
+        frc2::PIDController xError   { 6, 0, 6/100 };
+        frc2::PIDController yError   { 6, 0, 6/100 };
+        frc2::PIDController rotError { 2.5, 0, 0   };
     };
 
     // The data representing the current trajectory.
@@ -321,20 +329,8 @@ public:
      * Begins a command to drive a specified distance and rotate a specified
      * angle.
      */
-    void cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle,
-                  std::vector<frc::Translation2d> waypoints,
-                  units::meters_per_second_t speed = DRIVE_CMD_MAX_VELOCITY);
+    void cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle, PetersTrajectoryConfig config = PetersTrajectoryConfig());
     
-    /**
-     * Begins a command to follow a specified trajectory.
-     */
-    void cmdFollowTrajectory(frc::Trajectory trajectory);
-
-    /**
-     * Begins a command to follow a pathweaver trajecectory from a json file.
-     */
-    void cmdFollowPathweaverTrajectory(std::string jsonPath);
-
     /**
      * Returns whether the last command has finished.
      */
@@ -490,33 +486,18 @@ private:
     // Data regarding alignment.
     AlignmentData alignmentData {};
 
-    /**
-     * Represents a command for the drivetrain to execute over a period of time.
-     */
-    struct SwerveCommand {
-        enum CommandType {
-            NONE,
-            TRAJECTORY,        // Folow a trajectory.
-            ALIGN_TO_CARGO,    // Align the robot with the cargo in front of the robot.
-            ALIGN_TO_HIGH_HUB, // Align the robot with the high hub.
-        };
-
-        // The type of command to be executing.
-        CommandType type = NONE;
-
-        struct TrajectoryData {
-            // The trajectory to follow.
-            frc::Trajectory trajectory;
-            // The timer of the trajectory.
-            frc::Timer timer;
-        };
-        
-        // Data regarding the current trajectory command.
-        TrajectoryData trajectoryData {};
+    enum CommandType {
+        NONE,
+        TRAJECTORY,        // Folow a trajectory.
+        ALIGN_TO_CARGO,    // Align the robot with the cargo in front of the robot.
+        ALIGN_TO_HIGH_HUB, // Align the robot with the high hub.
     };
 
-    // The current command.
-    SwerveCommand cmd {};
+    // The type of command to be executing.
+    CommandType cmdType = NONE;
+
+    // The trajectory controller.
+    PetersTrajectoryController trajectoryController {};
 
     /**
      * Represents the data from controls during manual drive.
@@ -530,18 +511,4 @@ private:
 
     // The data for manual drive.
     ManualData manualData {};
-
-    frc2::PIDController cmdXController { 6, 0, 6/100 };
-    frc2::PIDController cmdYController { 6, 0, 6/100 };
-    frc::ProfiledPIDController<units::radians> cmdThetaController {
-        2.5, 0, 0,
-        frc::TrapezoidProfile<units::radians>::Constraints(DRIVE_CMD_MAX_ANGULAR_VELOCITY, DRIVE_CMD_MAX_ANGULAR_ACCELERATION)
-    };
-
-    /**
-     * The class that will handle generating chassis speeds for the robot using
-     * trajectory states. Implements a PID-style error correction system to
-     * accurately drive to a position.
-     */
-    frc::HolonomicDriveController cmdController { cmdXController, cmdYController, cmdThetaController };
 };
