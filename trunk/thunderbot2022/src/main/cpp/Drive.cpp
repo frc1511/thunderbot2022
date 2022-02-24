@@ -265,17 +265,13 @@ frc::Rotation2d SwerveModule::getAbsoluteRotation() {
 
 // --- Drive commands ---
 
-#define POSE_X_THRESHOLD 1_in
-#define POSE_Y_THRESHOLD 1_in
-#define POSE_ROT_THRESHOLD 1_deg
+#define POSE_X_THRESHOLD 0.5_in
+#define POSE_Y_THRESHOLD 0.5_in
+#define POSE_ROT_THRESHOLD 4_deg
 
-PetersTrajectoryController::PetersTrajectoryController() {
+PetersTrajectoryController::PetersTrajectoryController() { }
 
-}
-
-PetersTrajectoryController::~PetersTrajectoryController() {
-
-}
+PetersTrajectoryController::~PetersTrajectoryController() { }
 
 void PetersTrajectoryController::setTrajectory(frc::Pose2d currentPose, frc::Pose2d endPose, PetersTrajectoryConfig config) {
     trajectory = {};
@@ -290,20 +286,25 @@ void PetersTrajectoryController::setTrajectory(frc::Pose2d currentPose, frc::Pos
     // Get the total distance to travel (a^2 + b^2 = c^2).
     trajectory.totalDistance = units::math::sqrt(units::math::pow<2>(xDistance) + units::math::pow<2>(yDistance));
 
-    // Get the distance to accelerate to max velocity (Vf^2 = Vi^2 + 2ad).
-    trajectory.accelerateDistance = units::math::pow<2>(trajectory.config.maxVelocity) / (2 * trajectory.config.maxAcceleration);
-    // Get the distance to decelerate to final velocity (Vf^2 = Vi^2 + 2ad).
-    trajectory.decelerateDistance = (units::math::pow<2>(trajectory.config.endVelocity) - units::math::pow<2>(trajectory.config.maxVelocity)) / (2 * trajectory.config.maxAcceleration);
+    // Find the maximum velocity possible.
+    trajectory.maxVelocity = units::meters_per_second_t(std::sqrt(std::pow(trajectory.config.startVelocity.value(), 2) + std::pow(trajectory.config.endVelocity.value(), 2) + trajectory.totalDistance.value() + (2 * trajectory.config.maxAcceleration.value())) / 2);
+
+    // Get the distance to accelerate to max velocity.
+    trajectory.accelerateDistance = (units::math::pow<2>(trajectory.maxVelocity) - units::math::pow<2>(trajectory.config.startVelocity)) / (2 * trajectory.config.maxAcceleration);
+    // Get the distance to decelerate to final velocity.
+    trajectory.decelerateDistance = (units::math::pow<2>(trajectory.config.endVelocity) - units::math::pow<2>(trajectory.maxVelocity)) / (2 * trajectory.config.maxAcceleration);
     // Get the remaining distance in between during which the robot is at max velocity.
     trajectory.constantDistance = trajectory.totalDistance - trajectory.accelerateDistance - trajectory.decelerateDistance;
 
     if (trajectory.constantDistance < 0_m) {
-        // Do something here!
-        trajectory.constantDistance = 0_m;
+        std::cout << "WE HAVE A SERIOUS PROBLEM HERE!!!!\n";
     }
 
     // Get the angle the robot will be moving.
     trajectory.heading = units::math::atan(yDistance / xDistance);
+    trajectoryState = ACCELERATING;
+    trajectory.timer.Reset();
+    trajectory.timer.Start();
 }
 
 bool PetersTrajectoryController::atReference(frc::Pose2d currentPose) {
@@ -314,8 +315,11 @@ bool PetersTrajectoryController::atReference(frc::Pose2d currentPose) {
     if (units::math::abs(trajectory.end.X() - currentPose.X()) <= POSE_X_THRESHOLD &&
         units::math::abs(trajectory.end.Y() - currentPose.Y()) <= POSE_Y_THRESHOLD &&
         units::math::abs(trajectory.end.Rotation().Degrees() - currentPose.Rotation().Degrees()) <= POSE_ROT_THRESHOLD) {
+        trajectoryState = UNKNOWN;
         return true;
     }
+
+    return false;
 }
 
 frc::ChassisSpeeds PetersTrajectoryController::getVelocities(frc::Pose2d currentPose) {
@@ -331,14 +335,26 @@ frc::ChassisSpeeds PetersTrajectoryController::getVelocities(frc::Pose2d current
 
     TrajectoryState lastState = trajectoryState;
 
-    if (trajectory.distanceTraveled <= trajectory.accelerateDistance) {
-        trajectoryState = ACCELERATING;
-    }
-    else if (trajectory.distanceTraveled <= trajectory.accelerateDistance + trajectory.constantDistance) {
-        trajectoryState = CONSTANT;
-    }
-    else {
-        trajectoryState = DECELERATING;
+    switch (trajectoryState) {
+        case UNKNOWN:
+            break;
+        case ACCELERATING:
+            if (trajectory.distanceTraveled > trajectory.accelerateDistance) {
+                trajectoryState = CONSTANT;
+            }
+            break;
+        case CONSTANT:
+            if (trajectory.distanceTraveled > trajectory.accelerateDistance + trajectory.constantDistance) {
+                trajectoryState = DECELERATING;
+            }
+            break;
+        case DECELERATING:
+            if (units::math::abs(trajectory.distanceTraveled - trajectory.totalDistance) < 0.1_m) {
+                trajectoryState = ERROR_CORRECTION;
+            }
+            break;
+        case ERROR_CORRECTION:
+            break;
     }
 
     if (trajectoryState != lastState) {
@@ -356,20 +372,35 @@ frc::ChassisSpeeds PetersTrajectoryController::getVelocities(frc::Pose2d current
         angVel = -DRIVE_CMD_MAX_ANGULAR_VELOCITY;
     }
 
+    // angVel = units::radians_per_second_t(trajectory.rotError.Calculate())
+
     switch (trajectoryState) {
         case UNKNOWN:
+            std::cout << "unknown\n";
             vel = 0_mps;
             angVel = 0_rad_per_s;
             break;
         case ACCELERATING:
+            std::cout << "accelerating\n";
             vel = trajectory.config.maxAcceleration * trajectory.timer.Get() * (std::signbit(trajectory.totalDistance.value()) ? -1 : 1);
             break;
         case CONSTANT:
+            std::cout << "constant\n";
             vel = trajectory.config.maxVelocity * (std::signbit(trajectory.totalDistance.value()) ? -1 : 1);
             break;
         case DECELERATING:
+            std::cout << "decelerating\n";
             vel = (trajectory.config.maxVelocity - (trajectory.config.maxAcceleration * trajectory.timer.Get())) * (std::signbit(trajectory.totalDistance.value()) ? -1 : 1);
             if (vel < 0_mps) vel = 0_mps;
+            break;
+        case ERROR_CORRECTION:
+            std::cout << "error correction\n";
+            {
+                // units::meter_t x = units::meter_t(trajectory.xError.Calculate(currentPose.X().value(), trajectory.end.X().value()));
+                // units::meter_t y = units::meter_t(trajectory.yError.Calculate(currentPose.Y().value(), trajectory.end.Y().value()));
+
+                // vel = units::math::sqrt(units::math::pow<2>(x) + units::math::pow<2>(y));
+            }
             break;
     }
 
@@ -385,7 +416,7 @@ Drive::Drive(Camera* camera, Limelight* limelight)
   : camera(camera), limelight(limelight), imu(NULL) {
 
     // thetaController.EnableContinuousInput(-180_deg, 180_deg);
-    cmdController.SetEnabled(true);
+    // cmdController.SetEnabled(true);
 
 #ifndef TEST_BOARD
     imu = new frc::ADIS16470_IMU();
@@ -432,7 +463,8 @@ void Drive::resetToMode(MatchMode mode) {
     cmdCancel();
 
     driveMode = STOPPED;
-    cmd = {};
+    cmdType = NONE;
+    trajectoryController = {};
     manualData = {};
 
     for(SwerveModule* module : swerveModules) {
@@ -483,17 +515,17 @@ void Drive::sendFeedback() {
     }
     Feedback::sendString("drive", "control mode", buffer);
 
-    switch (cmd.type) {
-        case SwerveCommand::NONE:
+    switch (cmdType) {
+        case NONE:
             buffer = "none";
             break;
-        case SwerveCommand::TRAJECTORY:
+        case TRAJECTORY:
             buffer = "trajectory";
             break;
-        case SwerveCommand::ALIGN_TO_CARGO:
+        case ALIGN_TO_CARGO:
             buffer = "align with cargo";
             break;
-        case SwerveCommand::ALIGN_TO_HIGH_HUB:
+        case ALIGN_TO_HIGH_HUB:
             buffer = "align with high hub";
             break;
     }
@@ -546,23 +578,23 @@ void Drive::process() {
             break;
         case COMMAND:
             if (cmdIsFinished()) {
-                cmd.type = SwerveCommand::NONE;
+                cmdType = NONE;
             }
 
-            switch (cmd.type) {
-                case SwerveCommand::NONE:
+            switch (cmdType) {
+                case NONE:
                     // Stop the command.
                     driveMode = STOPPED;
                     break;
-                case SwerveCommand::TRAJECTORY:
+                case TRAJECTORY:
                     // Execute the follow trajectory command.
                     exeFollowTrajectory();
                     break;
-                case SwerveCommand::ALIGN_TO_CARGO:
+                case ALIGN_TO_CARGO:
                     // Execute the align with cargo command.
                     exeAlignToCargo();
                     break;
-                case SwerveCommand::ALIGN_TO_HIGH_HUB:
+                case ALIGN_TO_HIGH_HUB:
                     // Execute the align with high hub command.
                     exeAlignToHighHub();
                     break;
@@ -668,7 +700,7 @@ bool Drive::cmdAlignToCargo() {
     }
 
     driveMode = COMMAND;
-    cmd.type = SwerveCommand::ALIGN_TO_CARGO;
+    cmdType = ALIGN_TO_CARGO;
 
     return true;
 }
@@ -680,37 +712,18 @@ bool Drive::cmdAlignToHighHub() {
     }
 
     driveMode = COMMAND;
-    cmd.type = SwerveCommand::ALIGN_TO_HIGH_HUB;
+    cmdType = ALIGN_TO_HIGH_HUB;
     alignmentData.position = AlignmentData::UNKNOWN;
     
     return true;
 }
 
-void Drive::cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle, std::vector<frc::Translation2d> waypoints, units::meters_per_second_t speed) {
-  frc::Trajectory trajectory = frc::TrajectoryGenerator::GenerateTrajectory(
-    getPose(), waypoints, { x, y, angle }, getTrajectoryConfig()
-  );
-  cmdFollowTrajectory(trajectory);
-}
+void Drive::cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle, PetersTrajectoryConfig config) {
+    // Do something.
 
-void Drive::cmdFollowPathweaverTrajectory(std::string jsonPath) {
-    fs::path directory = fs::path(frc::filesystem::GetDeployDirectory()) / "Pathweaver" / jsonPath;
-    
-    // Load the trajectory from the Pathweaver json file.
-    frc::Trajectory trajectory(frc::TrajectoryUtil::FromPathweaverJson(directory.string()));
-
-    // Start a follow trajectory command.
-    cmdFollowTrajectory(trajectory);
-}
-
-void Drive::cmdFollowTrajectory(frc::Trajectory trajectory) {
     driveMode = COMMAND;
-    cmd.type = SwerveCommand::TRAJECTORY;
-    
-    cmd.trajectoryData.trajectory = trajectory;
-    
-    cmd.trajectoryData.timer.Reset();
-    cmd.trajectoryData.timer.Start();
+    cmdType = TRAJECTORY;
+    trajectoryController.setTrajectory(getPose(), {x, y, angle}, config);
 }
 
 bool Drive::cmdIsFinished() {
@@ -719,24 +732,23 @@ bool Drive::cmdIsFinished() {
         return true;
     }
 
-    switch (cmd.type) {
+    switch (cmdType) {
         // If no command is running, then it has finished.
-        case SwerveCommand::NONE:
+        case NONE:
             return true;
-        case SwerveCommand::TRAJECTORY:
-            // If a command is currently running but the total time of the
-            // trajectory has elapsed.
-            if (cmd.trajectoryData.timer.HasElapsed(cmd.trajectoryData.trajectory.TotalTime())) {
+        case TRAJECTORY:
+            if (trajectoryController.atReference(getPose())) {
+                std::cout << "WE ARE FINISHED!!\n";
                 return true;
             }
             return false;
-        case SwerveCommand::ALIGN_TO_CARGO:
+        case ALIGN_TO_CARGO:
             // Check if the cargo is in the center of the frame.
             if (camera->getTargetSector() == Camera::CENTER) {
                 return true;
             }
             return false;
-        case SwerveCommand::ALIGN_TO_HIGH_HUB:
+        case ALIGN_TO_HIGH_HUB:
             if (alignmentData.position == AlignmentData::CENTER) {
                 alignmentData.position = AlignmentData::UNKNOWN;
                 return true;
@@ -748,7 +760,7 @@ bool Drive::cmdIsFinished() {
 }
 
 void Drive::cmdCancel() {
-    cmd.type = SwerveCommand::NONE;
+    cmdType = NONE;
 }
 
 void Drive::setModuleStates(frc::ChassisSpeeds chassisSpeeds) {
@@ -834,18 +846,13 @@ void Drive::exeManual() {
 }
 
 void Drive::exeFollowTrajectory() {
-    // Get the current time of the trajectory.
-    units::second_t currentTime(cmd.trajectoryData.timer.Get());
-    
-    // Sample the desired state of the trajectory at this point in time.
-    frc::Trajectory::State desiredState = cmd.trajectoryData.trajectory.Sample(currentTime);
-    
     // Calculate chassis velocities that are required in order to reach the
     // desired state.
-    frc::ChassisSpeeds targetChassisSpeeds = cmdController.Calculate(
-        getPose(), desiredState, cmd.trajectoryData.trajectory.States().back().pose.Rotation());
+    frc::ChassisSpeeds targetChassisSpeeds = trajectoryController.getVelocities(getPose());
 
-    // Finally drive!
+    std::cout << "vel " << targetChassisSpeeds.vx.value() << " " << targetChassisSpeeds.vy.value() << " " << targetChassisSpeeds.omega.value() << '\n';
+
+    // Drive!
     setModuleStates(targetChassisSpeeds);
 
     //hi ishan
@@ -853,6 +860,10 @@ void Drive::exeFollowTrajectory() {
     //hi trevor
     //hi nevin
     //hi josh
+    //hi byers
+    //hi calla
+    //hi nadia
+    //hi homer 2.0
 }
 
 void Drive::exeAlignToCargo() {
