@@ -287,7 +287,11 @@ void PetersTrajectoryController::setTrajectory(frc::Pose2d currentPose, frc::Pos
     trajectory.totalDistance = units::math::sqrt(units::math::pow<2>(xDistance) + units::math::pow<2>(yDistance));
 
     // Find the maximum velocity possible.
-    trajectory.maxVelocity = units::meters_per_second_t(std::sqrt(std::pow(trajectory.config.startVelocity.value(), 2) + std::pow(trajectory.config.endVelocity.value(), 2) + trajectory.totalDistance.value() + (2 * trajectory.config.maxAcceleration.value())) / 2);
+    trajectory.maxVelocity = units::meters_per_second_t(std::sqrt((2 * trajectory.config.maxAcceleration.value() * trajectory.totalDistance.value() + std::pow(trajectory.config.startVelocity.value(), 2) + std::pow(trajectory.config.endVelocity.value(), 2)) / 2));
+
+    if (units::math::abs(trajectory.maxVelocity) > units::math::abs(trajectory.config.maxVelocity)) {
+        trajectory.maxVelocity = trajectory.config.maxVelocity;
+    }
 
     // Get the distance to accelerate to max velocity.
     trajectory.accelerateDistance = (units::math::pow<2>(trajectory.maxVelocity) - units::math::pow<2>(trajectory.config.startVelocity)) / (2 * trajectory.config.maxAcceleration);
@@ -295,10 +299,6 @@ void PetersTrajectoryController::setTrajectory(frc::Pose2d currentPose, frc::Pos
     trajectory.decelerateDistance = (units::math::pow<2>(trajectory.config.endVelocity) - units::math::pow<2>(trajectory.maxVelocity)) / (2 * trajectory.config.maxAcceleration);
     // Get the remaining distance in between during which the robot is at max velocity.
     trajectory.constantDistance = trajectory.totalDistance - trajectory.accelerateDistance - trajectory.decelerateDistance;
-
-    if (trajectory.constantDistance < 0_m) {
-        std::cout << "WE HAVE A SERIOUS PROBLEM HERE!!!!\n";
-    }
 
     // Get the angle the robot will be moving.
     trajectory.heading = units::math::atan(yDistance / xDistance);
@@ -382,16 +382,18 @@ frc::ChassisSpeeds PetersTrajectoryController::getVelocities(frc::Pose2d current
             break;
         case ACCELERATING:
             std::cout << "accelerating\n";
-            vel = trajectory.config.maxAcceleration * trajectory.timer.Get() * (std::signbit(trajectory.totalDistance.value()) ? -1 : 1);
+            vel = (trajectory.config.maxAcceleration * trajectory.timer.Get())
+                  * (std::signbit(trajectory.totalDistance.value()) ? -1 : 1);
             break;
         case CONSTANT:
             std::cout << "constant\n";
-            vel = trajectory.config.maxVelocity * (std::signbit(trajectory.totalDistance.value()) ? -1 : 1);
+            vel = trajectory.maxVelocity
+                  * (std::signbit(trajectory.totalDistance.value()) ? -1 : 1);
             break;
         case DECELERATING:
             std::cout << "decelerating\n";
-            vel = (trajectory.config.maxVelocity - (trajectory.config.maxAcceleration * trajectory.timer.Get())) * (std::signbit(trajectory.totalDistance.value()) ? -1 : 1);
-            if (vel < 0_mps) vel = 0_mps;
+            vel = (trajectory.maxVelocity - (trajectory.config.maxAcceleration * trajectory.timer.Get()))
+                  * (std::signbit(trajectory.totalDistance.value()) ? -1 : 1);
             break;
         case ERROR_CORRECTION:
             std::cout << "error correction\n";
