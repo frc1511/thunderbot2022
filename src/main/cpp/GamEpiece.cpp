@@ -25,6 +25,7 @@ void GamEpiece::resetToMode(MatchMode mode) {
         }
         intakeDirection = NOTTAKE;
         shooterState = NOT_SHOOTING;
+        desiredShooterState = NOT_SHOOTING;
     }
 
 }

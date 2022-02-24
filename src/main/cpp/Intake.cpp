@@ -5,7 +5,7 @@
 
 const double kSpeedStageOne = .7; // used for intaking
 const double kSpeedStageTwo = .9; // used for shooting
-const double kSpeedStageTwoSlow = .15; // used for intaking into stage two
+const double kSpeedStageTwoSlow = .14; // used for intaking into stage two
 const double kReverseSpeedStageOne = -.4; // used for outtaking
 const double kReverseSpeedStageTwo = -.3; // used for outtaking
 
@@ -57,7 +57,12 @@ void Intake::resetToMode(MatchMode mode){
     intakeMotorStageTwo->Set(0);
     intakePosition = false;
     intakeSpeed = 0;
-    ballCount = 1;        // set the ball count to zero
+    if(checkSensor(&stageOneFlag)){
+        ballCount = 1;
+    }
+    else{
+        ballCount = 0;
+    }    // set the ball count to zero
     stageTwoOccupied = false;
     stageOneSensorPrevious = checkSensor(&stageOneFlag); 
     stageTwoSensorPrevious = checkSensor(&stageTwoFlag); 

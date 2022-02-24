@@ -16,7 +16,7 @@
 #define HOOD_MAX_POS (HOOD_MIN_POS + .18) //0.7
 
 // The maximum RPM of the shooter wheels.
-#define SHOOTER_MAX_RPM 5000 // 5700
+#define SHOOTER_MAX_RPM 2700 // 5700
 
 // The tolerance of the hood position.
 #define HOOD_TOLERANCE .01
@@ -48,7 +48,7 @@
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
 #define HIGH_HUB_SHOT_HOOD_POS (HOOD_MIN_POS + .003) //.533
-#define HIGH_HUB_SHOT_SHOOTER_RPM 1800
+#define HIGH_HUB_SHOT_SHOOTER_RPM 1650
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
 #define LOW_HUB_SHOT_HOOD_POS (HOOD_MIN_POS + .111) // .641
