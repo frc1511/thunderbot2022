@@ -17,10 +17,13 @@ void Autonomous::resetToMode(MatchMode mode) {
     currentMode = DO_NOTHING;
 
     if (mode == MODE_AUTO) {
-        currentMode = (AutoMode)Feedback::getEditableDouble("auto", "mode", 0);
+        currentMode = (AutoMode)Feedback::getDouble("Auto", "Mode", 0);
         
         switch (currentMode) {
             case DO_NOTHING:
+                startPosition = UNKNOWN;
+                break;
+            case UBER:
                 startPosition = UNKNOWN;
                 break;
             case LEFT_ONE_BALL:
@@ -80,6 +83,8 @@ void Autonomous::sendFeedback() {
 
     handleDashboardString(DO_NOTHING, "Doing nothing", buffer);
 
+    handleDashboardString(UBER, "Driving out of the tarmac (taxi)", buffer);
+
     handleDashboardString(LEFT_ONE_BALL,   "(Positioned left) Score ball in robot", buffer);
     handleDashboardString(CENTER_ONE_BALL, "(Positioned center) Score ball in robot", buffer);
     handleDashboardString(RIGHT_ONE_BALL,  "(Positioned right) Score ball in robot", buffer);
@@ -88,7 +93,7 @@ void Autonomous::sendFeedback() {
     handleDashboardString(CENTER_TWO_BALL, "(Positioned center) Score ball in robot, and 2", buffer);
     handleDashboardString(RIGHT_TWO_BALL,  "(Positioned right) Score ball in robot, and 3", buffer);
     //hi ishan
-    //handleDashboardString(CENTER_THREE_BALL,      "(Positioned center) Score ball 2, 4, and ball in robot", buffer);
+    handleDashboardString(CENTER_THREE_BALL,      "(Positioned center) Score ball 2, 4, and ball in robot", buffer);
     handleDashboardString(RIGHT_SHORT_THREE_BALL, "(Positioned right) Score ball in robot, 3, and 2,", buffer);
     handleDashboardString(RIGHT_FAR_THREE_BALL,   "(Positioned right) Score ball in robot, 3, and 4,", buffer);
     handleDashboardString(RIGHT_FOUR_BALL,        "(Positioned right) Score ball in robot, 3, 2, and 4", buffer);
@@ -96,11 +101,9 @@ void Autonomous::sendFeedback() {
     Feedback::sendString("thunderdashboard", "auto_list", buffer);
 }
 
-
-
 void Autonomous::process() {
-    if (!gamEpiece)
-        return;
+    // if (!gamEpiece)
+    //     return;
 
     if (timer.Get().value() <= Feedback::getEditableDouble("thunderdashboard", "auto_start_delay", 0))
         {
@@ -110,6 +113,9 @@ void Autonomous::process() {
     switch (currentMode) {
         case DO_NOTHING:
             doNothing();
+            break;
+        case UBER:
+            uber();
             break;
         case LEFT_ONE_BALL:
             leftOneBall();
@@ -153,7 +159,25 @@ void Autonomous::doNothing() {
     // Very good function. - jeff downs
 }
 
-void Autonomous::leftOneBall(){
+void Autonomous::uber() {
+    if (step == 0) {
+        std::cout << "hi\n";
+        drive->cmdDrive(0_m, 2_m, 0_deg, PetersTrajectoryConfig());
+        step++;
+    }
+    else if (step == 1 && drive->cmdIsFinished()) {
+        step++;
+    }
+    else if (step == 2) {
+        drive->cmdDrive(-1_m, 0_m, 90_deg, PetersTrajectoryConfig());
+        step++;
+    }
+    else if (step == 3 && drive->cmdIsFinished()) {
+        step++;
+    }
+}
+
+void Autonomous::leftOneBall() {
     if (step == 0) {
         // TODO: Initialize odometry to starting position.
         

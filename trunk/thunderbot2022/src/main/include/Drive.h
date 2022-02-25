@@ -39,13 +39,11 @@
 #define DRIVE_MANUAL_MAX_ANGULAR_VELOCITY 3.14_rad_per_s * 2
 
 // The maximum speed of the chassis during a drive command.
-#define DRIVE_CMD_MAX_VELOCITY 0.1_mps
+#define DRIVE_CMD_MAX_VELOCITY 4_mps
 // The maximum acceleration of the chassis during a drive command.
-#define DRIVE_CMD_MAX_ACCELERATION 0.4_mps_sq
+#define DRIVE_CMD_MAX_ACCELERATION 2_mps_sq
 // The maximum angular speed of the chassis during a drive command.
-#define DRIVE_CMD_MAX_ANGULAR_VELOCITY 0.1_rad_per_s
-// The maximum angular acceleration of the chassis during a drive command.
-#define DRIVE_CMD_MAX_ANGULAR_ACCELERATION (3.14_rad_per_s / 1_s)
+#define DRIVE_CMD_MAX_ANGULAR_VELOCITY 45_deg_per_s
 
 #ifdef HOMER
 
@@ -120,6 +118,13 @@ public:
      */
     units::radian_t getRawRotation();
 
+    /**
+     * Returns the raw value of the drive motor's encoder.
+     */
+    double getRawDriveEncoder();
+    
+    units::degree_t target = 0_deg;
+
 private:
     /**
      * Returns the current velocity of the drive motor (meters per second).
@@ -176,6 +181,8 @@ public:
     PetersTrajectoryController();
     ~PetersTrajectoryController();
 
+    void sendFeedback();
+
     /**
      * Sets the trajectory for the controller to reference.
      */
@@ -222,10 +229,6 @@ private:
         units::meter_t constantDistance = 0_m;
 
         PetersTrajectoryConfig config {};
-
-        frc2::PIDController xError   { 6, 0, 6/100 };
-        frc2::PIDController yError   { 6, 0, 6/100 };
-        frc2::PIDController rotError { 2.5, 0, 0   };
     };
 
     // The data representing the current trajectory.

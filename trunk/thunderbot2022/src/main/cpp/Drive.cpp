@@ -7,24 +7,26 @@
 #define DRIVE_WHEEL_CIRCUMFERENCE 0.21 // meters
 
 /**
- * The gear ratio of the drive motor (5.25:1).
- * 
- * AKA: The number of rotations the drive encoder will read after 1 rotation of
- * the wheel.
+ * Drive encoder value after 1 foot.
  */
-#define DRIVE_GEAR_RATIO 5.25
+#define DRIVE_FOOT_TO_ENDODER_FACTOR 6.51
+
+/**
+ * The gear ratio of the drive motor (5.25:1).
+ */
+// #define DRIVE_GEAR_RATIO 5.25
 
 /**
  * The coefficient used to convert rotations of the NEO motors into a distance
  * traveled in meters.
  */
-#define DRIVE_ENCODER_TO_METER_FACTOR (DRIVE_WHEEL_CIRCUMFERENCE / DRIVE_GEAR_RATIO)
+#define DRIVE_ENCODER_TO_METER_FACTOR (1 / (DRIVE_FOOT_TO_ENDODER_FACTOR * 3.28084)) // (DRIVE_WHEEL_CIRCUMFERENCE / DRIVE_GEAR_RATIO)
 
 /**
  * The coefficient used to convert a distance in meters into a number of
  * rotations of the NEO motors.
  */
-#define DRIVE_METER_TO_ENCODER_FACTOR (DRIVE_GEAR_RATIO / DRIVE_WHEEL_CIRCUMFERENCE)
+#define DRIVE_METER_TO_ENCODER_FACTOR (DRIVE_FOOT_TO_ENDODER_FACTOR * 3.28084) // (DRIVE_GEAR_RATIO / DRIVE_WHEEL_CIRCUMFERENCE)
 
 /**
  * The coeffieient used to convert a radian value into rotations of the NEO 550
@@ -69,7 +71,7 @@
 #define DRIVE_I_ZONE_VALUE 0
 #define DRIVE_FF_VALUE 0.000187
 
-#define ROT_P_VALUE 0.08
+#define ROT_P_VALUE 0.4 //0.08
 #define ROT_I_VALUE 0
 #define ROT_D_VALUE 0
 #define ROT_I_ZONE_VALUE 0
@@ -100,6 +102,7 @@ SwerveModule::~SwerveModule() {
 void SwerveModule::stop() {
     turningMotor->Set(0);
     driveMotor->Set(0);
+    driveMotor->SetEncoder(0);
 }
 
 void SwerveModule::configureMotors() {
@@ -162,6 +165,9 @@ units::radian_t SwerveModule::getRawRotation() {
     return units::degree_t(turningAbsEncoder->GetAbsolutePosition());
 }
 
+double SwerveModule::getRawDriveEncoder() {
+    return driveMotor->GetEncoder();
+}
 
 void SwerveModule::setState(frc::SwerveModuleState targetState) {
     frc::SwerveModuleState currentState = getState();
@@ -205,6 +211,8 @@ void SwerveModule::setTurningMotor(units::radian_t angle) {
         // Subtract 2π rad, or add 2π rad depending on the sign.
         rotation = units::radian_t(rotation.value() - (2 * wpi::numbers::pi) * (std::signbit(rotation.value()) ? -1 : 1));
     }
+
+    target = rotation + 90_deg;
     
     // Convert the radian value to internal encoder value.
     double output = rotation.value() * TURN_RADIAN_TO_ENCODER_FACTOR;
@@ -265,25 +273,67 @@ frc::Rotation2d SwerveModule::getAbsoluteRotation() {
 
 // --- Drive commands ---
 
-#define POSE_X_THRESHOLD 0.5_in
-#define POSE_Y_THRESHOLD 0.5_in
+#define POSE_X_THRESHOLD 1_in
+#define POSE_Y_THRESHOLD 1_in
 #define POSE_ROT_THRESHOLD 4_deg
 
 PetersTrajectoryController::PetersTrajectoryController() { }
 
 PetersTrajectoryController::~PetersTrajectoryController() { }
 
+void PetersTrajectoryController::sendFeedback() {
+    const char* buffer = "";
+    switch (trajectoryState) {
+        case UNKNOWN:
+            buffer = "unknown";
+            break;
+        case ACCELERATING:
+            buffer = "accelerating";
+            break;
+        case CONSTANT:
+            buffer = "constant";
+            break;
+        case DECELERATING:
+            buffer = "decelerating";
+            break;
+        case ERROR_CORRECTION:
+            buffer = "error correction";
+            break;
+    }
+    Feedback::sendString("peter's trajectory controller", "trajectory state", buffer);
+
+    Feedback::sendDouble("peter's trajectory controller", "state timer (seconds)", trajectory.timer.Get().value());
+    Feedback::sendDouble("peter's trajectory controller", "start X (meters)", trajectory.start.X().value());
+    Feedback::sendDouble("peter's trajectory controller", "start Y (meters)", trajectory.start.Y().value());
+    Feedback::sendDouble("peter's trajectory controller", "start Rotation (degrees)", trajectory.start.Rotation().Degrees().value());
+    Feedback::sendDouble("peter's trajectory controller", "end X (meters)", trajectory.end.X().value());
+    Feedback::sendDouble("peter's trajectory controller", "end Y (meters)", trajectory.end.Y().value());
+    Feedback::sendDouble("peter's trajectory controller", "end Rotation (degrees)", trajectory.end.Rotation().Degrees().value());
+    Feedback::sendDouble("peter's trajectory controller", "max velocity (mps)", trajectory.maxVelocity.value());
+    Feedback::sendDouble("peter's trajectory controller", "distance traveled (meters)", trajectory.distanceTraveled.value());
+    Feedback::sendDouble("peter's trajectory controller", "total distance (meters)", trajectory.totalDistance.value());
+    Feedback::sendDouble("peter's trajectory controller", "heading (degrees)", trajectory.heading.value());
+    Feedback::sendDouble("peter's trajectory controller", "accelerate distance (meters)", trajectory.accelerateDistance.value());
+    Feedback::sendDouble("peter's trajectory controller", "decelerate distance (meters)", trajectory.decelerateDistance.value());
+    Feedback::sendDouble("peter's trajectory controller", "constant distance (meters)", trajectory.constantDistance.value());
+    Feedback::sendDouble("peter's trajectory controller", "configured max velocity", trajectory.config.maxVelocity.value());
+    Feedback::sendDouble("peter's trajectory controller", "configured max acceleration", trajectory.config.maxAcceleration.value());
+    Feedback::sendDouble("peter's trajectory controller", "configured max angular velocity", trajectory.config.maxAngularVelocity.value());
+    Feedback::sendDouble("peter's trajectory controller", "configured start velocity", trajectory.config.startVelocity.value());
+    Feedback::sendDouble("peter's trajectory controller", "configured end velocity", trajectory.config.endVelocity.value());
+}
+
 void PetersTrajectoryController::setTrajectory(frc::Pose2d currentPose, frc::Pose2d endPose, PetersTrajectoryConfig config) {
     trajectory = {};
 
     trajectory.start = currentPose;
-    trajectory.end = { currentPose.X() + endPose.X(), currentPose.Y() + endPose.Y(), endPose.Rotation() };
+    trajectory.end = { currentPose.X() + endPose.X(), currentPose.Y() + endPose.Y(), units::math::fmod(endPose.Rotation().Degrees(), 360_deg) };
     trajectory.config = config;
 
     units::meter_t xDistance = trajectory.end.X() - trajectory.start.X();
     units::meter_t yDistance = trajectory.end.Y() - trajectory.start.Y();
 
-    // Get the total distance to travel (a^2 + b^2 = c^2).
+    // Get the total distance to travel.
     trajectory.totalDistance = units::math::sqrt(units::math::pow<2>(xDistance) + units::math::pow<2>(yDistance));
 
     // Find the maximum velocity possible.
@@ -296,12 +346,12 @@ void PetersTrajectoryController::setTrajectory(frc::Pose2d currentPose, frc::Pos
     // Get the distance to accelerate to max velocity.
     trajectory.accelerateDistance = (units::math::pow<2>(trajectory.maxVelocity) - units::math::pow<2>(trajectory.config.startVelocity)) / (2 * trajectory.config.maxAcceleration);
     // Get the distance to decelerate to final velocity.
-    trajectory.decelerateDistance = (units::math::pow<2>(trajectory.config.endVelocity) - units::math::pow<2>(trajectory.maxVelocity)) / (2 * trajectory.config.maxAcceleration);
+    trajectory.decelerateDistance = (units::math::pow<2>(trajectory.config.endVelocity) - units::math::pow<2>(trajectory.maxVelocity)) / (2 * -trajectory.config.maxAcceleration);
     // Get the remaining distance in between during which the robot is at max velocity.
     trajectory.constantDistance = trajectory.totalDistance - trajectory.accelerateDistance - trajectory.decelerateDistance;
 
     // Get the angle the robot will be moving.
-    trajectory.heading = units::math::atan(yDistance / xDistance);
+    trajectory.heading = units::math::atan2(yDistance, xDistance);
     trajectoryState = ACCELERATING;
     trajectory.timer.Reset();
     trajectory.timer.Start();
@@ -330,7 +380,7 @@ frc::ChassisSpeeds PetersTrajectoryController::getVelocities(frc::Pose2d current
     units::meter_t xDistance = currentPose.X() - trajectory.start.X();
     units::meter_t yDistance = currentPose.Y() - trajectory.start.Y();
 
-    // Get the total distance traveled (a^2 + b^2 = c^2).
+    // Get the total distance traveled.
     trajectory.distanceTraveled = units::math::sqrt(units::math::pow<2>(xDistance) + units::math::pow<2>(yDistance));
 
     TrajectoryState lastState = trajectoryState;
@@ -364,13 +414,15 @@ frc::ChassisSpeeds PetersTrajectoryController::getVelocities(frc::Pose2d current
 
     units::meters_per_second_t vel = 0_mps;
     units::radians_per_second_t angVel = 0_rad_per_s;
-    
+
     if (trajectory.end.Rotation().Degrees() - currentPose.Rotation().Degrees() > POSE_ROT_THRESHOLD) {
         angVel = DRIVE_CMD_MAX_ANGULAR_VELOCITY;
     }
-    else if (trajectory.end.Rotation().Degrees() - currentPose.Rotation().Degrees() < POSE_ROT_THRESHOLD) {
+    else if (trajectory.end.Rotation().Degrees() - currentPose.Rotation().Degrees() < -POSE_ROT_THRESHOLD) {
         angVel = -DRIVE_CMD_MAX_ANGULAR_VELOCITY;
     }
+    
+    // std::cout << angVel.value() << '\n';
 
     // angVel = units::radians_per_second_t(trajectory.rotError.Calculate())
 
@@ -397,19 +449,13 @@ frc::ChassisSpeeds PetersTrajectoryController::getVelocities(frc::Pose2d current
             break;
         case ERROR_CORRECTION:
             std::cout << "error correction\n";
-            {
-                // units::meter_t x = units::meter_t(trajectory.xError.Calculate(currentPose.X().value(), trajectory.end.X().value()));
-                // units::meter_t y = units::meter_t(trajectory.yError.Calculate(currentPose.Y().value(), trajectory.end.Y().value()));
-
-                // vel = units::math::sqrt(units::math::pow<2>(x) + units::math::pow<2>(y));
-            }
             break;
     }
 
     units::meters_per_second_t xVel = vel * units::math::cos(trajectory.heading);
     units::meters_per_second_t yVel = vel * units::math::sin(trajectory.heading);
 
-    return { xVel, yVel, angVel };
+    return frc::ChassisSpeeds::FromFieldRelativeSpeeds(xVel, yVel, angVel, currentPose.Rotation());
 }
 
 // --- Drivetrain ---
@@ -426,7 +472,7 @@ Drive::Drive(Camera* camera, Limelight* limelight)
     imu->ConfigCalTime(frc::ADIS16470_IMU::CalibrationTime::_4s);
     // Set the default axis for the IMU's gyro to take.
 #ifdef HOMER
-    imu->SetYawAxis(frc::ADIS16470_IMU::IMUAxis::kX);
+    imu->SetYawAxis(frc::ADIS16470_IMU::IMUAxis::kZ);
 #else
     imu->SetYawAxis(frc::ADIS16470_IMU::IMUAxis::kY);
 #endif
@@ -488,6 +534,8 @@ void Drive::resetToMode(MatchMode mode) {
 }
 
 void Drive::sendFeedback() {
+    trajectoryController.sendFeedback();
+
     Feedback::sendDouble("thunderdashboard", "gyro", !imuCalibrated);
 
     Feedback::sendDouble("drive", "imu angle (degrees)", imu ? imu->GetAngle().value() : 0);
@@ -553,7 +601,17 @@ void Drive::sendFeedback() {
     Feedback::sendDouble("drive", "wheel 1 offset", offsets.at(1).value());
     Feedback::sendDouble("drive", "wheel 2 offset", offsets.at(2).value());
     Feedback::sendDouble("drive", "wheel 3 offset", offsets.at(3).value());
+
+    Feedback::sendDouble("drive", "module 0 target rotation (degerees)", swerveModules.at(0)->target.value());
+    Feedback::sendDouble("drive", "module 1 target rotation (degerees)", swerveModules.at(1)->target.value());
+    Feedback::sendDouble("drive", "module 2 target rotation (degerees)", swerveModules.at(2)->target.value());
+    Feedback::sendDouble("drive", "module 3 target rotation (degerees)", swerveModules.at(3)->target.value());
     
+    Feedback::sendDouble("drive", "module 0 drive encoder", swerveModules.at(0)->getRawDriveEncoder());
+    Feedback::sendDouble("drive", "module 1 drive encoder", swerveModules.at(1)->getRawDriveEncoder());
+    Feedback::sendDouble("drive", "module 2 drive encoder", swerveModules.at(2)->getRawDriveEncoder());
+    Feedback::sendDouble("drive", "module 3 drive encoder", swerveModules.at(3)->getRawDriveEncoder());
+
     //hi josh
 
     Feedback::sendDouble("drive", "wheel 0 speed (mps)", swerveModules.at(0)->getState().speed.value());
