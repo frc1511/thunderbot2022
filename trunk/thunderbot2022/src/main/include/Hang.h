@@ -1,5 +1,5 @@
 #pragma once
-// RIP "#pragma twice", Forever in our hearts, Revision 68 to Revision 107
+// RIP "#pragma twice", Forever in our hearts, Revision 68 to Revision 107 - trevor wiesen
 
 #include "Mechanism.h"
 #include "IOMap.h"
@@ -98,6 +98,7 @@ private:
     double hangBrokenSlowerHeight;
     //is the robot done/on traversal
     bool autoDone;
+    bool extendALittleDone;
 
 //sensors that are not servos
     //encoder on winch to tell how far its gone

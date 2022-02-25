@@ -230,6 +230,7 @@ void Hang::process(){
                 stepDone = true;
                 hangBar++;
                 std::cout << "windUpString" << '\n';
+                extendALittleDone = false;
             }
             else
             {
@@ -317,7 +318,7 @@ void Hang::extend()
     to change state to releasing brake, toggle the brake piston to extend brake
     check if extended with flag sensors
     */
-    if ((homeSensor.Get() == 1) && extendStep == 0)
+    if ((homeSensor.Get() == 1 || extendALittleDone == true)  && extendStep == 0 )
     {
         disengageBrake();
         extendStep++;
@@ -326,7 +327,7 @@ void Hang::extend()
         winchMotor->Set(.5);
         extendStep++;
     }
-    else if (extendStep == 2 && readEncoder() >= 5.5)
+    else if (extendStep == 2 && (readEncoder() >= 5.5 && readEncoder() <= 6))
     {
         step++;
     }
@@ -353,6 +354,7 @@ void Hang::extendALittle()
     }
     else if(extendStep == 2){
         step++;
+        extendALittleDone = true;
     }
 }
 
