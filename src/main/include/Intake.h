@@ -78,6 +78,7 @@ private:
     bool shooterSensorPrevious;  // used for ball count
 
     bool stageTwoOccupied; // indicates if stage 2 has a ball in it
+    bool didAutoExist; //for reset purposes
 
     States currentState;
     IntakeDirection targetDirection;
