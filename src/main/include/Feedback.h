@@ -18,6 +18,11 @@ public:
     static void sendDouble(const char* subsystem, const char* name, double value);
 
     /**
+     * Returns a double value from the dashboard.
+     */
+    static double getDouble(const char* subsystem, const char* name, double fallback);
+
+    /**
      * Sends a boolean value to the dashboard.
      */
     static void sendBoolean(const char* subsystem, const char* name, bool yesno);

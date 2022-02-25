@@ -16,6 +16,11 @@ public:
         DO_NOTHING = 0,
     
         /**
+         * Drive out of the tarmac (taxi).
+         */
+        UBER,
+
+        /**
          * 1. Start in the left starting location.
          * 2. Align with high hub.
          * 3. Shoot cargo.
@@ -121,6 +126,7 @@ private:
     StartingPosition startPosition = UNKNOWN;
 
     void doNothing();
+    void uber();
     void leftOneBall();
     void centerOneBall();
     void rightOneBall();

@@ -46,9 +46,9 @@ private:
   Controls controls { &drive, nullptr, nullptr };
   Autonomous autonomous { &drive, nullptr };
 
-  static const int nMechanisms = 3;
+  static const int nMechanisms = 2;
   Mechanism *allMechanisms[nMechanisms] {
-    &camera, &limelight, &drive
+    /*&camera,*/ &limelight, &drive
   };
 #else
   GamEpiece gamEpiece { &limelight };

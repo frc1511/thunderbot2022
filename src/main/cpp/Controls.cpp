@@ -1,5 +1,6 @@
 #include "Controls.h"
 #include <iostream>
+
 // #define XBOX_CONTROLLER
 
 #ifdef XBOX_CONTROLLER
@@ -83,11 +84,11 @@ void Controls::resetToMode(MatchMode mode) {
 }
 
 void Controls::process() {
-    auxController.process();
     driveController.process();
-    doSwitchPanel();
     doDrive();
 #ifndef HOMER
+    doSwitchPanel();
+    auxController.process();
     doAux();
 #endif
 }
@@ -252,7 +253,7 @@ void Controls::doAux() {
             lastPressedMode = Shooter::LAUNCH_PAD;
         }
         else if (auxController.getRawButton(CROSS_BUTTON)) {
-            lastPressedMode = Shooter::ODOMETRY;
+            // lastPressedMode = Shooter::ODOMETRY;
         }
         else if(auxController.getRawButton(TRIANGLE_BUTTON)) {
             if(highOrLow){
@@ -380,7 +381,9 @@ bool Controls::getShouldPersistConfig() {
 
 void Controls::controllerInDisable(){
     driveController.process();
+#ifndef HOMER
     auxController.process();
+#endif
     if(driveController.getRawButton(SHARE_BUTTON)){
         drive->calibrateIMU();
         drive->zeroRotation();

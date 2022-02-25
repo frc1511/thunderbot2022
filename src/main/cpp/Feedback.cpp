@@ -26,6 +26,14 @@ void Feedback::sendDouble(const char* subsystem, const char* name, double value)
     frc::SmartDashboard::PutNumber(keyName, value);
 }
 
+double Feedback::getDouble(const char* subsystem, const char* name, double fallback) {
+    std::string keyName = subsystem;
+    keyName += "_";
+    keyName += name;
+    
+    return frc::SmartDashboard::GetNumber(keyName, fallback);
+}
+
 void Feedback::sendBoolean(const char* subsystem, const char* name, bool value) {
     sendString(subsystem, name, value ? "true" : "false");
 }
