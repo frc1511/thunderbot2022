@@ -66,7 +66,7 @@ void Hang::resetToMode(MatchMode mode){
     ratchetServo.Set(0);
     autoDone = false;
     manual = NOT;
-    stepDone = false;
+    stepDone = true;
     currentEncoderValue = 0;
 
 
@@ -91,10 +91,10 @@ void Hang::sendFeedback(){
     }
     int hangStatus = 0;
     if(stepDone){
-        hangStatus = 1;
+        hangStatus = 2;
     }
     else{
-        hangStatus = 2;
+        hangStatus = 1;
     }
     Feedback::sendDouble("Hang", "encoder value", readEncoder());
     Feedback::sendDouble("Hang", "winch motor speed", winchMotor->Get());
@@ -122,7 +122,8 @@ void Hang::process(){
             break;
         case MID:
             if (step == 0)
-            {
+            {   
+                hangBar = 1;
                 extendStep = 0;
                 step++;
                 std::cout << "reset" << '\n';
@@ -148,7 +149,6 @@ void Hang::process(){
             {
                 retract();
                 stepDone = true;
-                hangBar++;
                 //std::cout << "retract" << '\n';
             }
             else
@@ -228,7 +228,6 @@ void Hang::process(){
                 windUpString();
                 autoDone = true;
                 stepDone = true;
-                hangBar++;
                 std::cout << "windUpString" << '\n';
                 extendALittleDone = false;
             }
@@ -502,17 +501,20 @@ void Hang::commandAuto()
     {
         case NOT_ON_BAR:
             targetStage = MID;
+            stepDone = false;
             break;
         case MID:
             if(stepDone == true)
             {
                 targetStage = HIGH_TRAVERSAL;
                 step = 0;
+                stepDone = false;
             }
             break;
         case HIGH_TRAVERSAL:
             if(stepDone == true)
-            {
+            {   
+                hangBar++;
                 targetStage = HIGH_TRAVERSAL;
                 step = 0;
             }
