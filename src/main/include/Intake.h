@@ -7,6 +7,7 @@
 #include <frc/DoubleSolenoid.h>
 #include <frc/DigitalInput.h>
 #include <frc/Counter.h>
+#include <frc/filter/Debouncer.h>
 
 /** has two sensors and two motors
  * stage one banner sensor and stage two banner sensor
@@ -85,4 +86,5 @@ private:
     frc::DigitalInput stageOneFlag{DIO_STORAGE_BANNER_STAGE_ONE}; // true is present, false is not present
     frc::DigitalInput stageTwoFlag{DIO_STORAGE_BANNER_STAGE_TWO}; // true is present, false is not present
     frc::DigitalInput shooterFlag{DIO_SHOOTER_BANNER_LEFT_ROBOT}; // true is present, false is not present
+    frc::Debouncer m_debouncer{100_ms, frc::Debouncer::DebounceType::kBoth}; //used to not double count a single ball
 };

@@ -83,6 +83,7 @@ void Intake::resetToMode(MatchMode mode)
         stageOneSensorPrevious = checkSensor(&stageOneFlag);
         stageTwoSensorPrevious = checkSensor(&stageTwoFlag);
         shooterSensorPrevious = checkSensor(&shooterFlag);
+        m_debouncer.Calculate(stageOneSensorPrevious);
     }
     currentState = STATE_STOP;
     targetDirection = NOTTAKE;
@@ -90,6 +91,7 @@ void Intake::resetToMode(MatchMode mode)
 
 void Intake::ballCountIntake(bool currentSensorOneInput, bool currentSensorTwoInput)
 {
+    
     if (stageOneSensorPrevious == false && currentSensorOneInput == true)
     {
         ballCount++;
@@ -156,7 +158,7 @@ void Intake::switchStates() // command switches
 void Intake::process()
 {
 
-    bool currentSensorOneInput = checkSensor(&stageOneFlag);
+    bool currentSensorOneInput = m_debouncer.Calculate(checkSensor(&stageOneFlag));
     bool currentSensorTwoInput = checkSensor(&stageTwoFlag);
     bool currentShooterSensorInput = checkSensor(&shooterFlag);
     // the desired actions of the intake motors
