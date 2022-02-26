@@ -68,7 +68,7 @@
  */
 class SwerveModule {
 public:
-    SwerveModule(ThunderSparkMax::MotorID driveID, ThunderSparkMax::MotorID turningID, int canCoderCANID);
+    SwerveModule(ThunderSparkMax::MotorID driveID, ThunderSparkMax::MotorID turningID, int canCoderCANID, bool driveInverted);
     ~SwerveModule();
 
     void stop();
@@ -159,6 +159,9 @@ private:
 
     // The offset of the CANCoders.
     units::radian_t canCoderOffset = 0_rad;
+
+    // Whether the drive is inverted.
+    bool driveInverted = false;
 };
 
 // --- Drive trajectories ---
@@ -329,11 +332,21 @@ public:
     bool cmdAlignToHighHub();
 
     /**
-     * Begins a command to drive a specified distance and rotate a specified
-     * angle.
+     * Begins a command to rotate to a specified angle.
      */
-    void cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle, PetersTrajectoryConfig config = PetersTrajectoryConfig());
+    void cmdRotateToAngle(frc::Rotation2d angle, units::radians_per_second_t velocity);
+
+    /**
+     * Begins a command to translate a specified distance and rotate to a
+     * specified rotation.
+     */
+    void cmdDriveTranslate(units::meter_t x, units::meter_t y, frc::Rotation2d angle, PetersTrajectoryConfig config = PetersTrajectoryConfig());
     
+    /**
+     * Begins a command to drive and rotate to a specified pose.
+     */
+    void cmdDriveToPose(units::meter_t x, units::meter_t y, frc::Rotation2d angle, PetersTrajectoryConfig config = PetersTrajectoryConfig());
+
     /**
      * Returns whether the last command has finished.
      */
@@ -433,10 +446,10 @@ private:
 
     // The swerve modules on the robot.
     wpi::array<SwerveModule*, 4> swerveModules {
-      new SwerveModule(ThunderSparkMax::MotorID::DriveFrontLeft, ThunderSparkMax::MotorID::DrivePivotFrontLeft, CAN_SWERVE_FL_ROT_CAN_CODER),
-      new SwerveModule(ThunderSparkMax::MotorID::DriveRearLeft, ThunderSparkMax::MotorID::DrivePivotRearLeft, CAN_SWERVE_BL_ROT_CAN_CODER),
-      new SwerveModule(ThunderSparkMax::MotorID::DriveRearRight, ThunderSparkMax::MotorID::DrivePivotRearRight, CAN_SWERVE_BR_ROT_CAN_CODER),
-      new SwerveModule(ThunderSparkMax::MotorID::DriveFrontRight, ThunderSparkMax::MotorID::DrivePivotFrontRight, CAN_SWERVE_FR_ROT_CAN_CODER),
+      new SwerveModule(ThunderSparkMax::MotorID::DriveFrontLeft, ThunderSparkMax::MotorID::DrivePivotFrontLeft, CAN_SWERVE_FL_ROT_CAN_CODER, false),
+      new SwerveModule(ThunderSparkMax::MotorID::DriveRearLeft, ThunderSparkMax::MotorID::DrivePivotRearLeft, CAN_SWERVE_BL_ROT_CAN_CODER, false),
+      new SwerveModule(ThunderSparkMax::MotorID::DriveRearRight, ThunderSparkMax::MotorID::DrivePivotRearRight, CAN_SWERVE_BR_ROT_CAN_CODER, true),
+      new SwerveModule(ThunderSparkMax::MotorID::DriveFrontRight, ThunderSparkMax::MotorID::DrivePivotFrontRight, CAN_SWERVE_FR_ROT_CAN_CODER, false),
     };
 
     // The magnetic encoder offsets of the swerve modules.

@@ -176,13 +176,21 @@ void Controls::doDrive() {
 
     // If driving regular.
     if (fabs(xDriveVelocity) > AXIS_DEADZONE || fabs(yDriveVelocity) > AXIS_DEADZONE) {
-        finalXVelocity = xDriveVelocity;
-        finalYVelocity = yDriveVelocity;
+        if (fabs(xDriveVelocity) > AXIS_DEADZONE) {
+            finalXVelocity = xDriveVelocity;
+        }
+        if (fabs(yDriveVelocity) > AXIS_DEADZONE) {
+            finalYVelocity = yDriveVelocity;
+        }
     }
     // If driving slow.
     else if (fabs(xSlowDriveVelocity) > AXIS_DEADZONE || fabs(ySlowDriveVelocity) > AXIS_DEADZONE) {
-        finalXVelocity = xSlowDriveVelocity * SLOW_DRIVE_FACTOR;
-        finalYVelocity = ySlowDriveVelocity * SLOW_DRIVE_FACTOR;
+        if (fabs(xSlowDriveVelocity) > AXIS_DEADZONE) {
+            finalXVelocity = xSlowDriveVelocity * SLOW_DRIVE_FACTOR;
+        } 
+        if (fabs(ySlowDriveVelocity) > AXIS_DEADZONE) {
+            finalYVelocity = ySlowDriveVelocity * SLOW_DRIVE_FACTOR;
+        }
     }
 
     if (!driveDisabled) {

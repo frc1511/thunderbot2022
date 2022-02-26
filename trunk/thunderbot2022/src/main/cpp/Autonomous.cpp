@@ -1,8 +1,8 @@
 #include "Autonomous.h"
 
-#define LEFT_START_POSITION (frc::Pose2d(0_ft, 0_ft, 0_deg))
-#define CENTER_START_POSITION (frc::Pose2d(0_ft, 0_ft, 0_deg))
-#define RIGHT_START_POSITION (frc::Pose2d(0_ft, 0_ft, 0_deg))
+#define LEFT_START_POSITION   (frc::Pose2d(1.838_m, 6.142_m, 226.511_deg))
+#define CENTER_START_POSITION (frc::Pose2d(5.136_m, 5.959_m, 313.468_deg))
+#define RIGHT_START_POSITION  (frc::Pose2d(6.015_m, 8.124_m, 1.498_deg))
 
 Autonomous::Autonomous(Drive* drive, GamEpiece* gamEpiece, Controls* controls) 
   : drive(drive), gamEpiece(gamEpiece), controls(controls) {
@@ -182,14 +182,14 @@ void Autonomous::doNothing() {
 void Autonomous::uber() {
     if (step == 0) {
         std::cout << "hi\n";
-        drive->cmdDrive(0_m, 2_m, 0_deg, PetersTrajectoryConfig());
+        drive->cmdDriveTranslate(0_m, 2_m, 0_deg);
         step++;
     }
     else if (step == 1 && drive->cmdIsFinished()) {
         step++;
     }
     else if (step == 2) {
-        drive->cmdDrive(-1_m, 0_m, 90_deg, PetersTrajectoryConfig());
+        drive->cmdDriveTranslate(-1_m, 0_m, 90_deg);
         step++;
     }
     else if (step == 3 && drive->cmdIsFinished()) {
@@ -203,7 +203,7 @@ void Autonomous::leftOneBall() {
         
         // Drive back to until outside of the tarmac.
         /** TODO: Change these values. */
-        drive->cmdDrive(0_ft, 10_ft, 180_deg, {});
+        drive->cmdDriveTranslate(0_ft, 10_ft, 180_deg, {});
 
         step++;
     }
@@ -226,7 +226,7 @@ void Autonomous::centerOneBall() {
         
         // Drive back to until outside of the tarmac.
         /** TODO: Change these values. */
-        drive->cmdDrive(0_ft, 10_ft, 180_deg, {});
+        drive->cmdDriveTranslate(0_ft, 10_ft, 180_deg, {});
 
         step++;
     }
@@ -248,7 +248,7 @@ void Autonomous::rightOneBall() {
         
         // Drive back to until outside of the tarmac.
         /** TODO: Change these values. */
-        drive->cmdDrive(0_ft, 10_ft, 180_deg, {});
+        drive->cmdDriveTranslate(0_ft, 10_ft, 180_deg, {});
 
         step++;
     }
@@ -271,7 +271,7 @@ void Autonomous::leftTwoBall() {
         step++;
     }
     else if(step == 1) {
-        drive->cmdDrive(0_ft, 10_ft, 180_deg, {});
+        drive->cmdDriveTranslate(0_ft, 10_ft, 180_deg, {});
 
         step++;
     }
@@ -291,7 +291,7 @@ void Autonomous::centerTwoBall() {
         step++;
     }
     else if(step == 1) {
-        drive->cmdDrive(0_ft, 10_ft, 180_deg, {});
+        drive->cmdDriveTranslate(0_ft, 10_ft, 180_deg, {});
 
         step++;
     }
@@ -311,7 +311,7 @@ void Autonomous::rightTwoBall() {
         step++;
     }
     else if(step == 1) {
-        drive->cmdDrive(0_ft, 10_ft, 180_deg, {});
+        drive->cmdDriveTranslate(0_ft, 10_ft, 180_deg, {});
 
         step++;
     }
@@ -331,14 +331,14 @@ void Autonomous::centerThreeBall() {
         step++;
     }
     else if(step == 4) {
-        drive->cmdDrive(5_ft, 15_ft, 30_deg, {});
+        drive->cmdDriveTranslate(5_ft, 15_ft, 30_deg, {});
         step++;
     }
     else if(step == 5 && drive->cmdIsFinished()){
         step++;
     }
     else if(step == 6) {
-        drive->cmdDrive(5_ft, 15_ft, 150_deg, {});
+        drive->cmdDriveTranslate(5_ft, 15_ft, 150_deg, {});
         step++;
     }
     else if(step == 7 && drive->cmdIsFinished()){
@@ -359,14 +359,14 @@ void Autonomous::rightShortThreeBall() {
         step++;
     }
     else if(step == 4) {
-        drive->cmdDrive(5_ft, -5_ft, 45_deg, {});
+        drive->cmdDriveTranslate(5_ft, -5_ft, 45_deg, {});
         step++;
     }
     else if(step == 5 && drive->cmdIsFinished()){
         step++;
     }
     else if(step == 6) {
-       drive->cmdDrive(.5_ft, 0_ft, -45_deg, {});
+       drive->cmdDriveTranslate(.5_ft, 0_ft, -45_deg, {});
        step++;
     }
     else if(step == 7 && drive->cmdIsFinished()){
@@ -385,14 +385,14 @@ void Autonomous::rightFarThreeBall() {
         step++;
     }
     else if(step == 4) {
-        drive->cmdDrive(5_ft, 15_ft, 150_deg, {});
+        drive->cmdDriveTranslate(5_ft, 15_ft, 150_deg, {});
         step++;
     }
     else if(step == 5 && drive->cmdIsFinished()){
         step++;
     }
     else if(step == 6) {
-        drive->cmdDrive(10_ft, 10_ft, -100_deg, {});
+        drive->cmdDriveTranslate(10_ft, 10_ft, -100_deg, {});
         step++;
     }
     else if(step == 7 && drive->cmdIsFinished()){
@@ -412,14 +412,14 @@ void Autonomous::rightFourBall() {
         step++;
     }
     else if(step == 10) {
-        drive->cmdDrive(10_ft, -3_ft, 100_deg, {});
+        drive->cmdDriveTranslate(10_ft, -3_ft, 100_deg, {});
         step++;
     }
     else if(step == 11 && drive->cmdIsFinished()){
         step++;
     }
     else if(step == 12) {
-        drive->cmdDrive(10_ft, 10_ft, -100_deg, {});
+        drive->cmdDriveTranslate(10_ft, 10_ft, -100_deg, {});
         step++;
     }
     else if(step == 13 && drive->cmdIsFinished()){

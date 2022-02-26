@@ -52,6 +52,8 @@ void Robot::TestInit() {
 }
 
 void Robot::TestPeriodic() {
+    // drive.manualDrive(0, .1, 0);
+    // drive.process();
 }
 
 void Robot::reset(Mechanism::MatchMode mode) {
