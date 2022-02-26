@@ -26,7 +26,7 @@
 #define HOOD_SPEED_FORWARD .5
 #define HOOD_SPEED_BACKWARD -.5
 
-#define SHOOTER_TOLERANCE 30
+#define SHOOTER_TOLERANCE 40
 
 // --- Preset values ---
 
