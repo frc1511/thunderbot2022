@@ -26,7 +26,7 @@
 #define HOOD_SPEED_FORWARD .5
 #define HOOD_SPEED_BACKWARD -.5
 
-#define SHOOTER_TOLERANCE 50
+#define SHOOTER_TOLERANCE 30
 
 // --- Preset values ---
 
@@ -47,8 +47,8 @@
 #define TARMAC_LINE_SHOOTER_RPM 2000
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
-#define HIGH_HUB_SHOT_HOOD_POS (HOOD_MIN_POS + .003) //.533
-#define HIGH_HUB_SHOT_SHOOTER_RPM 1650
+#define HIGH_HUB_SHOT_HOOD_POS (HOOD_MIN_POS + .019) //.550
+#define HIGH_HUB_SHOT_SHOOTER_RPM 1600
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
 #define LOW_HUB_SHOT_HOOD_POS (HOOD_MIN_POS + .111) // .641
