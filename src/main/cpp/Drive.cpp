@@ -79,12 +79,13 @@
 
 // --- Swerve module ---
 
-SwerveModule::SwerveModule(ThunderSparkMax::MotorID driveID, ThunderSparkMax::MotorID turningID, int canCoderCANID)
+SwerveModule::SwerveModule(ThunderSparkMax::MotorID driveID, ThunderSparkMax::MotorID turningID, int canCoderCANID, bool _driveInverted)
   : driveMotor(ThunderSparkMax::create(driveID)),
     drivePID(driveMotor->GetPIDController()),
     turningMotor(ThunderSparkMax::create(turningID)),
     turningPID(turningMotor->GetPIDController()),
-    turningAbsEncoder(ThunderCANCoder::create(canCoderCANID)) {
+    turningAbsEncoder(ThunderCANCoder::create(canCoderCANID)),
+    driveInverted(_driveInverted) {
     
     configureMotors();
     
@@ -119,7 +120,7 @@ void SwerveModule::configureMotors() {
     driveMotor->SetSmartCurrentLimit(DRIVE_MAX_AMPERAGE);
 
     // It is not inverted!
-    driveMotor->SetInverted(false);
+    driveMotor->SetInverted(driveInverted);
 
     // Ramping (0.5 seconds to accelerate from neutral to full throttle).
     driveMotor->SetClosedLoopRampRate(DRIVE_RAMP_TIME);
@@ -327,7 +328,7 @@ void PetersTrajectoryController::setTrajectory(frc::Pose2d currentPose, frc::Pos
     trajectory = {};
 
     trajectory.start = currentPose;
-    trajectory.end = { currentPose.X() + endPose.X(), currentPose.Y() + endPose.Y(), units::math::fmod(endPose.Rotation().Degrees(), 360_deg) };
+    trajectory.end = endPose;
     trajectory.config = config;
 
     units::meter_t xDistance = trajectory.end.X() - trajectory.start.X();
@@ -618,6 +619,11 @@ void Drive::sendFeedback() {
     Feedback::sendDouble("drive", "wheel 1 speed (mps)", swerveModules.at(1)->getState().speed.value());
     Feedback::sendDouble("drive", "wheel 2 speed (mps)", swerveModules.at(2)->getState().speed.value());
     Feedback::sendDouble("drive", "wheel 3 speed (mps)", swerveModules.at(3)->getState().speed.value());
+
+    Feedback::sendDouble("drive", "manual X pct", manualData.xPct);
+    Feedback::sendDouble("drive", "manual Y pct", manualData.yPct);
+    Feedback::sendDouble("drive", "manual angular pct", manualData.rotPct);
+    Feedback::sendBoolean("drive", "vice grip", manualData.viceGrip);
 }
 
 void Drive::process() {
@@ -778,12 +784,28 @@ bool Drive::cmdAlignToHighHub() {
     return true;
 }
 
-void Drive::cmdDrive(units::meter_t x, units::meter_t y, frc::Rotation2d angle, PetersTrajectoryConfig config) {
-    // Do something.
+void Drive::cmdRotateToAngle(frc::Rotation2d angle, units::radians_per_second_t velocity) {
+    frc::Pose2d currentPose = getPose();
 
+    PetersTrajectoryConfig config {};
+    config.maxAngularVelocity = velocity;
+
+    cmdDriveToPose(currentPose.X(), currentPose.Y(), angle, config);
+}
+
+void Drive::cmdDriveTranslate(units::meter_t x, units::meter_t y, frc::Rotation2d angle, PetersTrajectoryConfig config) {
+    frc::Pose2d currentPose = getPose();
+
+    frc::Pose2d targetPose = { currentPose.X() + x, currentPose.Y() + y, angle };
+
+    cmdDriveToPose(targetPose.X(), targetPose.Y(), targetPose.Rotation(), config);
+}
+
+void Drive::cmdDriveToPose(units::meter_t x, units::meter_t y, frc::Rotation2d angle, PetersTrajectoryConfig config) {
     driveMode = COMMAND;
     cmdType = TRAJECTORY;
-    trajectoryController.setTrajectory(getPose(), {x, y, angle}, config);
+
+    trajectoryController.setTrajectory(getPose(), { x, y, units::math::fmod(angle.Degrees(), 360_deg) }, config);
 }
 
 bool Drive::cmdIsFinished() {
