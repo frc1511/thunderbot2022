@@ -12,8 +12,8 @@
 #define SHOOTER_FF_VALUE .000187
 
 // Minimum / maximum hood servo positions.
-#define HOOD_MIN_POS 0.53 //0.433
-#define HOOD_MAX_POS (HOOD_MIN_POS + .18) //0.7
+#define HOOD_MIN_POS 0.531 //0.433
+#define HOOD_MAX_POS (HOOD_MIN_POS + .154) //0.7
 
 // The maximum RPM of the shooter wheels.
 #define SHOOTER_MAX_RPM 2700 // 5700
@@ -35,7 +35,7 @@
 #define HUB_SHOOTER_RPM 2000
 
 // The hood position and shooter RPM when the robot is at the far wall.
-#define WALL_HOOD_POS (HOOD_MIN_POS + .1551)
+#define WALL_HOOD_POS (HOOD_MIN_POS + .1531)
 #define WALL_SHOOTER_RPM 2600
 
 // The hood position and shooter RPM when the robot is at the launch pad.
