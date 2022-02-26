@@ -5,11 +5,12 @@
 #include "GamEpiece.h"
 #include "Feedback.h"
 #include "Camera.h"
+#include "Controls.h"
 #include <frc/Timer.h>
 
 class Autonomous : public Mechanism {
 public:
-    Autonomous(Drive* drive, GamEpiece* gamEpiece);
+    Autonomous(Drive* drive, GamEpiece* gamEpiece, Controls* controls);
     ~Autonomous();
 
     enum AutoMode {
@@ -109,13 +110,19 @@ public:
          * 7. Shoot cargo.
          */
         RIGHT_FOUR_BALL,
+
+        AUTO_FOR_TREVOR_ZERO,
+        AUTO_FOR_TREVOR_ONE,
+        AUTO_FOR_TREVOR_TWO,
     };
 
     void resetToMode(MatchMode mode) override;
     void sendFeedback() override;
     void process() override;
 
+
 private:
+    Controls *controls;
     enum StartingPosition {
         UNKNOWN = 0,
         LEFT,
@@ -137,6 +144,7 @@ private:
     void rightShortThreeBall();
     void rightFarThreeBall();
     void rightFourBall();
+    void autoForTrevor();
 
     bool alignAndShoot(Shooter::ShooterMode shooterMode, unsigned ballNum);
 

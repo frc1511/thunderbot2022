@@ -27,12 +27,12 @@ ControllerState::~ControllerState(){
 }
 void ControllerState::reset(){
     if(whichController == 0){
-        autoButtonsFile = "/home/lvuser/autoButtonsDriver.txt";
-        autoAxesFile = "/home/lvuser/autoAxesDriver.txt";
+        autoButtonsFile = driverAutoFiles[(whichMode)*2];
+        autoAxesFile = driverAutoFiles[(whichMode+1)*2];
     }
     else if(whichController == 1){
-        autoButtonsFile = "/home/lvuser/autoButtonsAux.txt";
-        autoAxesFile = "/home/lvuser/autoAxesAux.txt";
+        autoButtonsFile = auxAutoFiles[(whichMode)*2];
+        autoAxesFile = auxAutoFiles[(whichMode+1)*2];
     }
     normalOrRelay = true;
     std::cout << "reset :D\n";
@@ -41,9 +41,44 @@ void ControllerState::reset(){
     axes = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 }
 void ControllerState::process(){
+
+    //records when each button is pressed and realeased
+    for (int i = 0; i < 14; i++) { // 14 buttons, 6 axis, 1 pov
+        buttons[(2*i)+1] = buttons[2*i];
+        if(normalOrRelay){ // checks if it should look to the controller for the value of the button
+            buttons[2*i] = myController.GetRawButton(i+1);
+        }
+        if(buttons[2*i] != buttons[(2*i)+1] && recordOrNot) { // the button changed its state and we are trying to record
+            std::cout << "which button:" << i << "pressed?" << buttons[2*i] << "\n";
+            recordButton(i+1,autoTimer.Get().value()); // loop starts at 0 but buttons start at 1 so add 1
+        }
+      
+        if(i<=5){ // this will trigger when i is 0-5 so all 6 axes
+            if(normalOrRelay){ // checks if it should look to the controller for the value of the axes
+                axes[2*i] = myController.GetRawAxis(i); 
+            }
+            if(fabs(axes[2*i]-axes[(2*i)+1]) >=.05 && recordOrNot){ // the axis changed by .05 
+                std::cout << "which axis" << i << "where?" << axes[2*i] << "\n";
+                recordAxis(i,autoTimer.Get().value(), axes[2*i]);
+                axes[(2*i)+1] = axes[2*i];
+            }
+        }
+        else if(i == 6){ // .GetPOV() is treated as a seventh axis so when i is 6. programmers start at 0 idk why its dumb
+            axes[(2*i)+1] = axes[2*i];
+            if(normalOrRelay){ // checks if it should look to the controller for the value of the pov
+                axes[2*i] = myController.GetPOV();
+            }
+            if(axes[2*i] != axes[(2*i)+1] && recordOrNot){ // the POV changed from what it once was
+                std::cout << "which axis" << i << "where?" << axes[2*i] << "\n";
+                recordAxis(i,autoTimer.Get().value(), axes[2*i]);
+                
+            }
+        }
+    }
+    //std::cout << std::string(autoButtonsFile) << autoTimer.Get().value() << "\n";
     if(!normalOrRelay){ //under autonomous control :D
         if(buttonsDone == false){
-            if(buttonsTime.size() > 0){
+            if(buttonsTime.size() > 0){ // make sure there is more buttons to change
                 if(autoTimer.Get().value() >= buttonsTime[0]){ // the timer has surpassed the next time when somthing is toggled 
                     buttons[(buttonsInt[0]-1)*2] = !buttons[(buttonsInt[0]-1)*2]; //toggles the rihgt button, subtracts one cuase vectors start at 0 but buttons starts at 1
                     buttonsTime.erase(buttonsTime.begin());
@@ -56,7 +91,7 @@ void ControllerState::process(){
             }
         }
         if(axisDone == false){
-            if(axesTime.size() > 0){
+            if(axesTime.size() > 0){ // make sure there are more axes to be changed
                 if(autoTimer.Get().value() >= axesTime[0]){
                     axesValues[axesInt[0]*2] = axesPos[0];
                     axesTime.erase(axesTime.begin());
@@ -74,56 +109,6 @@ void ControllerState::process(){
             normalOrRelay = true;
         }
     }
-
-    //records when each button is pressed and realeased
-    for (int i = 0; i < 14; i++) {
-        buttons[(2*i)+1] = buttons[2*i];
-        if(normalOrRelay){
-            buttons[2*i] = myController.GetRawButton(i+1);
-        }
-        if(buttons[2*i] != buttons[(2*i)+1] && recordOrNot) { //the button IS pressed and WAS NOT pressed before this loop or the button IS NOT pressed and WAS pressed before this loop
-            std::cout << "which button:" << i << "pressed?" << buttons[2*i] << "\n";
-            if(timerStartedYet == false){
-                autoTimer.Reset();
-                autoTimer.Start();
-                timerStartedYet = true;
-            }
-            recordButton(i+1,autoTimer.Get().value());
-        }
-      
-        if(i<=5){
-            if(normalOrRelay){
-                axes[2*i] = myController.GetRawAxis(i);
-            }
-            if(fabs(axes[2*i]-axes[(2*i)+1]) >=.05 && recordOrNot){
-                std::cout << "which axis" << i << "where?" << axes[2*i] << "\n";
-                if(timerStartedYet == false){
-                    autoTimer.Reset();
-                    autoTimer.Start();
-                    timerStartedYet = true;
-                }
-                recordAxis(i,autoTimer.Get().value(), axes[2*i]);
-                axes[(2*i)+1] = axes[2*i];
-            }
-        }
-        else if(i == 6){
-            axes[(2*i)+1] = axes[2*i];
-            if(normalOrRelay){
-                axes[2*i] = myController.GetPOV();
-            }
-            if(axes[2*i] != axes[(2*i)+1] && recordOrNot){
-                std::cout << "which axis" << i << "where?" << axes[2*i] << "\n";
-                if(timerStartedYet == false){
-                    autoTimer.Reset();
-                    autoTimer.Start();
-                    timerStartedYet = true;
-                }
-                recordAxis(i,autoTimer.Get().value(), axes[2*i]);
-                
-            }
-        }
-    }
-    //std::cout << std::string(autoButtonsFile) << autoTimer.Get().value() << "\n";
 }
 
 bool ControllerState::getRawButton(int buttonID){
@@ -137,19 +122,11 @@ double ControllerState::getRawAxis(int axisID){
 }
 
 bool ControllerState::getRawButtonPressed(int buttonID){
-    return buttons[(buttonID-1)*2] && !buttons[((buttonID-1)*2)+1];
+    return buttons[(buttonID-1)*2] && !buttons[((buttonID-1)*2)+1]; // button is pressed but wasnt pressed before
 }
 
 bool ControllerState::getRawButtonReleased(int buttonID){
     return !buttons[(buttonID-1)*2] && buttons[((buttonID-1)*2)+1];
-}
-
-void ControllerState::setRawButton(int buttonID){
-    //put stuff here
-}
-
-void ControllerState::setRawAxis(int axisID){
-    //put stuff here
 }
 
 void ControllerState::recordButton(int whichButton, double time){
@@ -233,8 +210,13 @@ void ControllerState::replayAuto(){
 void ControllerState::record(){
     recordOrNot = !recordOrNot;
     if(recordOrNot){
-        timerStartedYet = false;
+        autoTimer.Reset();
+        autoTimer.Start();
+        timerStartedYet = true;
         std::cout << "recording :D\n";
     }
 }
 
+void ControllerState::chooseAutoMode(int whichAutoMode){
+    whichMode = whichAutoMode;
+}

@@ -15,35 +15,43 @@ class ControllerState{
     void process();
     void reset();
 
-
+    // .GetRawBUtton but with copntrollerState
     bool getRawButton(int buttonID);
+    // .GetRawAxis but with controller state. .GetPOV() is .getRawAxis(6)
     double getRawAxis(int axisID);
-
+    // only triggers when the button gets pressed down
     bool getRawButtonPressed(int buttonID);
+    // only triggers when the button gets released
     bool getRawButtonReleased(int buttonID);
 
-
-    void setRawButton(int buttonID);
-    void setRawAxis(int axisID);
-
-    void updateFromJoystic();
-
-    void recordButton(int whichButton, double time);
-    void recordAxis(int whichButton, double time, double position);
     
+    // prints the contents of autoButtons and autoAxes text files, uses those to store recorded inputs
     void testStuff();
+    // clear the current selected mode
     void clearAuto();
 
+    // replays the current inputs that it has stored
     void replayAuto();
+    // starts/stops recording the current mode. its a toggle so only call once
     void record();
 
+    void chooseAutoMode(int whichAutoMode);
+
     private:
+    // records the current button 
+    void recordButton(int whichButton, double time);
+    // records the current axis and the pov
+    void recordAxis(int whichButton, double time, double position);
+    // the text files that it will use to do stuff
     const char* autoButtonsFile = "";
     const char* autoAxesFile = "";
-    bool normalOrRelay = true; // normal controller controls is true, relay mode is false
+    // normal controller controls is true, relay mode is false
+    bool normalOrRelay = true; 
 
     frc::Joystick myController;
-    
+    std::vector<char*> driverAutoFiles = {"/home/lvuser/firstDriverAutoButtons.txt", "/home/lvuser/firstDriverAutoAxes.txt", "/home/lvuser/secondDriverAutoButtons.txt", "/home/lvuser/secondDriverAutoAxes.txt", "/home/lvuser/thirdDriverAutoButtons.txt", "/home/lvuser/thirdDriverAutoAxes.txt"};
+    std::vector<char*> auxAutoFiles = {"/home/lvuser/firstAuxAutoButtons.txt", "/home/lvuser/firstAuxAutoAxes.txt", "/home/lvuser/secondAuxAutoButtons.txt", "/home/lvuser/secondAuxAutoAxes.txt", "/home/lvuser/thirdAuxAutoButtons.txt", "/home/lvuser/thirdAuxAutoAxes.txt"};
+
     std::vector<int> buttonsInt;
     std::vector<double> buttonsTime;
     std::vector<int> axesInt;
@@ -72,6 +80,7 @@ class ControllerState{
 
     
     int whichController;
+    int whichMode = 0;
     frc::Timer autoTimer;
 
 

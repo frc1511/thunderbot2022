@@ -24,6 +24,8 @@ public:
 
     void controllerInDisable();
 
+    void chooseAutoMode(int autoMode);
+
 private:
 
     void doDrive();
@@ -50,10 +52,15 @@ private:
     bool highLowShot = false;
     bool highOrLow = false; //true = high hub shot, false = low hub shot
 
+    bool recordController = false;
+    bool clearController = false;
+
 //Normal Aux Variables
     Shooter::ShooterMode lastPressedMode = Shooter::TARMAC_LINE;
 //Manual Aux Variables
     int lastDPadValue = -1;
+
+    int theAutoMode = 0;
     // Something here...
     ControllerState driveController{0};
     ControllerState auxController{1};
