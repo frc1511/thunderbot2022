@@ -73,6 +73,10 @@ void GamEpiece::process() {
                 intake.setIntakeDirection(Intake::MANUAL);
                 break;
         }
+        shooter.spinInReverse(intakeDirection == OUTTAKE); // only reverse if outtaking
+    }
+    else{ // it is trying to shoot so dont reverse
+        shooter.spinInReverse(false);
     }
     
     switch(shooterState){
@@ -106,6 +110,7 @@ void GamEpiece::process() {
             }
             break;
     }
+    
     intake.process();
     shooter.process();
     
@@ -122,7 +127,6 @@ void GamEpiece::setShooterWarmUpEnabled(Shooter::ShooterMode shooterMode, bool e
 }
 
 void GamEpiece::shootABall(Shooter::ShooterMode shooterMode){
-    std::cout << "shooting part 2\n";
     shooter.setShooterMode(shooterMode); // tells the shooter where to go
     desiredShooterState = WANT_TO_SHOOT; 
 }

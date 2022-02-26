@@ -119,8 +119,6 @@ void Controls::doDrive() {
     bool calibrateGyro = driveController.getRawButton(SHARE_BUTTON);
 
     bool driveDisabled = false;
-    bool recordControllers = driveController.getRawButtonPressed(PLAYSTATION_BUTTON);
-    bool clearAutoForTrevor = driveController.getRawButtonPressed(TOUCHPAD_BUTTON);
     
     if (brickDrive) {
         drive->makeBrick();
