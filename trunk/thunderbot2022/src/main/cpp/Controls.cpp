@@ -69,6 +69,8 @@ Controls::~Controls() {
 }
 
 void Controls::resetToMode(MatchMode mode) {
+    auxController.chooseAutoMode(theAutoMode);
+    driveController.chooseAutoMode(theAutoMode);
     auxController.reset();
     driveController.reset();
     switch (mode) {
@@ -84,16 +86,15 @@ void Controls::resetToMode(MatchMode mode) {
 }
 
 void Controls::process() {
-    driveController.process();
     doDrive();
 #ifndef HOMER
     doSwitchPanel();
-    auxController.process();
     doAux();
 #endif
 }
 
 void Controls::doDrive() {
+    driveController.process();
     bool brickDrive = driveController.getRawButton(CROSS_BUTTON);
     bool viceGrip = driveController.getRawButton(CIRCLE_BUTTON);
     bool toggleCamera = driveController.getRawButtonPressed(SQUARE_BUTTON);
@@ -120,15 +121,7 @@ void Controls::doDrive() {
     bool driveDisabled = false;
     bool recordControllers = driveController.getRawButtonPressed(PLAYSTATION_BUTTON);
     bool clearAutoForTrevor = driveController.getRawButtonPressed(TOUCHPAD_BUTTON);
-
-    if(recordControllers){
-        driveController.record();
-        auxController.record();
-    }
-    if(clearAutoForTrevor){
-        driveController.clearAuto();
-        auxController.clearAuto();
-    }
+    
     if (brickDrive) {
         drive->makeBrick();
         driveDisabled = true;
@@ -199,8 +192,7 @@ void Controls::doDrive() {
 
 void Controls::doAux() {
     // Normal Aux Controls
-    
-
+    auxController.process();
     int dPadValue = auxController.getRawAxis(6);
 
     if (hangActive == true) {
@@ -264,17 +256,17 @@ void Controls::doAux() {
             }
         }
         /*
-        if(auxController.getRawButtonPressed(SQUARE_BUTTON)){
+        if(auxController.getRawButtonPressed(SQUARE_BUTTON)){ //1
             auxController.record();
             driveController.record();
         }
-        if(auxController.getRawButtonPressed(TRIANGLE_BUTTON)){
+        if(auxController.getRawButtonPressed(TRIANGLE_BUTTON)){ //4
             auxController.testStuff();
         }
-        if(auxController.getRawButtonPressed(CIRCLE_BUTTON)){
+        if(auxController.getRawButtonPressed(CIRCLE_BUTTON)){ //3
             auxController.replayAuto();
         }
-        if(auxController.getRawButtonPressed(CROSS_BUTTON)){
+        if(auxController.getRawButtonPressed(CROSS_BUTTON)){ //2
             auxController.clearAuto();
             driveController.clearAuto();
         }*/
@@ -336,7 +328,7 @@ void Controls::doAux() {
             if (auxController.getRawButton(LEFT_TRIGGER_BUTTON)) {
                 gamEpiece->setIntakeDirection(GamEpiece::IntakeDirection::INTAKE);
             }
-            else if (auxController.getRawButton(LEFT_BUMPER)) {
+            else if (driveController.getRawButton(3)) { //auxController.getRawButton(LEFT_BUMPER)
                 gamEpiece->setIntakeDirection(GamEpiece::IntakeDirection::OUTTAKE);
             }
             else {
@@ -369,6 +361,16 @@ void Controls::doSwitchPanel() {
     else {
         highOrLow = false;
     }
+    recordController = switchPanel.GetRawButtonPressed(12);
+    clearController = switchPanel.GetRawButtonPressed(11);
+    if(clearController){
+        driveController.clearAuto();
+        auxController.clearAuto();
+    }
+    else if(recordController){
+        driveController.record();
+        auxController.record();
+    }
 }
 
 bool Controls::getShouldPersistConfig() {
@@ -391,14 +393,19 @@ void Controls::controllerInDisable(){
 }
 
 void Controls::autoForTrevor(){
-    //auxController.replayAuto();
-    //driveController.replayAuto();
+    auxController.replayAuto();
+    driveController.replayAuto();
     std::cout << "shooting :D\n";
-    lastPressedMode = Shooter::LOW_HUB_SHOT;
+    /*lastPressedMode = Shooter::LOW_HUB_SHOT;
     gamEpiece->setShooterWarmUpEnabled(Shooter::LOW_HUB_SHOT, true);
-    gamEpiece->shootABall(Shooter::LOW_HUB_SHOT);
+    gamEpiece->shootABall(Shooter::LOW_HUB_SHOT);*/
 }
 
+void Controls::chooseAutoMode(int autoMode){
+    driveController.chooseAutoMode(autoMode);
+    auxController.chooseAutoMode(autoMode);
+    theAutoMode = autoMode;
+}
 void Controls::sendFeedback(){
     std::string mode = "";
     switch(lastPressedMode){
@@ -424,4 +431,5 @@ void Controls::sendFeedback(){
     Feedback::sendString("controls", "last pressed shooter mode", mode.c_str());
     Feedback::sendDouble("thunderdashboard", "frontcamera", whichCamera);
     Feedback::sendBoolean("controls", "warmup, true = yes", shoot);
+    Feedback::sendDouble("controls", "whichAutoMode", theAutoMode);
 }

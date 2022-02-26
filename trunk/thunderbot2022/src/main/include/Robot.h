@@ -53,10 +53,12 @@ private:
 #else
   GamEpiece gamEpiece { &limelight };
   Hang hang {};
-  Autonomous autonomous { &drive, &gamEpiece };
+
 
   BlinkyBlinky blinkyBlinky {};
   Controls controls { &drive, &gamEpiece, &hang };
+
+  Autonomous autonomous {&drive, &gamEpiece, &controls };
 
   static const int nMechanisms = 5;
   Mechanism *allMechanisms[nMechanisms] = {

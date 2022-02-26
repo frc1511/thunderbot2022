@@ -4,8 +4,8 @@
 #define CENTER_START_POSITION (frc::Pose2d(0_ft, 0_ft, 0_deg))
 #define RIGHT_START_POSITION (frc::Pose2d(0_ft, 0_ft, 0_deg))
 
-Autonomous::Autonomous(Drive* drive, GamEpiece* gamEpiece) 
-  : drive(drive), gamEpiece(gamEpiece) {
+Autonomous::Autonomous(Drive* drive, GamEpiece* gamEpiece, Controls* controls) 
+  : drive(drive), gamEpiece(gamEpiece), controls(controls) {
     
 }
 
@@ -14,7 +14,7 @@ Autonomous::~Autonomous() {
 }
 
 void Autonomous::resetToMode(MatchMode mode) {
-    currentMode = DO_NOTHING;
+    currentMode = AUTO_FOR_TREVOR_TWO;
 
     if (mode == MODE_AUTO) {
         currentMode = (AutoMode)Feedback::getDouble("Auto", "Mode", 0);
@@ -41,6 +41,11 @@ void Autonomous::resetToMode(MatchMode mode) {
             case RIGHT_FAR_THREE_BALL:
             case RIGHT_FOUR_BALL:
                 startPosition = RIGHT;
+                break;
+            case AUTO_FOR_TREVOR_ZERO:
+            case AUTO_FOR_TREVOR_ONE:
+            case AUTO_FOR_TREVOR_TWO:
+                startPosition = UNKNOWN;
                 break;
         }
 
@@ -97,6 +102,9 @@ void Autonomous::sendFeedback() {
     handleDashboardString(RIGHT_SHORT_THREE_BALL, "(Positioned right) Score ball in robot, 3, and 2,", buffer);
     handleDashboardString(RIGHT_FAR_THREE_BALL,   "(Positioned right) Score ball in robot, 3, and 4,", buffer);
     handleDashboardString(RIGHT_FOUR_BALL,        "(Positioned right) Score ball in robot, 3, 2, and 4", buffer);
+    handleDashboardString(AUTO_FOR_TREVOR_ZERO, "first auto for trevor", buffer);
+    handleDashboardString(AUTO_FOR_TREVOR_ONE, "second auto for trevor", buffer);
+    handleDashboardString(AUTO_FOR_TREVOR_TWO, "third auto for trevor", buffer);
 
     Feedback::sendString("thunderdashboard", "auto_list", buffer);
 }
@@ -146,6 +154,18 @@ void Autonomous::process() {
             break;
         case RIGHT_FOUR_BALL:
             rightFourBall();
+            break;
+        case AUTO_FOR_TREVOR_ZERO:
+            controls->chooseAutoMode(0);
+            autoForTrevor();
+            break;
+        case AUTO_FOR_TREVOR_ONE:
+            controls->chooseAutoMode(0);
+            autoForTrevor();
+            break;
+        case AUTO_FOR_TREVOR_TWO:
+            controls->chooseAutoMode(0);
+            autoForTrevor();
             break;
     }
 }
@@ -403,6 +423,14 @@ void Autonomous::rightFourBall() {
         step++;
     }
     else if(step == 13 && drive->cmdIsFinished()){
+        step++;
+    }
+}
+
+void Autonomous::autoForTrevor(){
+    controls->process();
+    if(step == 0){
+        controls->autoForTrevor();
         step++;
     }
 }
