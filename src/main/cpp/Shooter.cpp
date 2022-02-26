@@ -19,7 +19,7 @@
 #define SHOOTER_MAX_RPM 2700 // 5700
 
 // The tolerance of the hood position.
-#define HOOD_TOLERANCE .01
+#define HOOD_TOLERANCE .005
 
 // Speeds of the hood servo.
 #define HOOD_SPEED_STOPPED 0
@@ -158,8 +158,12 @@ void Shooter::process() {
         targetRPM = 0;
     }
     
+    if(reverse){
+        targetRPM = -500;
+    }
     shooterLeftPID->SetReference(targetRPM, rev::CANSparkMax::ControlType::kVelocity);
     shooterRightPID->SetReference(targetRPM, rev::CANSparkMax::ControlType::kVelocity);
+    
 
     // gets the position of the hood potentiometer
     double hoodPosition = readPotentiometer();
@@ -245,6 +249,18 @@ double Shooter::interpolation(double firstX, double firstY, double lastX,  doubl
 
 double Shooter::readPotentiometer(){
     return hoodPotentiometer.Get();
+}
+
+void Shooter::spinInReverse(bool reverseOrNot){
+    if(reverseOrNot){
+        shooterLeftPID->SetOutputRange(-SHOOTER_MAX_RPM, SHOOTER_MAX_RPM);
+        shooterRightPID->SetOutputRange(-SHOOTER_MAX_RPM, SHOOTER_MAX_RPM);
+    }
+    else{
+        shooterLeftPID->SetOutputRange(0,SHOOTER_MAX_RPM);
+        shooterRightPID->SetOutputRange(0,SHOOTER_MAX_RPM);
+    }
+    reverse = reverseOrNot;
 }
 
 void Shooter::sendFeedback() {

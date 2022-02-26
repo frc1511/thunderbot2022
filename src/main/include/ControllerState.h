@@ -49,8 +49,8 @@ class ControllerState{
     bool normalOrRelay = true; 
 
     frc::Joystick myController;
-    std::vector<char*> driverAutoFiles = {"/home/lvuser/firstDriverAutoButtons.txt", "/home/lvuser/firstDriverAutoAxes.txt", "/home/lvuser/secondDriverAutoButtons.txt", "/home/lvuser/secondDriverAutoAxes.txt", "/home/lvuser/thirdDriverAutoButtons.txt", "/home/lvuser/thirdDriverAutoAxes.txt"};
-    std::vector<char*> auxAutoFiles = {"/home/lvuser/firstAuxAutoButtons.txt", "/home/lvuser/firstAuxAutoAxes.txt", "/home/lvuser/secondAuxAutoButtons.txt", "/home/lvuser/secondAuxAutoAxes.txt", "/home/lvuser/thirdAuxAutoButtons.txt", "/home/lvuser/thirdAuxAutoAxes.txt"};
+    std::vector<const char*> driverAutoFiles = {"/home/lvuser/firstDriverAutoButtons.txt", "/home/lvuser/firstDriverAutoAxes.txt", "/home/lvuser/secondDriverAutoButtons.txt", "/home/lvuser/secondDriverAutoAxes.txt", "/home/lvuser/thirdDriverAutoButtons.txt", "/home/lvuser/thirdDriverAutoAxes.txt"};
+    std::vector<const char*> auxAutoFiles = {"/home/lvuser/firstAuxAutoButtons.txt", "/home/lvuser/firstAuxAutoAxes.txt", "/home/lvuser/secondAuxAutoButtons.txt", "/home/lvuser/secondAuxAutoAxes.txt", "/home/lvuser/thirdAuxAutoButtons.txt", "/home/lvuser/thirdAuxAutoAxes.txt"};
 
     std::vector<int> buttonsInt;
     std::vector<double> buttonsTime;

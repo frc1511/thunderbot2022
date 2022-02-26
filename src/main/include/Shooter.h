@@ -35,6 +35,11 @@ public:
      */
     void setHoodManual(double speed);
 
+    /**
+     * Spins the shooter wheels in reverse for outtakeing
+     */
+    void spinInReverse(bool reverseOrNot);
+
     enum ShooterMode {
         ODOMETRY,      // Use camera to decide shot speed and angle
         LAUNCH_PAD,    // shooting with back of robot contacting launch pad
@@ -78,6 +83,8 @@ private:
 
     // 
     double manualRPM = 0;
+    // true will reverse, false will not
+    bool reverse = false;
 
     ShooterMode shooterMode = TARMAC_LINE;
 

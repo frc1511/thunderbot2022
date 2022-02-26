@@ -7,7 +7,8 @@
 #include <frc/DoubleSolenoid.h>
 #include <frc/DigitalInput.h>
 #include <frc/Counter.h>
-#include <frc/filter/Debouncer.h>
+//#include <frc/filter/Debouncer.h>
+#include <frc/Timer.h>
 
 /** has two sensors and two motors
  * stage one banner sensor and stage two banner sensor
@@ -63,7 +64,8 @@ private:
         STATE_OUTTAKE,
         STATE_STOP,
         STATE_MANUAL,
-        STATE_SHOOT
+        STATE_SHOOT,
+        STATE_PRE_COUNT,
     };
     // Something here...
     // retract piston is intake enabled now, needs to be changed in code                intake forward           intake in robot
@@ -81,10 +83,13 @@ private:
     bool stageTwoOccupied; // indicates if stage 2 has a ball in it
     bool didAutoExist; //for reset purposes
 
+    bool countPending; // whether or not the timer is running
+
     States currentState;
     IntakeDirection targetDirection;
     frc::DigitalInput stageOneFlag{DIO_STORAGE_BANNER_STAGE_ONE}; // true is present, false is not present
     frc::DigitalInput stageTwoFlag{DIO_STORAGE_BANNER_STAGE_TWO}; // true is present, false is not present
     frc::DigitalInput shooterFlag{DIO_SHOOTER_BANNER_LEFT_ROBOT}; // true is present, false is not present
-    frc::Debouncer m_debouncer{100_ms, frc::Debouncer::DebounceType::kBoth}; //used to not double count a single ball
+    //frc::Debouncer m_debouncer{25_ms, frc::Debouncer::DebounceType::kBoth}; //used to not double count a single ball
+    frc::Timer ballCountFix;
 };
