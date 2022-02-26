@@ -328,7 +328,7 @@ void Controls::doAux() {
             if (auxController.getRawButton(LEFT_TRIGGER_BUTTON)) {
                 gamEpiece->setIntakeDirection(GamEpiece::IntakeDirection::INTAKE);
             }
-            else if (driveController.getRawButton(3)) { //auxController.getRawButton(LEFT_BUMPER)
+            else if (auxController.getRawButton(LEFT_BUMPER)) { //auxController.getRawButton(LEFT_BUMPER)
                 gamEpiece->setIntakeDirection(GamEpiece::IntakeDirection::OUTTAKE);
             }
             else {
