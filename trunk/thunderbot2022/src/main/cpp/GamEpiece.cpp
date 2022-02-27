@@ -199,11 +199,23 @@ void GamEpiece::sendFeedback() {
             shooterStateString = "SHOOTING";
             break;
     }
+    int currentAlliance = 0;
+    switch(frc::DriverStation::GetAlliance()){
+        case frc::DriverStation::kRed:
+            currentAlliance = 0;
+            break;
+        case frc::DriverStation::kBlue:
+            currentAlliance = 1;
+            break;
+        case frc::DriverStation::kInvalid:
+            break;
+    }
     Feedback::sendString("gamEpiece", "intakeDirection", intakeStateString.c_str());
     Feedback::sendString("gamEpiece", "shooterState", shooterStateString.c_str());
     Feedback::sendDouble("gamEpiece", "shot timer", shotTimer.Get().value());
     Feedback::sendDouble("gamEpiece", "game piece ball count", currentBallCount);
 
     Feedback::sendDouble("thunderdashboard","match_remaining", frc::DriverStation::GetMatchTime());
+    Feedback::sendDouble("thunderdashboard","alliance",currentAlliance);
     Feedback::sendDouble("thunderdashboard", "inpitmode", isCraterMode);
 }
