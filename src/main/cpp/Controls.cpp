@@ -248,7 +248,12 @@ void Controls::doAux() {
             lastPressedMode = Shooter::TARMAC_LINE;
         }
         else if (auxController.getRawButton(CIRCLE_BUTTON)) {
-            lastPressedMode = Shooter::LAUNCH_PAD;
+            if(nearOrFar){
+                lastPressedMode = Shooter::FAR_LAUNCH_PAD;
+            }
+            else{
+                lastPressedMode = Shooter::NEAR_LAUNCH_PAD;
+            }
         }
         else if (auxController.getRawButton(CROSS_BUTTON)) {
             // lastPressedMode = Shooter::ODOMETRY;
@@ -360,13 +365,8 @@ void Controls::doSwitchPanel() {
     else {
         drive->setControlMode(Drive::FIELD_CENTRIC);
     }
-    highLowShot = switchPanel.GetRawButton(7);
-    if (highLowShot){
-        highOrLow = true;
-    }
-    else {
-        highOrLow = false;
-    }
+    highOrLow = switchPanel.GetRawButton(7);
+    nearOrFar = switchPanel.GetRawButton(6);
     recordController = switchPanel.GetRawButtonPressed(12);
     clearController = switchPanel.GetRawButtonPressed(11);
     if(clearController){
@@ -419,8 +419,11 @@ void Controls::sendFeedback(){
         case(Shooter::TARMAC_LINE):
             mode = "tarmac line";
             break;
-        case(Shooter::LAUNCH_PAD):
-            mode = "launch pad";
+        case(Shooter::FAR_LAUNCH_PAD):
+            mode = "far launch pad";
+            break;
+        case(Shooter::NEAR_LAUNCH_PAD):
+            mode = "near launch pad";
             break;
         case(Shooter::HIGH_HUB_SHOT):
             mode = "high hub shot";
