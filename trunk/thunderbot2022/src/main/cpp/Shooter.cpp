@@ -39,12 +39,12 @@
 #define WALL_SHOOTER_RPM 2600
 
 // The hood position and shooter RPM when the robot is at the launch pad.
-#define LAUNCH_PAD_HOOD_POS (HOOD_MIN_POS + .1311)
-#define LAUNCH_PAD_SHOOTER_RPM 2200
+#define FAR_LAUNCH_PAD_HOOD_POS (HOOD_MIN_POS + .1311)
+#define FAR_LAUNCH_PAD_SHOOTER_RPM 2200
 // make button :D
 // The hood position and shooter RPM when the robot is at the tarmac line.
-#define LAUNCH_PAD_CLOSE_HOOD_POS (HOOD_MIN_POS + .1038) // .591
-#define LAUNCH_PAD_CLOSE_SHOOTER_RPM 2000
+#define NEAR_LAUNCH_PAD_HOOD_POS (HOOD_MIN_POS + .1038) // .591
+#define NEAR_LAUNCH_PAD_SHOOTER_RPM 2000
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
 #define TARMAC_LINE_HOOD_POS (HOOD_MIN_POS + .06) // .591
@@ -137,9 +137,13 @@ void Shooter::process() {
             targetHoodPosition = interpolation(xVarsHood[goodNumber], yVarsHood[goodNumber], xVarsHood[goodNumber+1], yVarsHood[goodNumber+1], distance);
             targetRPM = interpolation(xVarsSpeed[goodNumber], yVarsSpeed[goodNumber], xVarsSpeed[goodNumber+1], yVarsSpeed[goodNumber+1], distance);
             break;
-        case LAUNCH_PAD:
-            targetHoodPosition = LAUNCH_PAD_HOOD_POS;
-            targetRPM = LAUNCH_PAD_SHOOTER_RPM;
+        case FAR_LAUNCH_PAD:
+            targetHoodPosition = FAR_LAUNCH_PAD_HOOD_POS;
+            targetRPM = FAR_LAUNCH_PAD_SHOOTER_RPM;
+            break;
+        case NEAR_LAUNCH_PAD:
+            targetHoodPosition = NEAR_LAUNCH_PAD_HOOD_POS;
+            targetRPM = NEAR_LAUNCH_PAD_SHOOTER_RPM;
             break;
         case TARMAC_LINE:
             targetHoodPosition = TARMAC_LINE_HOOD_POS;
@@ -279,8 +283,11 @@ void Shooter::sendFeedback() {
         case ODOMETRY:
             modeString = "Odometry";
             break;
-        case LAUNCH_PAD:
-            modeString = "Launch Pad";
+        case FAR_LAUNCH_PAD:
+            modeString = "Far Launch Pad";
+            break;
+        case NEAR_LAUNCH_PAD:
+            modeString = "Near Launch Pad";
             break;
         case TARMAC_LINE:
             modeString = "Tarmac Line";
