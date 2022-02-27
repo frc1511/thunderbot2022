@@ -4,7 +4,7 @@
 #define CENTER_START_POSITION (frc::Pose2d(5.136_m, 5.959_m, 313.468_deg))
 #define RIGHT_START_POSITION  (frc::Pose2d(6.015_m, 8.124_m, 1.498_deg))
 
-Autonomous::Autonomous(Drive* drive, GamEpiece* gamEpiece, Controls* controls) 
+Autonomous::Autonomous(Drive* drive, GamEpiece* gamEpiece, Controls* controls)
   : drive(drive), gamEpiece(gamEpiece), controls(controls) {
     
 }
@@ -254,18 +254,21 @@ void Autonomous::centerTwoBall() {
 
 void Autonomous::rightTwoBall() {
     if(step == 0) {
-        gamEpiece->setIntakeDirection(GamEpiece::INTAKE);
+        // gamEpiece->setIntakeDirection(GamEpiece::INTAKE);
         step++;
     }
     else if(step == 1) {
-        drive->cmdDriveTranslate(0_ft, 10_ft, 180_deg, {});
-
+        drive->cmdDriveTranslate(0_in, -37.5_in, 0_deg);
         step++;
     }
     else if (step == 1 && drive->cmdIsFinished()) {
         step++;
     }
     else if (step == 2) {
+        drive->cmdDriveTranslate(42_in, 0_in, 0_deg);
+        step++;
+    }
+    else if (step == 3 && drive->cmdIsFinished()) {
         if(true){//alignAndShoot(Shooter::TARMAC_LINE, 2)) {
             step++;
         }
