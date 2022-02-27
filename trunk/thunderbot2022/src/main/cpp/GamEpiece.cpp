@@ -87,10 +87,14 @@ void GamEpiece::process() {
             shooter.setShooterSpinup(true);
             break;
         case(WANT_TO_SHOOT):
-            shooter.setShooterSpinup(true);
-            if(shooter.isShooterReady()){ // waits until hood is in place and shooter is at speed
-                shooterState = SHOOTING;
-                intake.setIntakeDirection(Intake::SHOOTING);
+            desiredShooterState = WARMUP_SHOOTER;
+            if(intake.ballAtStageTwo()){
+                shooter.setShooterSpinup(true);
+                if(shooter.isShooterReady() && intake.ballAtStageTwo()){ // waits until hood is in place and shooter is at speed
+                    shooterState = SHOOTING;
+                    intake.setIntakeDirection(Intake::SHOOTING);
+                    desiredShooterState = WARMUP_SHOOTER;
+                }
             }
             break;
         case(SHOOTING):
@@ -107,12 +111,14 @@ void GamEpiece::process() {
             if(intake.finishedShooting()){ // intake shot a ball so it is done 
                 intake.setIntakeDirection(Intake::NOTTAKE);
                 shooterState = WARMUP_SHOOTER;
+                desiredShooterState = WARMUP_SHOOTER;
             }
             break;
     }
     
     intake.process();
     shooter.process();
+    
     
 }
 
@@ -209,6 +215,7 @@ void GamEpiece::sendFeedback() {
     Feedback::sendString("gamEpiece", "intakeDirection", intakeStateString.c_str());
     Feedback::sendString("gamEpiece", "shooterState", shooterStateString.c_str());
     Feedback::sendDouble("gamEpiece", "shot timer", shotTimer.Get().value());
+    Feedback::sendDouble("gamEpiece", "game piece ball count", currentBallCount);
 
     Feedback::sendDouble("thunderdashboard","match_remaining", frc::DriverStation::GetMatchTime());
     Feedback::sendDouble("thunderdashboard", "inpitmode", isCraterMode);

@@ -15,11 +15,12 @@ void Robot::AutonomousInit() {
     //controls.autoForTrevor();
 }
 
+
 void Robot::AutonomousPeriodic() {
     autonomous.process();
     for (int i = 0; i < nMechanisms; ++i)
         allMechanisms[i]->process();
-    controls.process();
+    
 }
 
 void Robot::TeleopInit() {

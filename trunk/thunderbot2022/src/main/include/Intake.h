@@ -48,6 +48,8 @@ public:
 
     bool ballAtStageOne();
 
+    bool ballAtStageTwo();
+
 private:
     // ball count!!!!
 

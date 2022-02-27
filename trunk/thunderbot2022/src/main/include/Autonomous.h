@@ -22,28 +22,14 @@ public:
         UBER,
 
         /**
-         * 1. Start in the left starting location.
-         * 2. Align with high hub.
-         * 3. Shoot cargo.
+         * 1. Start facing the hub.
+         * 2. Shoot cargo.
+         * 3. Drive out of the tarmac.
          */
-        LEFT_ONE_BALL,
+        ONE_BALL,
 
         /**
-         * 1. Start in the center starting location.
-         * 2. Align with high hub.
-         * 3. Shoot cargo.
-         */
-        CENTER_ONE_BALL,
-
-        /**
-         * 1. Start in the right starting location.
-         * 2. Align with high hub.
-         * 3. Shoot cargo.
-         */
-        RIGHT_ONE_BALL,
-
-        /**
-         * 1. Start in the left starting location.
+         * 1. Start at the left starting location.
          * 2. Pick up ball 1.
          * 3. Align with high hub.
          * 4. Shoot both cargo.
@@ -51,7 +37,7 @@ public:
         LEFT_TWO_BALL,
 
         /**
-         * 1. Start in the center starting location.
+         * 1. Start at the center starting location.
          * 2. Pick up ball 2.
          * 3. Align with high hub.
          * 4. Shoot both cargo.
@@ -59,7 +45,7 @@ public:
         CENTER_TWO_BALL,
 
         /**
-         * 1. Start in the right starting location.
+         * 1. Start at the right starting location.
          * 2. Pick up ball 3.
          * 3. Align with high hub.
          * 4. Shoot both cargo.
@@ -67,7 +53,7 @@ public:
         RIGHT_TWO_BALL,
         
         /**
-         * 1. Start in the center starting location.
+         * 1. Start at the center starting location.
          * 2. Pick up ball 2.
          * 3. Align with high hub.
          * 4. Shoot both cargo.
@@ -78,7 +64,7 @@ public:
         CENTER_THREE_BALL,
 
         /**
-         * 1. Start in the right starting location.
+         * 1. Start at the right starting location.
          * 2. Pick up ball 3.
          * 3. Align with high hub.
          * 4. Shoot both cargo.
@@ -89,7 +75,7 @@ public:
         RIGHT_SHORT_THREE_BALL,
 
         /**
-         * 1. Start in the right starting location.
+         * 1. Start at the right starting location.
          * 2. Pick up ball 3.
          * 3. Align with high hub.
          * 4. Shoot both cargo.
@@ -100,7 +86,7 @@ public:
         RIGHT_FAR_THREE_BALL,
 
         /**
-         * 1. Start in the right starting location.
+         * 1. Start at the right starting location.
          * 2. Pick up ball 3.
          * 3. Align with high hub.
          * 4. Shoot both cargo.
@@ -122,6 +108,8 @@ public:
 
 
 private:
+    Drive* drive;
+    GamEpiece* gamEpiece;
     Controls *controls;
     enum StartingPosition {
         UNKNOWN = 0,
@@ -134,9 +122,7 @@ private:
 
     void doNothing();
     void uber();
-    void leftOneBall();
-    void centerOneBall();
-    void rightOneBall();
+    void oneBall();
     void leftTwoBall();
     void centerTwoBall();
     void rightTwoBall();
@@ -146,15 +132,16 @@ private:
     void rightFourBall();
     void autoForTrevor();
 
-    bool alignAndShoot(Shooter::ShooterMode shooterMode, unsigned ballNum);
+    void alignAndShoot(Shooter::ShooterMode shooterMode, unsigned ballNum);
 
     AutoMode currentMode = DO_NOTHING;
 
     frc::Timer timer {};
 
+    bool shootingIsDone = false;
+
     int step = 0;
     int shootStep = 0;
 
-    Drive* drive;
-    GamEpiece* gamEpiece;
+    
 };

@@ -341,6 +341,10 @@ bool Intake::ballAtStageOne()
     return stageOneSensorPrevious;
 }
 
+bool Intake::ballAtStageTwo(){
+    return stageTwoOccupied;
+}
+
 void Intake::sendFeedback()
 { // debug
     std::string targetIntakeState = "";
@@ -393,12 +397,12 @@ void Intake::sendFeedback()
     {
         intakePositionString = "intake is up";
     }
-
+    bool stageOneSensor = checkSensor(&stageOneFlag);
     Feedback::sendString("Intake", "Current target direction", targetIntakeState.c_str());
     Feedback::sendBoolean("Intake", "State of Intake, true = up", intakePosition);
     Feedback::sendDouble("Intake", "Manual speed of intake/storage", intakeSpeed);
     Feedback::sendString("Intake", "current state of the intake", currentstate.c_str());
-    Feedback::sendBoolean("Intake", "sensor stage one, true is tripped", checkSensor(&stageOneFlag));
+    Feedback::sendBoolean("Intake", "sensor stage one, true is tripped", stageOneSensor);
     Feedback::sendBoolean("Intake", "sensor stage two true is tripped", checkSensor(&stageTwoFlag));
     Feedback::sendBoolean("Intake", "sensor shooter true is tripped", checkSensor(&shooterFlag));
     Feedback::sendBoolean("Intake", "true is stage two is occupied", stageTwoOccupied);
@@ -408,6 +412,6 @@ void Intake::sendFeedback()
     Feedback::sendDouble("Intake", "stage 1 temperature (F)", intakeMotorStageOne->GetMotorTemperatureFarenheit());
     Feedback::sendDouble("Intake", "stage 2 temperature (F)", intakeMotorStageTwo->GetMotorTemperatureFarenheit());
 
-    Feedback::sendDouble("thunderdashboard", "stage1", stageOneSensorPrevious);
+    Feedback::sendDouble("thunderdashboard", "stage1", stageOneSensor);
     Feedback::sendDouble("thunderdashboard", "stage2", stageTwoOccupied);
 }

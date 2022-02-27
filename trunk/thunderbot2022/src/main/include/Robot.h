@@ -44,7 +44,7 @@ private:
 
 #ifdef HOMER
   Controls controls { &drive, nullptr, nullptr };
-  Autonomous autonomous { &drive, nullptr };
+  Autonomous autonomous { &drive, nullptr, &controls };
 
   static const int nMechanisms = 2;
   Mechanism *allMechanisms[nMechanisms] {
