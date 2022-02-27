@@ -79,12 +79,9 @@ void Autonomous::resetToMode(MatchMode mode) {
         switch (currentMode) {
             case DO_NOTHING:
             case UBER:
-            case LEFT_ONE_BALL:
             case LEFT_TWO_BALL:
-            case CENTER_ONE_BALL:
             case CENTER_TWO_BALL:
             case CENTER_THREE_BALL:
-            case RIGHT_ONE_BALL:
             case RIGHT_TWO_BALL:
             case RIGHT_SHORT_THREE_BALL:
             case RIGHT_FAR_THREE_BALL:
