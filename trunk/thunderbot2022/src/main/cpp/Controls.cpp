@@ -347,12 +347,12 @@ void Controls::doAux() {
 }
 
 void Controls::doSwitchPanel() {
-    hangActive = switchPanel.GetRawButton(6); // do be 8 tho
+    hangActive = switchPanel.GetRawButton(8); 
     gamePieceManual = switchPanel.GetRawButton(1);
     if (hangActive) {
         hangManual = switchPanel.GetRawButton(2);
     }
-    isCraterMode = switchPanel.GetRawButton(3); // do be 10 tho
+    isCraterMode = switchPanel.GetRawButton(10);
     robotCentric = switchPanel.GetRawButton(5);
     if (robotCentric) {
         drive->setControlMode(Drive::ROBOT_CENTRIC);

@@ -67,6 +67,8 @@ private:
     // The manual speed of the hood servo.
     double hoodSpeedManual = 0;
 
+    double hoodSpeedManualLast = 0;
+
     // The target RPM of the shooting motors.
     double targetRPM = 0;
 
