@@ -17,6 +17,10 @@ void Autonomous::resetToMode(MatchMode mode) {
     currentMode = AUTO_FOR_TREVOR_TWO;
 
     if (mode == MODE_AUTO) {
+        if (!drive->getIMUCalibrated()) {
+            drive->calibrateIMU();
+        }
+        
         currentMode = (AutoMode)Feedback::getDouble("Auto", "Mode", 0);
         
         switch (currentMode) {

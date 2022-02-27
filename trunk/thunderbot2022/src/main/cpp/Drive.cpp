@@ -694,6 +694,10 @@ void Drive::calibrateIMU() {
     }
 }
 
+bool Drive::getIMUCalibrated() {
+    return imuCalibrated;
+}
+
 void Drive::configMagneticEncoders() {
     if (!isCraterMode) {
         return;
