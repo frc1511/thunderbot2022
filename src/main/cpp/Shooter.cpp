@@ -41,10 +41,14 @@
 // The hood position and shooter RPM when the robot is at the launch pad.
 #define LAUNCH_PAD_HOOD_POS (HOOD_MIN_POS + .1311)
 #define LAUNCH_PAD_SHOOTER_RPM 2200
+// make button :D
+// The hood position and shooter RPM when the robot is at the tarmac line.
+#define LAUNCH_PAD_CLOSE_HOOD_POS (HOOD_MIN_POS + .1038) // .591
+#define LAUNCH_PAD_CLOSE_SHOOTER_RPM 2000
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
-#define TARMAC_LINE_HOOD_POS (HOOD_MIN_POS + .1038)
-#define TARMAC_LINE_SHOOTER_RPM 2000
+#define TARMAC_LINE_HOOD_POS (HOOD_MIN_POS + .06) // .591
+#define TARMAC_LINE_SHOOTER_RPM 1800
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
 #define HIGH_HUB_SHOT_HOOD_POS (HOOD_MIN_POS + .019) //.550
@@ -151,6 +155,9 @@ void Shooter::process() {
             break;
         case MANUAL:
             targetRPM = manualRPM;
+            if(hoodSpeedManual == 0 && hoodSpeedManualLast != 0){
+                targetHoodPosition = readPotentiometer();
+            }
             break;
     }
     
@@ -159,11 +166,13 @@ void Shooter::process() {
     }
     
     if(reverse){
-        targetRPM = -500;
+        shooterLeftMotor->Set(-.2);
+        shooterRightMotor->Set(-.2);
     }
-    shooterLeftPID->SetReference(targetRPM, rev::CANSparkMax::ControlType::kVelocity);
-    shooterRightPID->SetReference(targetRPM, rev::CANSparkMax::ControlType::kVelocity);
-    
+    else{
+        shooterLeftPID->SetReference(targetRPM, rev::CANSparkMax::ControlType::kVelocity);
+        shooterRightPID->SetReference(targetRPM, rev::CANSparkMax::ControlType::kVelocity);
+    }
 
     // gets the position of the hood potentiometer
     double hoodPosition = readPotentiometer();
@@ -195,6 +204,7 @@ void Shooter::process() {
     else if (hoodPosition <= HOOD_MIN_POS && servoSpeed < HOOD_SPEED_STOPPED) {
         servoSpeed = HOOD_SPEED_STOPPED;
     }
+    hoodSpeedManualLast = hoodSpeedManual;
 
     // Set the speed of the servo.
     if(fabs(servoSpeed) >= .05){
@@ -252,14 +262,14 @@ double Shooter::readPotentiometer(){
 }
 
 void Shooter::spinInReverse(bool reverseOrNot){
-    if(reverseOrNot){
+    /*if(reverseOrNot){
         shooterLeftPID->SetOutputRange(-SHOOTER_MAX_RPM, SHOOTER_MAX_RPM);
         shooterRightPID->SetOutputRange(-SHOOTER_MAX_RPM, SHOOTER_MAX_RPM);
     }
     else{
         shooterLeftPID->SetOutputRange(0,SHOOTER_MAX_RPM);
         shooterRightPID->SetOutputRange(0,SHOOTER_MAX_RPM);
-    }
+    }*/
     reverse = reverseOrNot;
 }
 
