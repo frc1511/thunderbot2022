@@ -10,7 +10,7 @@ const double kSpeedStageTwoSlow = .14;    // used for intaking into stage two
 const double kReverseSpeedStageOne = -.4; // used for outtaking
 const double kReverseSpeedStageTwo = -.3; // used for outtaking
 
-const units::second_t kDebouncerTime = 50_ms;
+const units::second_t kDebouncerTime = 50_ms; //used for making the ball count work
 
 Intake::Intake() : intakeMotorStageOne(ThunderSparkMax::create(ThunderSparkMax::MotorID::StorageStage1)),
                    intakeMotorStageTwo(ThunderSparkMax::create(ThunderSparkMax::MotorID::StorageStage2))
@@ -72,7 +72,7 @@ void Intake::resetToMode(MatchMode mode)
     {
         didAutoExist = true;
     }
-    if (mode == MatchMode::MODE_AUTO || (mode == MatchMode::MODE_TELEOP && didAutoExist == false))
+    if (mode == MatchMode::MODE_AUTO || (mode == MatchMode::MODE_TELEOP && didAutoExist == false)) //combo (ish) reset so it works when just doing tele, and when doing both
     {
         if (checkSensor(&stageOneFlag))
         {
