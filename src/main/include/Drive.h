@@ -274,6 +274,11 @@ public:
      * beginning of the match when the robot is not moving).
      */
     void calibrateIMU();
+
+    /**
+     * Returns whether the IMU is calibrated.
+     */
+    bool getIMUCalibrated();
     
     /**
      * Manually control the robot using percentages of the max drive velocities.
