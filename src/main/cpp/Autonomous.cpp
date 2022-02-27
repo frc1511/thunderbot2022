@@ -226,7 +226,7 @@ void Autonomous::oneBall() {
     }
     else if (step == 2) {
         alignAndShoot(Shooter::HIGH_HUB_SHOT, 1);
-        if(shootingIsDone){//alignAndShoot(Shooter::LOW_HUB_SHOT, 1)) {
+        if(shootingIsDone){
             step++;
         }
     }
@@ -253,7 +253,8 @@ void Autonomous::leftTwoBall() {
         step++;
     }
     else if (step == 2) {
-        if(true){//alignAndShoot(Shooter::TARMAC_LINE, 2)) {
+        alignAndShoot(Shooter::TARMAC_LINE, 2);
+        if(shootingIsDone){
             step++;
         }
     }
@@ -273,7 +274,8 @@ void Autonomous::centerTwoBall() {
         step++;
     }
     else if (step == 2) {
-        if(true){//alignAndShoot(Shooter::TARMAC_LINE, 2)) {
+        alignAndShoot(Shooter::TARMAC_LINE, 2);
+        if(shootingIsDone){
             step++;
         }
     }
@@ -296,7 +298,8 @@ void Autonomous::rightTwoBall() {
         step++;
     }
     else if (step == 4 && drive->cmdIsFinished()) {
-        if(true){//alignAndShoot(Shooter::TARMAC_LINE, 2)) {
+        alignAndShoot(Shooter::TARMAC_LINE, 2);
+        if(shootingIsDone){
             step++;
         }
     }
@@ -322,7 +325,8 @@ void Autonomous::centerThreeBall() {
         step++;
     }
     else if (step == 8) {
-        if(true){//alignAndShoot(Shooter::TARMAC_LINE, 2)) {
+        alignAndShoot(Shooter::TARMAC_LINE, 2);
+        if(shootingIsDone){
             step++;
         }
     }
@@ -350,7 +354,8 @@ void Autonomous::rightShortThreeBall() {
         step++;
     } 
     else if(step == 8) {
-        if(true){//alignAndShoot(Shooter::TARMAC_LINE, 1)) {
+        alignAndShoot(Shooter::TARMAC_LINE, 1);
+        if(shootingIsDone){
             step++;
         }
     }
@@ -376,7 +381,8 @@ void Autonomous::rightFarThreeBall() {
         step++;
     }
     else if(step == 8) {
-        if(true){//alignAndShoot(Shooter::TARMAC_LINE, 1)) {
+        alignAndShoot(Shooter::TARMAC_LINE, 1);
+        if(shootingIsDone){
             step++;
         }
     }
