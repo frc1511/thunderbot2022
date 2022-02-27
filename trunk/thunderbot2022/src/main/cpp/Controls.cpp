@@ -249,10 +249,10 @@ void Controls::doAux() {
         }
         else if (auxController.getRawButton(CIRCLE_BUTTON)) {
             if(nearOrFar){
-                lastPressedMode = Shooter::FAR_LAUNCH_PAD;
+                lastPressedMode = Shooter::NEAR_LAUNCH_PAD;
             }
             else{
-                lastPressedMode = Shooter::NEAR_LAUNCH_PAD;
+                lastPressedMode = Shooter::FAR_LAUNCH_PAD;
             }
         }
         else if (auxController.getRawButton(CROSS_BUTTON)) {

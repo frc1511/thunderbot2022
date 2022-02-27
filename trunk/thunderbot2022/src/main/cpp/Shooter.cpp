@@ -12,7 +12,7 @@
 #define SHOOTER_FF_VALUE .000187
 
 // Minimum / maximum hood servo positions.
-#define HOOD_MIN_POS 0.531 //0.433
+#define HOOD_MIN_POS 0.5541 //0.433
 #define HOOD_MAX_POS (HOOD_MIN_POS + .154) //0.7
 
 // The maximum RPM of the shooter wheels.
@@ -51,7 +51,7 @@
 #define TARMAC_LINE_SHOOTER_RPM 1800
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
-#define HIGH_HUB_SHOT_HOOD_POS (HOOD_MIN_POS + .019) //.550
+#define HIGH_HUB_SHOT_HOOD_POS (HOOD_MIN_POS + .006) //.560
 #define HIGH_HUB_SHOT_SHOOTER_RPM 1600
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
