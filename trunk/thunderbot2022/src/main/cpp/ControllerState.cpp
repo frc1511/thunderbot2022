@@ -93,7 +93,7 @@ void ControllerState::process(){
         if(axisDone == false){
             if(axesTime.size() > 0){ // make sure there are more axes to be changed
                 if(autoTimer.Get().value() >= axesTime[0]){
-                    axesValues[axesInt[0]*2] = axesPos[0];
+                    axes[axesInt[0]*2] = axesPos[0];
                     axesTime.erase(axesTime.begin());
                     axesInt.erase(axesInt.begin());
                     axesPos.erase(axesPos.begin());
