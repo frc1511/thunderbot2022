@@ -4,13 +4,13 @@
 #define INTAKE_MAX_AMPERAGE 30
 
 const double kSpeedStageOne = .7;         // used for intaking
-const double kSpeedStageOneLimbo = .2;   // used for when waiting at stage one when intaking
+const double kSpeedStageOneLimbo = .2;    // used for when waiting at stage one when intaking
 const double kSpeedStageTwo = .9;         // used for shooting
 const double kSpeedStageTwoSlow = .14;    // used for intaking into stage two
 const double kReverseSpeedStageOne = -.4; // used for outtaking
 const double kReverseSpeedStageTwo = -.3; // used for outtaking
 
-const units::second_t kDebouncerTime = 26_ms;
+const units::second_t kDebouncerTime = 50_ms;
 
 Intake::Intake() : intakeMotorStageOne(ThunderSparkMax::create(ThunderSparkMax::MotorID::StorageStage1)),
                    intakeMotorStageTwo(ThunderSparkMax::create(ThunderSparkMax::MotorID::StorageStage2))
@@ -191,111 +191,116 @@ void Intake::switchStates() // command switches
 }
 void Intake::process()
 {
-
+      States startState = currentState;
     // bool currentSensorOneInput = m_debouncer.Calculate(checkSensor(&stageOneFlag));
-    bool currentSensorOneInput = checkSensor(&stageOneFlag);
-    bool currentSensorTwoInput = checkSensor(&stageTwoFlag);
-    bool currentShooterSensorInput = checkSensor(&shooterFlag);
-    // the desired actions of the intake motors
-    switch (currentState)
-    { // extend piston to retract intake, retract piston to extend/deploy intake
-    case STATE_INTAKE_ONE_BALL:
-        horizontalIntake.Set(frc::DoubleSolenoid::Value::kForward); // deploy intake, forward is forward
-        intakeMotorStageOne->Set(kSpeedStageOne);                   // stage 1 go
-        if (stageTwoOccupied)
-        {                                // ball in stage two
-            intakeMotorStageTwo->Set(0); // stage 2 go, slow
-        }
-        else
-        {
-            intakeMotorStageTwo->Set(kSpeedStageTwoSlow);
-        }
-        ballCountIntake(currentSensorOneInput, currentSensorTwoInput);
-        switchStates();
-        break;
-    case STATE_PRE_COUNT:
-        horizontalIntake.Set(frc::DoubleSolenoid::Value::kForward);
-        intakeMotorStageOne->Set(kSpeedStageOneLimbo);
-        if (stageTwoOccupied)
-        {                                // ball in stage two
-            intakeMotorStageTwo->Set(0); // stage 2 go, slow
-        }
-        else
-        {
-            intakeMotorStageTwo->Set(kSpeedStageTwoSlow);
-        }
-        ballCountIntake(currentSensorOneInput, currentSensorTwoInput);
-        switchStates();
-        break;
-    case STATE_INTAKE_TWO_BALL:
-        horizontalIntake.Set(frc::DoubleSolenoid::Value::kReverse); // retract intake
-        intakeMotorStageOne->Set(0);                                // stage 1 stop
-        intakeMotorStageTwo->Set(0);                                // stage 2 stop
-        ballCountIntake(currentSensorOneInput, currentSensorTwoInput);
-        switchStates();
-        break;
-    case STATE_OUTTAKE:
-        horizontalIntake.Set(frc::DoubleSolenoid::Value::kOff); // change this to off // leave intake as is
-        intakeMotorStageOne->Set(kReverseSpeedStageOne);        // stage 1 go reverse
-        intakeMotorStageTwo->Set(kReverseSpeedStageTwo);        // stage 2 go reverse
-        ballCountOuttake(currentSensorOneInput, currentSensorTwoInput);
-        switchStates();
-        break;
-    case STATE_STOP:
-        horizontalIntake.Set(frc::DoubleSolenoid::Value::kReverse); // retract intake
-        if (stageTwoOccupied == true || ballCount < 1)              // if there is a ball in position (stage 2) or if there are no balls
-        {
-            intakeMotorStageOne->Set(0); // stage 1 stop
-            intakeMotorStageTwo->Set(0); // stage 2 stop
-        }
-        else // if there is a ball not in position
-        {
-            intakeMotorStageOne->Set(kSpeedStageOne);     // stage 1 go
-            intakeMotorStageTwo->Set(kSpeedStageTwoSlow); // stage 2 go, slow
-        }
-        ballCountIntake(currentSensorOneInput, currentSensorTwoInput);
-        switchStates();
-        break;
-    case STATE_SHOOT:
-        horizontalIntake.Set(frc::DoubleSolenoid::Value::kReverse); // retract intake
-        if (stageTwoOccupied == true)
-        {
-            intakeMotorStageTwo->Set(kSpeedStageTwo); // stage 2 go
-            intakeMotorStageOne->Set(0);              // stage 1 stops
-        }
-        else
-        {
-            intakeMotorStageTwo->Set(0); // stage 2 stops
-            intakeMotorStageOne->Set(0); // stage 1 stops
-            currentState = STATE_STOP;   // go back to stop, which gets any other possible balls in position
-        }
 
-        if (currentShooterSensorInput == false && shooterSensorPrevious == true)
-        {
-            ballCount = ballCount - 1;
-            stageTwoOccupied = false;
-        }
-
-        break;
-    case STATE_MANUAL:
-        if (intakePosition == true)
-        { // intake goes down
+    do
+    {
+        startState = currentState;
+        bool currentSensorOneInput = checkSensor(&stageOneFlag);
+        bool currentSensorTwoInput = checkSensor(&stageTwoFlag);
+        bool currentShooterSensorInput = checkSensor(&shooterFlag);
+        // the desired actions of the intake motors
+        switch (currentState)
+        { // extend piston to retract intake, retract piston to extend/deploy intake
+        case STATE_INTAKE_ONE_BALL:
+            horizontalIntake.Set(frc::DoubleSolenoid::Value::kForward); // deploy intake, forward is forward
+            intakeMotorStageOne->Set(kSpeedStageOne);                   // stage 1 go
+            if (stageTwoOccupied)
+            {                                // ball in stage two
+                intakeMotorStageTwo->Set(0); // stage 2 go, slow
+            }
+            else
+            {
+                intakeMotorStageTwo->Set(kSpeedStageTwoSlow);
+            }
+            ballCountIntake(currentSensorOneInput, currentSensorTwoInput);
+            switchStates();
+            break;
+        case STATE_PRE_COUNT:
             horizontalIntake.Set(frc::DoubleSolenoid::Value::kForward);
+            intakeMotorStageOne->Set(kSpeedStageOneLimbo);
+            if (stageTwoOccupied)
+            {                                // ball in stage two
+                intakeMotorStageTwo->Set(0); // stage 2 go, slow
+            }
+            else
+            {
+                intakeMotorStageTwo->Set(kSpeedStageTwoSlow);
+            }
+            ballCountIntake(currentSensorOneInput, currentSensorTwoInput);
+            switchStates();
+            break;
+        case STATE_INTAKE_TWO_BALL:
+            horizontalIntake.Set(frc::DoubleSolenoid::Value::kReverse); // retract intake
+            intakeMotorStageOne->Set(0);                                // stage 1 stop
+            intakeMotorStageTwo->Set(0);                                // stage 2 stop
+            ballCountIntake(currentSensorOneInput, currentSensorTwoInput);
+            switchStates();
+            break;
+        case STATE_OUTTAKE:
+            horizontalIntake.Set(frc::DoubleSolenoid::Value::kOff); // change this to off // leave intake as is
+            intakeMotorStageOne->Set(kReverseSpeedStageOne);        // stage 1 go reverse
+            intakeMotorStageTwo->Set(kReverseSpeedStageTwo);        // stage 2 go reverse
+            ballCountOuttake(currentSensorOneInput, currentSensorTwoInput);
+            switchStates();
+            break;
+        case STATE_STOP:
+            horizontalIntake.Set(frc::DoubleSolenoid::Value::kReverse); // retract intake
+            if (stageTwoOccupied == true || ballCount < 1)              // if there is a ball in position (stage 2) or if there are no balls
+            {
+                intakeMotorStageOne->Set(0); // stage 1 stop
+                intakeMotorStageTwo->Set(0); // stage 2 stop
+            }
+            else // if there is a ball not in position
+            {
+                intakeMotorStageOne->Set(kSpeedStageOne);     // stage 1 go
+                intakeMotorStageTwo->Set(kSpeedStageTwoSlow); // stage 2 go, slow
+            }
+            ballCountIntake(currentSensorOneInput, currentSensorTwoInput);
+            switchStates();
+            break;
+        case STATE_SHOOT:
+            horizontalIntake.Set(frc::DoubleSolenoid::Value::kReverse); // retract intake
+            if (stageTwoOccupied == true)
+            {
+                intakeMotorStageTwo->Set(kSpeedStageTwo); // stage 2 go
+                intakeMotorStageOne->Set(0);              // stage 1 stops
+            }
+            else
+            {
+                intakeMotorStageTwo->Set(0); // stage 2 stops
+                intakeMotorStageOne->Set(0); // stage 1 stops
+                currentState = STATE_STOP;   // go back to stop, which gets any other possible balls in position
+            }
+
+            if (currentShooterSensorInput == false && shooterSensorPrevious == true)
+            {
+                ballCount = ballCount - 1;
+                stageTwoOccupied = false;
+            }
+
+            break;
+        case STATE_MANUAL:
+            if (intakePosition == true)
+            { // intake goes down
+                horizontalIntake.Set(frc::DoubleSolenoid::Value::kForward);
+            }
+            else
+            { // intake goes up
+                horizontalIntake.Set(frc::DoubleSolenoid::Value::kReverse);
+            };
+            intakeMotorStageOne->Set(intakeSpeed); // set stage 1 and 2 to the manual speed
+            intakeMotorStageTwo->Set(intakeSpeed);
+            ballCount = -1;
+            stageTwoOccupied = false;
+            // YOU CAN NEVER LEAVE MANUAL!!!
+            break;
         }
-        else
-        { // intake goes up
-            horizontalIntake.Set(frc::DoubleSolenoid::Value::kReverse);
-        };
-        intakeMotorStageOne->Set(intakeSpeed); // set stage 1 and 2 to the manual speed
-        intakeMotorStageTwo->Set(intakeSpeed);
-        ballCount = -1;
-        stageTwoOccupied = false;
-        // YOU CAN NEVER LEAVE MANUAL!!!
-        break;
-    }
-    shooterSensorPrevious = currentShooterSensorInput;
-    stageOneSensorPrevious = currentSensorOneInput;
-    stageTwoSensorPrevious = currentSensorTwoInput;
+        shooterSensorPrevious = currentShooterSensorInput;
+        stageOneSensorPrevious = currentSensorOneInput;
+        stageTwoSensorPrevious = currentSensorTwoInput;
+    } while (currentState != startState);
 }
 // connects to gamEpiece
 void Intake::setIntakeDirection(IntakeDirection intakeDirection)
@@ -341,7 +346,8 @@ bool Intake::ballAtStageOne()
     return stageOneSensorPrevious;
 }
 
-bool Intake::ballAtStageTwo(){
+bool Intake::ballAtStageTwo()
+{
     return stageTwoOccupied;
 }
 

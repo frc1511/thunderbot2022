@@ -88,26 +88,14 @@ void GamEpiece::process() {
             break;
         case(WANT_TO_SHOOT):
             desiredShooterState = WARMUP_SHOOTER;
-            if(intake.ballAtStageTwo()){
-                shooter.setShooterSpinup(true);
-                if(shooter.isShooterReady() && intake.ballAtStageTwo()){ // waits until hood is in place and shooter is at speed
-                    shooterState = SHOOTING;
-                    intake.setIntakeDirection(Intake::SHOOTING);
-                    desiredShooterState = WARMUP_SHOOTER;
-                }
+            shooter.setShooterSpinup(true);
+            if(shooter.isShooterReady() && intake.ballAtStageTwo()){ // waits until hood is in place and shooter is at speed
+                shooterState = SHOOTING;
+                intake.setIntakeDirection(Intake::SHOOTING);
+                desiredShooterState = WARMUP_SHOOTER;
             }
             break;
         case(SHOOTING):
-        //shot timer
-           /* if(intake.finishedShooting() && waitingForTimer == false){ // intake shot a ball so it is done 
-                shotTimer.Reset();
-                shotTimer.Start();
-            }
-            if(shotTimer.Get().value() > 1){
-                intake.setIntakeDirection(Intake::NOTTAKE);
-                shooterState = WARMUP_SHOOTER;
-                shotTimer.Stop();
-            }*/
             if(intake.finishedShooting()){ // intake shot a ball so it is done 
                 intake.setIntakeDirection(Intake::NOTTAKE);
                 shooterState = WARMUP_SHOOTER;
@@ -115,7 +103,6 @@ void GamEpiece::process() {
             }
             break;
     }
-    
     intake.process();
     shooter.process();
     
