@@ -48,6 +48,8 @@ void Autonomous::resetToMode(MatchMode mode) {
                 startPosition = UNKNOWN;
                 break;
         }
+        
+        drive->zeroRotation();
 
         switch (startPosition) {
             case UNKNOWN:
@@ -68,7 +70,6 @@ void Autonomous::resetToMode(MatchMode mode) {
         timer.Start();
         step = 0;
         shootStep = 0;
-        drive->zeroRotation();
     }
 }
 
