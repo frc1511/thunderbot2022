@@ -16,6 +16,7 @@
 #include "BlinkyBlinky.h"
 #include "Camera.h"
 #include <frc/Compressor.h>
+#include <frc/Timer.h>
 
 class Robot : public frc::TimedRobot {
 public:
@@ -60,11 +61,12 @@ private:
 
   Autonomous autonomous {&drive, &gamEpiece, &controls };
 
-  static const int nMechanisms = 5;
+  static const int nMechanisms = 3;
   Mechanism *allMechanisms[nMechanisms] = {
-    &camera, &limelight, &hang, &gamEpiece, &drive
+    /*&camera, &limelight, */&hang, &gamEpiece, &drive
   };
 
   frc::Compressor compressor { frc::PneumaticsModuleType::CTREPCM };
 #endif
+  frc::Timer feedbackTimer;
 };

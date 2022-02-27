@@ -2,12 +2,18 @@
 
 bool isCraterMode = false;
 
-void Robot::RobotInit() {}
+void Robot::RobotInit() {
+    feedbackTimer.Reset();
+    feedbackTimer.Start();
+}
 void Robot::RobotPeriodic() {
-    for (int i = 0; i < nMechanisms; ++i)
-        allMechanisms[i]->sendFeedback();
-    autonomous.sendFeedback();
-    controls.sendFeedback();
+    if(feedbackTimer.Get().value() >= .5){
+        for (int i = 0; i < nMechanisms; ++i)
+            allMechanisms[i]->sendFeedback();
+        autonomous.sendFeedback();
+        controls.sendFeedback();
+        feedbackTimer.Reset();
+    }
 }
 
 void Robot::AutonomousInit() {

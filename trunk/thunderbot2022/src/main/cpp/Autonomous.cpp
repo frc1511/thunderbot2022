@@ -1,8 +1,8 @@
 #include "Autonomous.h"
 
-#define LEFT_START_POSITION   (frc::Pose2d(1.838_m, 6.142_m, 226.511_deg))
-#define CENTER_START_POSITION (frc::Pose2d(5.136_m, 5.959_m, 313.468_deg))
-#define RIGHT_START_POSITION  (frc::Pose2d(6.015_m, 8.124_m, 1.498_deg))
+#define LEFT_START_POSITION   (frc::Pose2d(1.838_m, 6.142_m, 226.511_deg - 90_deg))
+#define CENTER_START_POSITION (frc::Pose2d(5.136_m, 5.959_m, 313.468_deg - 90_deg))
+#define RIGHT_START_POSITION  (frc::Pose2d(6.015_m, 8.124_m, 1.498_deg - 90_deg))
 
 Autonomous::Autonomous(Drive* drive, GamEpiece* gamEpiece, Controls* controls)
   : drive(drive), gamEpiece(gamEpiece), controls(controls) {
@@ -68,6 +68,7 @@ void Autonomous::resetToMode(MatchMode mode) {
         timer.Start();
         step = 0;
         shootStep = 0;
+        drive->zeroRotation();
     }
 }
 
@@ -194,20 +195,21 @@ void Autonomous::uber() {
 }
 
 void Autonomous::oneBall() {
-    if (step == 0) {
-        alignAndShoot(Shooter::LOW_HUB_SHOT, 1);
+    if(step == 0){
+        drive->cmdDriveTranslate(0_ft, -8_in, 0_deg);
+        step++;
+    }
+    else if (step == 2) {
+        alignAndShoot(Shooter::HIGH_HUB_SHOT, 1);
         if(shootingIsDone){//alignAndShoot(Shooter::LOW_HUB_SHOT, 1)) {
             step++;
         }
     }
-    else if (step == 1 && drive->cmdIsFinished()) {
+    else if ((step == 1 || step == 3 || step == 5) && drive->cmdIsFinished()) {
         step++;
     }
-    else if (step == 2) {
-        drive->cmdDriveTranslate(0_ft, -1_m, 0_deg, {});
-        step++;
-    }
-    else if(step == 3 && drive->cmdIsFinished()) {
+    else if (step == 4) {
+        drive->cmdDriveTranslate(0_ft, -70_in, 0_deg, {});
         step++;
     }
 }
@@ -261,14 +263,14 @@ void Autonomous::rightTwoBall() {
         drive->cmdDriveTranslate(0_in, -37.5_in, 0_deg);
         step++;
     }
-    else if (step == 1 && drive->cmdIsFinished()) {
+    else if (step == 2 && drive->cmdIsFinished()) {
         step++;
     }
-    else if (step == 2) {
+    else if (step == 3) {
         drive->cmdDriveTranslate(42_in, 0_in, 0_deg);
         step++;
     }
-    else if (step == 3 && drive->cmdIsFinished()) {
+    else if (step == 4 && drive->cmdIsFinished()) {
         if(true){//alignAndShoot(Shooter::TARMAC_LINE, 2)) {
             step++;
         }
