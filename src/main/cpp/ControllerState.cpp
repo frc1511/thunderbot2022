@@ -28,11 +28,11 @@ ControllerState::~ControllerState(){
 void ControllerState::reset(){
     if(whichController == 0){
         autoButtonsFile = driverAutoFiles[(whichMode)*2];
-        autoAxesFile = driverAutoFiles[(whichMode+1)*2];
+        autoAxesFile = driverAutoFiles[(whichMode*2)+1];
     }
     else if(whichController == 1){
         autoButtonsFile = auxAutoFiles[(whichMode)*2];
-        autoAxesFile = auxAutoFiles[(whichMode+1)*2];
+        autoAxesFile = auxAutoFiles[(whichMode*2)+1];
     }
     normalOrRelay = true;
     std::cout << "reset :D\n";
