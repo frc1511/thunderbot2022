@@ -4,7 +4,7 @@
 #define ENCODER_OFFSETS_FILE_NAME "/home/lvuser/magnetic_encoder_offsets.txt"
 
 // The circumference of the drive wheels.
-#define DRIVE_WHEEL_CIRCUMFERENCE 0.21 // meters
+// #define DRIVE_WHEEL_CIRCUMFERENCE 0.21 // meters
 
 /**
  * Drive encoder value after 1 foot.
@@ -173,6 +173,10 @@ double SwerveModule::getRawDriveEncoder() {
     return driveMotor->GetEncoder();
 }
 
+units::radian_t SwerveModule::getTargetRotation() {
+    return targetRotation;
+}
+
 void SwerveModule::setState(frc::SwerveModuleState targetState) {
     frc::SwerveModuleState currentState = getState();
   
@@ -216,7 +220,7 @@ void SwerveModule::setTurningMotor(units::radian_t angle) {
         rotation = units::radian_t(rotation.value() - (2 * wpi::numbers::pi) * (std::signbit(rotation.value()) ? -1 : 1));
     }
 
-    target = rotation + 90_deg;
+    targetRotation = rotation + getAbsoluteRotation().Degrees();
     
     // Convert the radian value to internal encoder value.
     double output = rotation.value() * TURN_RADIAN_TO_ENCODER_FACTOR;
@@ -337,25 +341,36 @@ void PetersTrajectoryController::setTrajectory(frc::Pose2d currentPose, frc::Pos
     units::meter_t xDistance = trajectory.end.X() - trajectory.start.X();
     units::meter_t yDistance = trajectory.end.Y() - trajectory.start.Y();
 
-    // Get the total distance to travel.
+    // Get the total distance to travel (a^2 + b^2 = c^2).
     trajectory.totalDistance = units::math::sqrt(units::math::pow<2>(xDistance) + units::math::pow<2>(yDistance));
 
-    // Find the maximum velocity possible.
+    /**
+     * Find the maximum velocity possible.
+     * 
+     *  D1 = (Vm^2 - Vi^2) / 2a
+     *  D2 = (-Vf^2 + Vm^2) / 2a
+     *  
+     *  D1 + D2 <= Dtotal
+     *  
+     *  Vm = sqrt((2 * a * Dtotal + Vi^2 + Vf^2) / 2)
+    */
     trajectory.maxVelocity = units::meters_per_second_t(std::sqrt((2 * trajectory.config.maxAcceleration.value() * trajectory.totalDistance.value() + std::pow(trajectory.config.startVelocity.value(), 2) + std::pow(trajectory.config.endVelocity.value(), 2)) / 2));
 
+    // Clamp the maximum velocity to the configured maximum velocity.
     if (units::math::abs(trajectory.maxVelocity) > units::math::abs(trajectory.config.maxVelocity)) {
         trajectory.maxVelocity = trajectory.config.maxVelocity;
     }
 
-    // Get the distance to accelerate to max velocity.
+    // Get the distance to accelerate to max velocity (D = (Vm^2 - Vi^2) / 2a).
     trajectory.accelerateDistance = (units::math::pow<2>(trajectory.maxVelocity) - units::math::pow<2>(trajectory.config.startVelocity)) / (2 * trajectory.config.maxAcceleration);
-    // Get the distance to decelerate to final velocity.
+    // Get the distance to decelerate to final velocity (D = (Vf^2 - Vm^2) / -2a).
     trajectory.decelerateDistance = (units::math::pow<2>(trajectory.config.endVelocity) - units::math::pow<2>(trajectory.maxVelocity)) / (2 * -trajectory.config.maxAcceleration);
     // Get the remaining distance in between during which the robot is at max velocity.
     trajectory.constantDistance = trajectory.totalDistance - trajectory.accelerateDistance - trajectory.decelerateDistance;
 
-    // Get the angle the robot will be moving.
+    // Get the angle in which the robot will be moving.
     trajectory.heading = units::math::atan2(yDistance, xDistance);
+    
     trajectoryState = ACCELERATING;
     trajectory.timer.Reset();
     trajectory.timer.Start();
@@ -384,7 +399,7 @@ frc::ChassisSpeeds PetersTrajectoryController::getVelocities(frc::Pose2d current
     units::meter_t xDistance = currentPose.X() - trajectory.start.X();
     units::meter_t yDistance = currentPose.Y() - trajectory.start.Y();
 
-    // Get the total distance traveled.
+    // Get the total distance traveled (a^2 + b^2 = c^2).
     trajectory.distanceTraveled = units::math::sqrt(units::math::pow<2>(xDistance) + units::math::pow<2>(yDistance));
 
     TrajectoryState lastState = trajectoryState;
@@ -426,39 +441,32 @@ frc::ChassisSpeeds PetersTrajectoryController::getVelocities(frc::Pose2d current
         angVel = -DRIVE_CMD_MAX_ANGULAR_VELOCITY;
     }
     
-    // std::cout << angVel.value() << '\n';
-
-    // angVel = units::radians_per_second_t(trajectory.rotError.Calculate())
-
     switch (trajectoryState) {
         case UNKNOWN:
-            std::cout << "unknown\n";
             vel = 0_mps;
             angVel = 0_rad_per_s;
             break;
         case ACCELERATING:
-            std::cout << "accelerating\n";
             vel = (trajectory.config.maxAcceleration * trajectory.timer.Get())
                   * (std::signbit(trajectory.totalDistance.value()) ? -1 : 1);
             break;
         case CONSTANT:
-            std::cout << "constant\n";
             vel = trajectory.maxVelocity
                   * (std::signbit(trajectory.totalDistance.value()) ? -1 : 1);
             break;
         case DECELERATING:
-            std::cout << "decelerating\n";
             vel = (trajectory.maxVelocity - (trajectory.config.maxAcceleration * trajectory.timer.Get()))
                   * (std::signbit(trajectory.totalDistance.value()) ? -1 : 1);
             break;
         case ERROR_CORRECTION:
-            std::cout << "error correction\n";
             break;
     }
 
+    // Get individual X and Y components.
     units::meters_per_second_t xVel = vel * units::math::cos(trajectory.heading);
     units::meters_per_second_t yVel = vel * units::math::sin(trajectory.heading);
 
+    // Field-relative speeds.
     return frc::ChassisSpeeds::FromFieldRelativeSpeeds(xVel, yVel, angVel, currentPose.Rotation());
 }
 
@@ -466,9 +474,6 @@ frc::ChassisSpeeds PetersTrajectoryController::getVelocities(frc::Pose2d current
 
 Drive::Drive(Camera* camera, Limelight* limelight)
   : camera(camera), limelight(limelight), imu(NULL) {
-
-    // thetaController.EnableContinuousInput(-180_deg, 180_deg);
-    // cmdController.SetEnabled(true);
 
 #ifndef TEST_BOARD
     imu = new frc::ADIS16470_IMU();
@@ -591,25 +596,25 @@ void Drive::sendFeedback() {
     Feedback::sendDouble("drive", "robot y position (meters)", pose.Y().value());
     Feedback::sendDouble("drive", "robot rotation (degrees)", getRotation().Degrees().value());
 
-    Feedback::sendDouble("drive", "wheel 0 rotation (degrees)", swerveModules.at(0)->getState().angle.Degrees().value());
-    Feedback::sendDouble("drive", "wheel 1 rotation (degrees)", swerveModules.at(1)->getState().angle.Degrees().value());
-    Feedback::sendDouble("drive", "wheel 2 rotation (degrees)", swerveModules.at(2)->getState().angle.Degrees().value());
-    Feedback::sendDouble("drive", "wheel 3 rotation (degrees)", swerveModules.at(3)->getState().angle.Degrees().value());
+    Feedback::sendDouble("drive", "module 0 rotation (degrees)", swerveModules.at(0)->getState().angle.Degrees().value());
+    Feedback::sendDouble("drive", "module 1 rotation (degrees)", swerveModules.at(1)->getState().angle.Degrees().value());
+    Feedback::sendDouble("drive", "module 2 rotation (degrees)", swerveModules.at(2)->getState().angle.Degrees().value());
+    Feedback::sendDouble("drive", "module 3 rotation (degrees)", swerveModules.at(3)->getState().angle.Degrees().value());
 
-    Feedback::sendDouble("drive", "wheel 0 rotation without offsets (radians)", swerveModules.at(0)->getState().angle.Radians().value() + offsets.at(0).value());
-    Feedback::sendDouble("drive", "wheel 1 rotation without offsets (radians)", swerveModules.at(1)->getState().angle.Radians().value() + offsets.at(1).value());
-    Feedback::sendDouble("drive", "wheel 2 rotation without offsets (radians)", swerveModules.at(2)->getState().angle.Radians().value() + offsets.at(2).value());
-    Feedback::sendDouble("drive", "wheel 3 rotation without offsets (radians)", swerveModules.at(3)->getState().angle.Radians().value() + offsets.at(3).value());
+    Feedback::sendDouble("drive", "module 0 rotation without offsets (degrees)", units::degree_t(swerveModules.at(0)->getState().angle.Radians() + offsets.at(0)).value());
+    Feedback::sendDouble("drive", "module 1 rotation without offsets (degrees)", units::degree_t(swerveModules.at(1)->getState().angle.Radians() + offsets.at(1)).value());
+    Feedback::sendDouble("drive", "module 2 rotation without offsets (degrees)", units::degree_t(swerveModules.at(2)->getState().angle.Radians() + offsets.at(2)).value());
+    Feedback::sendDouble("drive", "module 3 rotation without offsets (degrees)", units::degree_t(swerveModules.at(3)->getState().angle.Radians() + offsets.at(3)).value());
 
-    Feedback::sendDouble("drive", "wheel 0 offset", offsets.at(0).value());
-    Feedback::sendDouble("drive", "wheel 1 offset", offsets.at(1).value());
-    Feedback::sendDouble("drive", "wheel 2 offset", offsets.at(2).value());
-    Feedback::sendDouble("drive", "wheel 3 offset", offsets.at(3).value());
+    Feedback::sendDouble("drive", "module 0 offset (degrees)", units::degree_t(offsets.at(0)).value());
+    Feedback::sendDouble("drive", "module 1 offset (degrees)", units::degree_t(offsets.at(1)).value());
+    Feedback::sendDouble("drive", "module 2 offset (degrees)", units::degree_t(offsets.at(2)).value());
+    Feedback::sendDouble("drive", "module 3 offset (degrees)", units::degree_t(offsets.at(3)).value());
 
-    Feedback::sendDouble("drive", "module 0 target rotation (degerees)", swerveModules.at(0)->target.value());
-    Feedback::sendDouble("drive", "module 1 target rotation (degerees)", swerveModules.at(1)->target.value());
-    Feedback::sendDouble("drive", "module 2 target rotation (degerees)", swerveModules.at(2)->target.value());
-    Feedback::sendDouble("drive", "module 3 target rotation (degerees)", swerveModules.at(3)->target.value());
+    Feedback::sendDouble("drive", "module 0 target rotation (degerees)", units::degree_t(swerveModules.at(0)->getTargetRotation()).value());
+    Feedback::sendDouble("drive", "module 1 target rotation (degerees)", units::degree_t(swerveModules.at(1)->getTargetRotation()).value());
+    Feedback::sendDouble("drive", "module 2 target rotation (degerees)", units::degree_t(swerveModules.at(2)->getTargetRotation()).value());
+    Feedback::sendDouble("drive", "module 3 target rotation (degerees)", units::degree_t(swerveModules.at(3)->getTargetRotation()).value());
     
     Feedback::sendDouble("drive", "module 0 drive encoder", swerveModules.at(0)->getRawDriveEncoder());
     Feedback::sendDouble("drive", "module 1 drive encoder", swerveModules.at(1)->getRawDriveEncoder());
@@ -618,10 +623,10 @@ void Drive::sendFeedback() {
 
     //hi josh
 
-    Feedback::sendDouble("drive", "wheel 0 speed (mps)", swerveModules.at(0)->getState().speed.value());
-    Feedback::sendDouble("drive", "wheel 1 speed (mps)", swerveModules.at(1)->getState().speed.value());
-    Feedback::sendDouble("drive", "wheel 2 speed (mps)", swerveModules.at(2)->getState().speed.value());
-    Feedback::sendDouble("drive", "wheel 3 speed (mps)", swerveModules.at(3)->getState().speed.value());
+    Feedback::sendDouble("drive", "module 0 speed (mps)", swerveModules.at(0)->getState().speed.value());
+    Feedback::sendDouble("drive", "module 1 speed (mps)", swerveModules.at(1)->getState().speed.value());
+    Feedback::sendDouble("drive", "module 2 speed (mps)", swerveModules.at(2)->getState().speed.value());
+    Feedback::sendDouble("drive", "module 3 speed (mps)", swerveModules.at(3)->getState().speed.value());
 
     Feedback::sendDouble("drive", "manual X pct", manualData.xPct);
     Feedback::sendDouble("drive", "manual Y pct", manualData.yPct);
@@ -677,8 +682,8 @@ frc::Pose2d Drive::getPose() {
 }
 
 void Drive::zeroRotation() {
-    resetIMU();
-    updateOdometry();
+    resetOdometry(getPose());
+    // resetIMU();
 }
 
 void Drive::calibrateIMU() {
@@ -873,7 +878,7 @@ void Drive::updateOdometry() {
 
 void Drive::resetOdometry(frc::Pose2d pose) {
     // Reset the position on the field.
-    odometry.ResetPosition(pose, pose.Rotation());
+    odometry.ResetPosition(pose, getRotation());
 }
 
 void Drive::resetIMU() {
@@ -888,11 +893,6 @@ frc::Rotation2d Drive::getRotation() {
 
     // Get the current rotation of the robot.
     units::radian_t rotation(units::math::fmod(imuAngle, 360_deg));
-
-    // Convert -2π to 2π value into -π to π value.
-    // if(units::math::abs(rotation).value() > wpi::numbers::pi) {
-        // rotation = units::radian_t(rotation.value() - (2 * wpi::numbers::pi) * (std::signbit(rotation.value()) ? -1 : 1));
-    // }
     
     return frc::Rotation2d(rotation);
 }

@@ -31,8 +31,6 @@
 #include <fstream>
 #include <iostream>
 
-// #define DRIVE_DEBUG // Un-comment to enable debug drive functionality.
-
 // The maximum speed of the chassis during manual drive.
 #define DRIVE_MANUAL_MAX_VELOCITY 6_mps
 // The maximum angular speed of the chassis during manual drive.
@@ -123,7 +121,10 @@ public:
      */
     double getRawDriveEncoder();
     
-    units::degree_t target = 0_deg;
+    /**
+     * Returns the target rotation of the swerve module.
+     */
+    units::radian_t getTargetRotation();
 
 private:
     /**
@@ -160,7 +161,10 @@ private:
     // The offset of the CANCoders.
     units::radian_t canCoderOffset = 0_rad;
 
-    // Whether the drive is inverted.
+    // The target rotation of the swerve module.
+    units::degree_t targetRotation = 0_deg;
+
+    // Whether the drive motor is inverted.
     bool driveInverted = false;
 };
 
@@ -274,6 +278,10 @@ public:
     /**
      * Manually control the robot using percentages of the max drive velocities.
      * (The direction of the velocities is dependant on the control type).
+     * 
+     * Positive xPct -> move right, negative xPct -> move left.
+     * Positive yPct -> move forward, negative yPct -> move backward.
+     * Positive rotPct -> turn counter-clockwise, negative rotPct -> turn clockwise.
      */
     void manualDrive(double xPct, double yPct, double rotPct);
 
