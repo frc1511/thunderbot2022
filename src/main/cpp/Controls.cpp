@@ -395,6 +395,7 @@ void Controls::controllerInDisable(){
     if(driveController.getRawButton(SHARE_BUTTON)){
         drive->calibrateIMU();
         drive->zeroRotation();
+        drive->resetOdometry();
     }
 }
 

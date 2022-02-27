@@ -26,16 +26,16 @@ void Autonomous::resetToMode(MatchMode mode) {
             case UBER:
                 startPosition = UNKNOWN;
                 break;
-            case LEFT_ONE_BALL:
+            case ONE_BALL:
+                startPosition = UNKNOWN;
+                break;
             case LEFT_TWO_BALL:
                 startPosition = LEFT;
                 break;
-            case CENTER_ONE_BALL:
             case CENTER_TWO_BALL:
             case CENTER_THREE_BALL:
                 startPosition = CENTER;
                 break;
-            case RIGHT_ONE_BALL:
             case RIGHT_TWO_BALL:
             case RIGHT_SHORT_THREE_BALL:
             case RIGHT_FAR_THREE_BALL:
@@ -84,27 +84,29 @@ static void handleDashboardString(Autonomous::AutoMode mode, const char* descrip
 }
 
 void Autonomous::sendFeedback() {
+    Feedback::sendDouble("autonomous", "current step", step);
+    Feedback::sendDouble("autonomous", "shooter step", shootStep);
+    Feedback::sendBoolean("autonomous", "align and shoot complete", shootingIsDone);
     char buffer[256] = "";
 
-    handleDashboardString(DO_NOTHING, "Doing nothing", buffer);
+    handleDashboardString(DO_NOTHING, "Do nothing: Doing nothing or something; we don't know", buffer);
 
-    handleDashboardString(UBER, "Driving out of the tarmac (taxi)", buffer);
+    handleDashboardString(UBER, "Uber: Drive backwards out of the tarmac (taxi)", buffer);
 
-    handleDashboardString(LEFT_ONE_BALL,   "(Positioned left) Score ball in robot", buffer);
-    handleDashboardString(CENTER_ONE_BALL, "(Positioned center) Score ball in robot", buffer);
-    handleDashboardString(RIGHT_ONE_BALL,  "(Positioned right) Score ball in robot", buffer);
+    handleDashboardString(ONE_BALL, "One ball: (Positioned facing the hub) Score ball in robot and drive backwards", buffer);
 
-    handleDashboardString(LEFT_TWO_BALL,   "(Positioned left) Score ball in robot and 1", buffer);
-    handleDashboardString(CENTER_TWO_BALL, "(Positioned center) Score ball in robot, and 2", buffer);
-    handleDashboardString(RIGHT_TWO_BALL,  "(Positioned right) Score ball in robot, and 3", buffer);
+    handleDashboardString(LEFT_TWO_BALL, "Left Two Ball: (Positioned left) Score ball in robot and 1", buffer);
+    handleDashboardString(CENTER_TWO_BALL, "Center Two Ball: (Positioned center) Score ball in robot, and 2", buffer);
+    handleDashboardString(RIGHT_TWO_BALL, "Right Two Ball: (Positioned right) Score ball in robot, and 3", buffer);
     //hi ishan
-    handleDashboardString(CENTER_THREE_BALL,      "(Positioned center) Score ball 2, 4, and ball in robot", buffer);
-    handleDashboardString(RIGHT_SHORT_THREE_BALL, "(Positioned right) Score ball in robot, 3, and 2,", buffer);
-    handleDashboardString(RIGHT_FAR_THREE_BALL,   "(Positioned right) Score ball in robot, 3, and 4,", buffer);
-    handleDashboardString(RIGHT_FOUR_BALL,        "(Positioned right) Score ball in robot, 3, 2, and 4", buffer);
-    handleDashboardString(AUTO_FOR_TREVOR_ZERO, "first auto for trevor", buffer);
-    handleDashboardString(AUTO_FOR_TREVOR_ONE, "second auto for trevor", buffer);
-    handleDashboardString(AUTO_FOR_TREVOR_TWO, "third auto for trevor", buffer);
+    handleDashboardString(CENTER_THREE_BALL, "Center three ball: (Positioned center) Score ball 2, 4, and ball in robot", buffer);
+    handleDashboardString(RIGHT_SHORT_THREE_BALL, "Right short three ball: (Positioned right) Score ball in robot, 3, and 2", buffer);
+    handleDashboardString(RIGHT_FAR_THREE_BALL, "Right far three ball: (Positioned right) Score ball in robot, 3, and 4", buffer);
+    handleDashboardString(RIGHT_FOUR_BALL, "Right four ball: (Positioned right) Score ball in robot, 3, 2, and 4", buffer);
+
+    handleDashboardString(AUTO_FOR_TREVOR_ZERO, "first auto for Trevor", buffer);
+    handleDashboardString(AUTO_FOR_TREVOR_ONE, "second auto for Trevor", buffer);
+    handleDashboardString(AUTO_FOR_TREVOR_TWO, "third auto for Trevor", buffer);
 
     Feedback::sendString("thunderdashboard", "auto_list", buffer);
 }
@@ -113,10 +115,9 @@ void Autonomous::process() {
     // if (!gamEpiece)
     //     return;
 
-    if (timer.Get().value() <= Feedback::getEditableDouble("thunderdashboard", "auto_start_delay", 0))
-        {
-            return;
-        }
+    if (timer.Get().value() <= Feedback::getEditableDouble("thunderdashboard", "auto_start_delay", 0)) {
+        return;
+    }
 
     switch (currentMode) {
         case DO_NOTHING:
@@ -125,14 +126,8 @@ void Autonomous::process() {
         case UBER:
             uber();
             break;
-        case LEFT_ONE_BALL:
-            leftOneBall();
-            break;
-        case CENTER_ONE_BALL:
-            centerOneBall();
-            break;
-        case RIGHT_ONE_BALL:
-            rightOneBall();
+        case ONE_BALL:
+            oneBall();
             break;
         case LEFT_TWO_BALL:
             leftTwoBall();
@@ -181,13 +176,13 @@ void Autonomous::doNothing() {
 
 void Autonomous::uber() {
     if (step == 0) {
-        std::cout << "hi\n";
-        drive->cmdDriveTranslate(0_m, 2_m, 0_deg);
+        drive->cmdDriveTranslate(0_m, 1_m, 0_deg);
         step++;
     }
     else if (step == 1 && drive->cmdIsFinished()) {
         step++;
     }
+    /*
     else if (step == 2) {
         drive->cmdDriveTranslate(-1_m, 0_m, 90_deg);
         step++;
@@ -195,70 +190,22 @@ void Autonomous::uber() {
     else if (step == 3 && drive->cmdIsFinished()) {
         step++;
     }
+    */
 }
 
-void Autonomous::leftOneBall() {
+void Autonomous::oneBall() {
     if (step == 0) {
-        // TODO: Initialize odometry to starting position.
-        
-        // Drive back to until outside of the tarmac.
-        /** TODO: Change these values. */
-        drive->cmdDriveTranslate(0_ft, 10_ft, 180_deg, {});
-
-        step++;
+        alignAndShoot(Shooter::LOW_HUB_SHOT, 1);
+        if(shootingIsDone){//alignAndShoot(Shooter::LOW_HUB_SHOT, 1)) {
+            step++;
+        }
     }
     else if (step == 1 && drive->cmdIsFinished()) {
         step++;
     }
     else if (step == 2) {
-        if (alignAndShoot(Shooter::TARMAC_LINE, 1)) {
-            step++;
-        }
-    }
-    else if(step == 3 && drive->cmdIsFinished()) {
+        drive->cmdDriveTranslate(0_ft, -1_m, 0_deg, {});
         step++;
-    }
-}
-
-void Autonomous::centerOneBall() {
-     if (step == 0) {
-        // TODO: Initialize odometry to starting position.
-        
-        // Drive back to until outside of the tarmac.
-        /** TODO: Change these values. */
-        drive->cmdDriveTranslate(0_ft, 10_ft, 180_deg, {});
-
-        step++;
-    }
-    else if (step == 1 && drive->cmdIsFinished()) {
-        step++;
-    }
-    else if (step == 2) {
-        if (alignAndShoot(Shooter::TARMAC_LINE, 1)) {
-            step++;
-        }
-    }
-    else if(step == 3 && drive->cmdIsFinished()) {
-        step++;
-    }
-}
-
-void Autonomous::rightOneBall() {
-     if (step == 0) {
-        
-        // Drive back to until outside of the tarmac.
-        /** TODO: Change these values. */
-        drive->cmdDriveTranslate(0_ft, 10_ft, 180_deg, {});
-
-        step++;
-    }
-    else if (step == 1 && drive->cmdIsFinished()) {
-        step++;
-    }
-    else if (step == 2) {
-        if (alignAndShoot(Shooter::TARMAC_LINE, 1)) {
-            step++;
-        }
     }
     else if(step == 3 && drive->cmdIsFinished()) {
         step++;
@@ -279,7 +226,7 @@ void Autonomous::leftTwoBall() {
         step++;
     }
     else if (step == 2) {
-        if (alignAndShoot(Shooter::TARMAC_LINE, 2)) {
+        if(true){//alignAndShoot(Shooter::TARMAC_LINE, 2)) {
             step++;
         }
     }
@@ -299,7 +246,7 @@ void Autonomous::centerTwoBall() {
         step++;
     }
     else if (step == 2) {
-        if (alignAndShoot(Shooter::TARMAC_LINE, 2)) {
+        if(true){//alignAndShoot(Shooter::TARMAC_LINE, 2)) {
             step++;
         }
     }
@@ -319,7 +266,7 @@ void Autonomous::rightTwoBall() {
         step++;
     }
     else if (step == 2) {
-        if (alignAndShoot(Shooter::TARMAC_LINE, 2)) {
+        if(true){//alignAndShoot(Shooter::TARMAC_LINE, 2)) {
             step++;
         }
     }
@@ -345,7 +292,7 @@ void Autonomous::centerThreeBall() {
         step++;
     }
     else if (step == 8) {
-        if (alignAndShoot(Shooter::TARMAC_LINE, 2)) {
+        if(true){//alignAndShoot(Shooter::TARMAC_LINE, 2)) {
             step++;
         }
     }
@@ -373,7 +320,7 @@ void Autonomous::rightShortThreeBall() {
         step++;
     } 
     else if(step == 8) {
-        if (alignAndShoot(Shooter::TARMAC_LINE, 1)) {
+        if(true){//alignAndShoot(Shooter::TARMAC_LINE, 1)) {
             step++;
         }
     }
@@ -399,7 +346,7 @@ void Autonomous::rightFarThreeBall() {
         step++;
     }
     else if(step == 8) {
-        if (alignAndShoot(Shooter::TARMAC_LINE, 1)) {
+        if(true){//alignAndShoot(Shooter::TARMAC_LINE, 1)) {
             step++;
         }
     }
@@ -435,27 +382,29 @@ void Autonomous::autoForTrevor(){
     }
 }
 
-bool Autonomous::alignAndShoot(Shooter::ShooterMode shooterMode, unsigned ballNum) {
-    if (shootStep == 0) {
+void Autonomous::alignAndShoot(Shooter::ShooterMode shooterMode, unsigned ballNum) {
+    if (shootStep == 0) {/*
         // Start a command to align with high hub, and check if found by limelight.
-        if (drive->cmdAlignToHighHub()) {
-            shootStep++;
+        if (drive->cmdAlignToHighHub()) {*/
+            shootStep++;/*
         }
         else {
             // Abort mission when high hub not found.
             currentMode = DO_NOTHING;
-        }
+        }*/
     }
-    else if (shootStep == 1) {
-        //gamEpiece->shootABall(shooterMode);
+    if (shootStep == 2 && !gamEpiece->isShotInProgress()) {
+        gamEpiece->setShooterWarmUpEnabled(Shooter::LOW_HUB_SHOT, false);
+        shootStep ++;
+        shootingIsDone = true;
+    }
+    else{
+        shootingIsDone = false;
+    }
+    if (shootStep == 1) {
+        gamEpiece->shootABall(shooterMode);
         shootStep++;
     }
-    else if (shootStep == 1/* && !gamEpiece->isShotInProgress()*/) {
-        shootStep = 0;
-        return true;
-    }
-
-    return false;
 }
 
 //                                       --- CAUTION ---

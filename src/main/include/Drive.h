@@ -43,7 +43,7 @@
 // The maximum acceleration of the chassis during a drive command.
 #define DRIVE_CMD_MAX_ACCELERATION 2_mps_sq
 // The maximum angular speed of the chassis during a drive command.
-#define DRIVE_CMD_MAX_ANGULAR_VELOCITY 45_deg_per_s
+#define DRIVE_CMD_MAX_ANGULAR_VELOCITY 80_deg_per_s
 
 #ifdef HOMER
 

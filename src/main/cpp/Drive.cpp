@@ -119,8 +119,11 @@ void SwerveModule::configureMotors() {
     // Amperage limit.
     driveMotor->SetSmartCurrentLimit(DRIVE_MAX_AMPERAGE);
 
-    // It is not inverted!
+#ifdef HOMER
+    driveMotor->SetInverted(false);
+#else
     driveMotor->SetInverted(driveInverted);
+#endif
 
     // Ramping (0.5 seconds to accelerate from neutral to full throttle).
     driveMotor->SetClosedLoopRampRate(DRIVE_RAMP_TIME);
@@ -887,9 +890,9 @@ frc::Rotation2d Drive::getRotation() {
     units::radian_t rotation(units::math::fmod(imuAngle, 360_deg));
 
     // Convert -2π to 2π value into -π to π value.
-    if(units::math::abs(rotation).value() > wpi::numbers::pi) {
-        rotation = units::radian_t(rotation.value() - (2 * wpi::numbers::pi) * (std::signbit(rotation.value()) ? -1 : 1));
-    }
+    // if(units::math::abs(rotation).value() > wpi::numbers::pi) {
+        // rotation = units::radian_t(rotation.value() - (2 * wpi::numbers::pi) * (std::signbit(rotation.value()) ? -1 : 1));
+    // }
     
     return frc::Rotation2d(rotation);
 }
