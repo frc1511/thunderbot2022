@@ -25,8 +25,6 @@ void Autonomous::resetToMode(MatchMode mode) {
         
         switch (currentMode) {
             case DO_NOTHING:
-                startPosition = UNKNOWN;
-                break;
             case UBER:
                 startPosition = UNKNOWN;
                 break;
@@ -74,6 +72,34 @@ void Autonomous::resetToMode(MatchMode mode) {
         timer.Start();
         step = 0;
         shootStep = 0;
+    }
+    if (mode == MODE_TELEOP) {
+        currentMode = (AutoMode)Feedback::getDouble("Auto", "Mode", 0);
+        
+        switch (currentMode) {
+            case DO_NOTHING:
+            case UBER:
+            case LEFT_ONE_BALL:
+            case LEFT_TWO_BALL:
+            case CENTER_ONE_BALL:
+            case CENTER_TWO_BALL:
+            case CENTER_THREE_BALL:
+            case RIGHT_ONE_BALL:
+            case RIGHT_TWO_BALL:
+            case RIGHT_SHORT_THREE_BALL:
+            case RIGHT_FAR_THREE_BALL:
+            case RIGHT_FOUR_BALL:
+                break;
+            case AUTO_FOR_TREVOR_ZERO:
+                controls->chooseAutoMode(0);
+                break;
+            case AUTO_FOR_TREVOR_ONE:
+                controls->chooseAutoMode(1);
+                break;
+            case AUTO_FOR_TREVOR_TWO:
+                controls->chooseAutoMode(2);
+                break;
+        }
     }
 }
 
@@ -157,15 +183,12 @@ void Autonomous::process() {
             rightFourBall();
             break;
         case AUTO_FOR_TREVOR_ZERO:
-            controls->chooseAutoMode(0);
             autoForTrevor();
             break;
         case AUTO_FOR_TREVOR_ONE:
-            controls->chooseAutoMode(0);
             autoForTrevor();
             break;
         case AUTO_FOR_TREVOR_TWO:
-            controls->chooseAutoMode(0);
             autoForTrevor();
             break;
     }
