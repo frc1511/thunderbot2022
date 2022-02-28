@@ -281,9 +281,8 @@ frc::Rotation2d SwerveModule::getAbsoluteRotation() {
 
 // --- Drive commands ---
 
-#define POSE_X_THRESHOLD 2_in
-#define POSE_Y_THRESHOLD 2_in
-#define POSE_ROT_THRESHOLD 4_deg
+#define DISTANCE_THRESHOLD 2_in
+#define ROTATION_THRESHOLD 4_deg
 
 PetersTrajectoryController::PetersTrajectoryController() { }
 
@@ -291,7 +290,7 @@ PetersTrajectoryController::~PetersTrajectoryController() { }
 
 void PetersTrajectoryController::sendFeedback() {
     const char* buffer = "";
-    switch (trajectoryState) {
+    switch (driveState) {
         case UNKNOWN:
             buffer = "unknown";
             break;
@@ -304,45 +303,47 @@ void PetersTrajectoryController::sendFeedback() {
         case DECELERATING:
             buffer = "decelerating";
             break;
-        case ERROR_CORRECTION:
-            buffer = "error correction";
-            break;
     }
-    Feedback::sendString("peter's trajectory controller", "trajectory state", buffer);
-
-    Feedback::sendDouble("peter's trajectory controller", "state timer (seconds)", trajectory.timer.Get().value());
-    Feedback::sendDouble("peter's trajectory controller", "start X (meters)", trajectory.start.X().value());
-    Feedback::sendDouble("peter's trajectory controller", "start Y (meters)", trajectory.start.Y().value());
-    Feedback::sendDouble("peter's trajectory controller", "start Rotation (degrees)", trajectory.start.Rotation().Degrees().value());
-    Feedback::sendDouble("peter's trajectory controller", "end X (meters)", trajectory.end.X().value());
-    Feedback::sendDouble("peter's trajectory controller", "end Y (meters)", trajectory.end.Y().value());
-    Feedback::sendDouble("peter's trajectory controller", "end Rotation (degrees)", trajectory.end.Rotation().Degrees().value());
-    Feedback::sendDouble("peter's trajectory controller", "max velocity (mps)", trajectory.maxVelocity.value());
-    Feedback::sendDouble("peter's trajectory controller", "distance traveled (meters)", trajectory.distanceTraveled.value());
-    Feedback::sendDouble("peter's trajectory controller", "total distance (meters)", trajectory.totalDistance.value());
-    Feedback::sendDouble("peter's trajectory controller", "heading (degrees)", trajectory.heading.value());
-    Feedback::sendDouble("peter's trajectory controller", "accelerate distance (meters)", trajectory.accelerateDistance.value());
-    Feedback::sendDouble("peter's trajectory controller", "decelerate distance (meters)", trajectory.decelerateDistance.value());
-    Feedback::sendDouble("peter's trajectory controller", "constant distance (meters)", trajectory.constantDistance.value());
-    Feedback::sendDouble("peter's trajectory controller", "configured max velocity", trajectory.config.maxVelocity.value());
-    Feedback::sendDouble("peter's trajectory controller", "configured max acceleration", trajectory.config.maxAcceleration.value());
-    Feedback::sendDouble("peter's trajectory controller", "configured max angular velocity", trajectory.config.maxAngularVelocity.value());
-    Feedback::sendDouble("peter's trajectory controller", "configured start velocity", trajectory.config.startVelocity.value());
-    Feedback::sendDouble("peter's trajectory controller", "configured end velocity", trajectory.config.endVelocity.value());
+    Feedback::sendString("peter's trajectory controller", "drive state", buffer);
+    Feedback::sendBoolean("peter's trajectory controller", "drive finished", driveFinished);
+    Feedback::sendBoolean("peter's trajectory controller", "rotate finished", rotateFinished);
+    Feedback::sendDouble("peter's trajectory controller", "state timer (seconds)", timer.Get().value());
+    Feedback::sendDouble("peter's trajectory controller", "start X (meters)", start.X().value());
+    Feedback::sendDouble("peter's trajectory controller", "start Y (meters)", start.Y().value());
+    Feedback::sendDouble("peter's trajectory controller", "start Rotation (degrees)", start.Rotation().Degrees().value());
+    Feedback::sendDouble("peter's trajectory controller", "end X (meters)", end.X().value());
+    Feedback::sendDouble("peter's trajectory controller", "end Y (meters)", end.Y().value());
+    Feedback::sendDouble("peter's trajectory controller", "end Rotation (degrees)", end.Rotation().Degrees().value());
+    Feedback::sendDouble("peter's trajectory controller", "max velocity (mps)", maxVelocity.value());
+    Feedback::sendDouble("peter's trajectory controller", "distance traveled (meters)", distanceTraveled.value());
+    Feedback::sendDouble("peter's trajectory controller", "total distance (meters)", totalDistance.value());
+    Feedback::sendDouble("peter's trajectory controller", "heading (degrees)", heading.value());
+    Feedback::sendDouble("peter's trajectory controller", "accelerate distance (meters)", accelerateDistance.value());
+    Feedback::sendDouble("peter's trajectory controller", "decelerate distance (meters)", decelerateDistance.value());
+    Feedback::sendDouble("peter's trajectory controller", "constant distance (meters)", constantDistance.value());
+    Feedback::sendDouble("peter's trajectory controller", "configured max acceleration", maxAcceleration.value());
+    Feedback::sendDouble("peter's trajectory controller", "configured max angular velocity", maxAngularVelocity.value());
+    Feedback::sendDouble("peter's trajectory controller", "configured start velocity", startVelocity.value());
+    Feedback::sendDouble("peter's trajectory controller", "configured end velocity", endVelocity.value());
 }
 
 void PetersTrajectoryController::setTrajectory(frc::Pose2d currentPose, frc::Pose2d endPose, PetersTrajectoryConfig config) {
-    trajectory = {};
+    start = currentPose;
+    end = endPose;
+    maxVelocity = config.maxVelocity;
+    maxAcceleration = config.maxAcceleration;
+    maxAngularVelocity = config.maxAngularVelocity;
+    startVelocity = config.startVelocity;
+    endVelocity = config.endVelocity;
+    distanceTraveled = 0_m;
+    driveFinished = false;
+    rotateFinished = false;
 
-    trajectory.start = currentPose;
-    trajectory.end = endPose;
-    trajectory.config = config;
-
-    units::meter_t xDistance = trajectory.end.X() - trajectory.start.X();
-    units::meter_t yDistance = trajectory.end.Y() - trajectory.start.Y();
+    units::meter_t xDistance = end.X() - start.X();
+    units::meter_t yDistance = end.Y() - start.Y();
 
     // Get the total distance to travel (a^2 + b^2 = c^2).
-    trajectory.totalDistance = units::math::sqrt(units::math::pow<2>(xDistance) + units::math::pow<2>(yDistance));
+    totalDistance = units::math::sqrt(units::math::pow<2>(xDistance) + units::math::pow<2>(yDistance));
 
     /**
      * Find the maximum velocity possible.
@@ -354,117 +355,114 @@ void PetersTrajectoryController::setTrajectory(frc::Pose2d currentPose, frc::Pos
      *  
      *  Vm = sqrt((2 * a * Dtotal + Vi^2 + Vf^2) / 2)
     */
-    trajectory.maxVelocity = units::meters_per_second_t(std::sqrt((2 * trajectory.config.maxAcceleration.value() * trajectory.totalDistance.value() + std::pow(trajectory.config.startVelocity.value(), 2) + std::pow(trajectory.config.endVelocity.value(), 2)) / 2));
+    maxVelocity = units::meters_per_second_t(std::sqrt((2 * config.maxAcceleration.value() * totalDistance.value() + std::pow(config.startVelocity.value(), 2) + std::pow(config.endVelocity.value(), 2)) / 2));
 
     // Clamp the maximum velocity to the configured maximum velocity.
-    if (units::math::abs(trajectory.maxVelocity) > units::math::abs(trajectory.config.maxVelocity)) {
-        trajectory.maxVelocity = trajectory.config.maxVelocity;
+    if (units::math::abs(maxVelocity) > units::math::abs(config.maxVelocity)) {
+        maxVelocity = config.maxVelocity;
     }
 
     // Get the distance to accelerate to max velocity (D = (Vm^2 - Vi^2) / 2a).
-    trajectory.accelerateDistance = (units::math::pow<2>(trajectory.maxVelocity) - units::math::pow<2>(trajectory.config.startVelocity)) / (2 * trajectory.config.maxAcceleration);
+    accelerateDistance = (units::math::pow<2>(maxVelocity) - units::math::pow<2>(config.startVelocity)) / (2 * config.maxAcceleration);
     // Get the distance to decelerate to final velocity (D = (Vf^2 - Vm^2) / -2a).
-    trajectory.decelerateDistance = (units::math::pow<2>(trajectory.config.endVelocity) - units::math::pow<2>(trajectory.maxVelocity)) / (2 * -trajectory.config.maxAcceleration);
+    decelerateDistance = (units::math::pow<2>(config.endVelocity) - units::math::pow<2>(maxVelocity)) / (2 * -config.maxAcceleration);
     // Get the remaining distance in between during which the robot is at max velocity.
-    trajectory.constantDistance = trajectory.totalDistance - trajectory.accelerateDistance - trajectory.decelerateDistance;
+    constantDistance = totalDistance - accelerateDistance - decelerateDistance;
 
     // Get the angle in which the robot will be moving.
-    trajectory.heading = units::math::atan2(yDistance, xDistance);
+    heading = units::math::atan2(yDistance, xDistance);
     
-    trajectoryState = ACCELERATING;
-    trajectory.timer.Reset();
-    trajectory.timer.Start();
+    driveState = ACCELERATING;
+    timer.Reset();
+    timer.Start();
 }
 
 bool PetersTrajectoryController::atReference(frc::Pose2d currentPose) {
-    if (trajectoryState == UNKNOWN) {
+    if (driveState == UNKNOWN || (driveFinished && rotateFinished)) {
         return true;
     }
     
-    if (units::math::abs(trajectory.end.X() - currentPose.X()) <= POSE_X_THRESHOLD &&
-        units::math::abs(trajectory.end.Y() - currentPose.Y()) <= POSE_Y_THRESHOLD &&
-        units::math::abs(trajectory.end.Rotation().Degrees() - currentPose.Rotation().Degrees()) <= POSE_ROT_THRESHOLD) {
-        trajectoryState = UNKNOWN;
-        return true;
-    }
-
     return false;
 }
 
 frc::ChassisSpeeds PetersTrajectoryController::getVelocities(frc::Pose2d currentPose) {
     if (atReference(currentPose)) {
-        return { 0_mps, 0_mps, 0_rad_per_s };
+        return {};
     }
 
-    units::meter_t xDistance = currentPose.X() - trajectory.start.X();
-    units::meter_t yDistance = currentPose.Y() - trajectory.start.Y();
-
-    // Get the total distance traveled (a^2 + b^2 = c^2).
-    trajectory.distanceTraveled = units::math::sqrt(units::math::pow<2>(xDistance) + units::math::pow<2>(yDistance));
-
-    TrajectoryState lastState = trajectoryState;
-
-    switch (trajectoryState) {
-        case UNKNOWN:
-            break;
-        case ACCELERATING:
-            if (trajectory.distanceTraveled > trajectory.accelerateDistance) {
-                trajectoryState = CONSTANT;
-            }
-            break;
-        case CONSTANT:
-            if (trajectory.distanceTraveled > trajectory.accelerateDistance + trajectory.constantDistance) {
-                trajectoryState = DECELERATING;
-            }
-            break;
-        case DECELERATING:
-            if (units::math::abs(trajectory.distanceTraveled - trajectory.totalDistance) < 0.1_m) {
-                trajectoryState = ERROR_CORRECTION;
-            }
-            break;
-        case ERROR_CORRECTION:
-            break;
-    }
-
-    if (trajectoryState != lastState) {
-        trajectory.timer.Reset();
-        trajectory.timer.Start();
-    }
-
-    units::meters_per_second_t vel = 0_mps;
+    units::meters_per_second_t xVel = 0_mps;
+    units::meters_per_second_t yVel = 0_mps;
     units::radians_per_second_t angVel = 0_rad_per_s;
 
-    if (trajectory.end.Rotation().Degrees() - currentPose.Rotation().Degrees() > POSE_ROT_THRESHOLD) {
-        angVel = DRIVE_CMD_MAX_ANGULAR_VELOCITY;
-    }
-    else if (trajectory.end.Rotation().Degrees() - currentPose.Rotation().Degrees() < -POSE_ROT_THRESHOLD) {
-        angVel = -DRIVE_CMD_MAX_ANGULAR_VELOCITY;
-    }
-    
-    switch (trajectoryState) {
-        case UNKNOWN:
-            vel = 0_mps;
-            angVel = 0_rad_per_s;
-            break;
-        case ACCELERATING:
-            vel = (trajectory.config.maxAcceleration * trajectory.timer.Get())
-                  * (std::signbit(trajectory.totalDistance.value()) ? -1 : 1);
-            break;
-        case CONSTANT:
-            vel = trajectory.maxVelocity
-                  * (std::signbit(trajectory.totalDistance.value()) ? -1 : 1);
-            break;
-        case DECELERATING:
-            vel = (trajectory.maxVelocity - (trajectory.config.maxAcceleration * trajectory.timer.Get()))
-                  * (std::signbit(trajectory.totalDistance.value()) ? -1 : 1);
-            break;
-        case ERROR_CORRECTION:
-            break;
+    if (!rotateFinished) {
+        if (end.Rotation().Degrees() - currentPose.Rotation().Degrees() > ROTATION_THRESHOLD) {
+            angVel = DRIVE_CMD_MAX_ANGULAR_VELOCITY;
+        }
+        else if (end.Rotation().Degrees() - currentPose.Rotation().Degrees() < -ROTATION_THRESHOLD) {
+            angVel = -DRIVE_CMD_MAX_ANGULAR_VELOCITY;
+        }
+        else {
+            rotateFinished = true;
+        }
     }
 
-    // Get individual X and Y components.
-    units::meters_per_second_t xVel = vel * units::math::cos(trajectory.heading);
-    units::meters_per_second_t yVel = vel * units::math::sin(trajectory.heading);
+    if (!driveFinished) {
+        units::meter_t xDistance = currentPose.X() - start.X();
+        units::meter_t yDistance = currentPose.Y() - start.Y();
+
+        // Get the total distance traveled (a^2 + b^2 = c^2).
+        distanceTraveled = units::math::sqrt(units::math::pow<2>(xDistance) + units::math::pow<2>(yDistance));
+
+        DriveState lastState = driveState;
+
+        switch (driveState) {
+            case UNKNOWN:
+                break;
+            case ACCELERATING:
+                if (distanceTraveled > accelerateDistance) {
+                    driveState = CONSTANT;
+                }
+                break;
+            case CONSTANT:
+                if (distanceTraveled > accelerateDistance + constantDistance) {
+                    driveState = DECELERATING;
+                }
+                break;
+            case DECELERATING:
+                if (units::math::abs(totalDistance - distanceTraveled) < DISTANCE_THRESHOLD) {
+                    driveFinished = true;
+                    driveState = UNKNOWN;
+                }
+                break;
+        }
+
+        if (driveState != lastState) {
+            timer.Reset();
+            timer.Start();
+        }
+        
+        units::meters_per_second_t vel = 0_mps;
+        
+        switch (driveState) {
+            case UNKNOWN:
+                break;
+            case ACCELERATING:
+                vel = (maxAcceleration * timer.Get())
+                    * (std::signbit(totalDistance.value()) ? -1 : 1);
+                break;
+            case CONSTANT:
+                vel = maxVelocity
+                    * (std::signbit(totalDistance.value()) ? -1 : 1);
+                break;
+            case DECELERATING:
+                vel = (maxVelocity - (maxAcceleration * timer.Get()))
+                    * (std::signbit(totalDistance.value()) ? -1 : 1);
+                break;
+        }
+        // Get individual X and Y components.
+        xVel = vel * units::math::cos(heading);
+        yVel = vel * units::math::sin(heading);
+    }
 
     // Field-relative speeds.
     return frc::ChassisSpeeds::FromFieldRelativeSpeeds(xVel, yVel, angVel, currentPose.Rotation());

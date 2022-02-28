@@ -207,39 +207,54 @@ public:
     frc::ChassisSpeeds getVelocities(frc::Pose2d currentPose);
 
 private:
-    enum TrajectoryState {
+    enum DriveState {
         UNKNOWN,
         ACCELERATING,
         CONSTANT,
         DECELERATING,
-        ERROR_CORRECTION,
     };
     
     // The state of the controller.
-    TrajectoryState trajectoryState = TrajectoryState::UNKNOWN;
+    DriveState driveState = DriveState::UNKNOWN;
 
-    struct TrajectoryData {
-        frc::Timer timer {};
-        
-        frc::Pose2d start {};
-        frc::Pose2d end {};
+    // Timer for acceleration and deceleration.
+    frc::Timer timer {};
+    
+    // The start position and rotation.
+    frc::Pose2d start {};
+    // The desired end position and rotation.
+    frc::Pose2d end {};
 
-        units::meters_per_second_t maxVelocity = 0_mps;
+    // The maximum velocity to reach.
+    units::meters_per_second_t maxVelocity = 0_mps;
+    // The maximum acceleration.
+    units::meters_per_second_squared_t maxAcceleration = 0_mps_sq;
+    // The maximum deceleration.
+    units::radians_per_second_t maxAngularVelocity = 0_rad_per_s;
+    // The starting velocity.
+    units::meters_per_second_t startVelocity = 0_mps;
+    // The ending velocity.
+    units::meters_per_second_t endVelocity = 0_mps;
 
-        units::meter_t distanceTraveled = 0_m;
-        
-        units::meter_t totalDistance = 0_m;
-        units::degree_t heading = 0_deg;
-        
-        units::meter_t accelerateDistance = 0_m;
-        units::meter_t decelerateDistance = 0_m;
-        units::meter_t constantDistance = 0_m;
+    // The distance that has been traveled.
+    units::meter_t distanceTraveled = 0_m;
+    
+    // The distance to be traveled.
+    units::meter_t totalDistance = 0_m;
+    // The angle to drive in.
+    units::degree_t heading = 0_deg;
+    
+    // The distance to accelerate.
+    units::meter_t accelerateDistance = 0_m;
+    // The distance to decelerate.
+    units::meter_t decelerateDistance = 0_m;
+    // The distance at maximum velocity.
+    units::meter_t constantDistance = 0_m;
 
-        PetersTrajectoryConfig config {};
-    };
-
-    // The data representing the current trajectory.
-    TrajectoryData trajectory {};
+    // Whether the robot has successfully driven to the target position.
+    bool driveFinished = false;
+    // Whether the robot has successfully rotated to the target angle.
+    bool rotateFinished = false;
 };
 
 // --- Drivetrain ---
