@@ -87,14 +87,15 @@ void Controls::resetToMode(MatchMode mode) {
 
 void Controls::process() {
     doDrive();
-#ifndef HOMER
     doSwitchPanel();
+#ifndef HOMER
     doAux();
 #endif
 }
 
 void Controls::doDrive() {
     driveController.process();
+    auxController.process();
     bool brickDrive = driveController.getRawButton(CROSS_BUTTON);
     bool viceGrip = driveController.getRawButton(CIRCLE_BUTTON);
     bool toggleCamera = driveController.getRawButtonPressed(SQUARE_BUTTON);
@@ -120,6 +121,14 @@ void Controls::doDrive() {
 
     bool driveDisabled = false;
     
+    if(driveController.getRawButtonPressed(TOUCHPAD_BUTTON)){
+        driveController.testStuff();
+    }
+
+    if(auxController.getRawButtonPressed(TOUCHPAD_BUTTON)){
+        auxController.testStuff();
+    }
+
     if (brickDrive) {
         drive->makeBrick();
         driveDisabled = true;

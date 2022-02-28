@@ -59,11 +59,11 @@ private:
   BlinkyBlinky blinkyBlinky {};
   Controls controls { &drive, &gamEpiece, &hang };
 
-  Autonomous autonomous {&drive, &gamEpiece, &controls };
+  Autonomous autonomous { &drive, &gamEpiece, &controls };
 
-  static const int nMechanisms = 3;
+  static const int nMechanisms = 4;
   Mechanism *allMechanisms[nMechanisms] = {
-    /*&camera, &limelight, */&hang, &gamEpiece, &drive
+    /*&camera,*/ &limelight, &hang, &gamEpiece, &drive
   };
 
   frc::Compressor compressor { frc::PneumaticsModuleType::CTREPCM };

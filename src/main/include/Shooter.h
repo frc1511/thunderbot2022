@@ -76,6 +76,7 @@ private:
     // The target position of the hood.
     double targetHoodPosition = 0;
 
+    /*
     double interpolation(double firstX, double firstY, double lastX,  double lastY, double distance);
     int goodNumber;
     double distance;
@@ -83,6 +84,7 @@ private:
     std::vector<double> yVarsHood = {};
     std::vector<double> xVarsSpeed = {};
     std::vector<double> yVarsSpeed = {};
+    */
 
     // 
     double manualRPM = 0;
@@ -108,8 +110,8 @@ private:
     frc::Servo hoodServo {PWM_SHOOTER_HOOD_SERVO};
     frc::AnalogPotentiometer hoodPotentiometer {ANALOG_SHOOTER_HOOD_POTENTIOMETER};
 
-    InterpolatingTreeMap<units::radian_t, double> hoodInterpolation { {} };
-    InterpolatingTreeMap<units::radian_t, double> rpmInterpolation  { {} };
+    InterpolatingTreeMap<units::radian_t, double> hoodInterpolation;
+    InterpolatingTreeMap<units::radian_t, double> rpmInterpolation;
 
 //hi jeff :D
 // trevor's weird comments below
