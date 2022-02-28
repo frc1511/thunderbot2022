@@ -49,8 +49,8 @@ class ControllerState{
     bool normalOrRelay = true; 
 
     frc::Joystick myController;
-    std::vector<const char*> driverAutoFiles = {"/home/lvuser/firstDriverAutoButtons.txt", "/home/lvuser/firstDriverAutoAxes.txt", "/home/lvuser/secondDriverAutoButtons.txt", "/home/lvuser/secondDriverAutoAxes.txt", "/home/lvuser/thirdDriverAutoButtons.txt", "/home/lvuser/thirdDriverAutoAxes.txt"};
-    std::vector<const char*> auxAutoFiles = {"/home/lvuser/firstAuxAutoButtons.txt", "/home/lvuser/firstAuxAutoAxes.txt", "/home/lvuser/secondAuxAutoButtons.txt", "/home/lvuser/secondAuxAutoAxes.txt", "/home/lvuser/thirdAuxAutoButtons.txt", "/home/lvuser/thirdAuxAutoAxes.txt"};
+    std::vector<const char*> driverAutoFiles = {"/home/lvuser/firstDriverAutoButtons.txt", "/home/lvuser/firstDriverAutoAxes.txt", "/home/lvuser/secondDriverAutoButtons.txt", "/home/lvuser/secondDriverAutoAxes.txt", "/home/lvuser/thirdDriverAutoButtons.txt", "/home/lvuser/thirdDriverAutoAxes.txt", "/home/lvuser/fourthDriverAutoButtons.txt", "/home/lvuser/fourthDriverAutoAxes.txt", "/home/lvuser/fifthDriverAutoButtons.txt", "/home/lvuser/fifthDriverAutoAxes.txt"};
+    std::vector<const char*> auxAutoFiles = {"/home/lvuser/firstAuxAutoButtons.txt", "/home/lvuser/firstAuxAutoAxes.txt", "/home/lvuser/secondAuxAutoButtons.txt", "/home/lvuser/secondAuxAutoAxes.txt", "/home/lvuser/thirdAuxAutoButtons.txt", "/home/lvuser/thirdAuxAutoAxes.txt", "/home/lvuser/fourthAuxAutoButtons.txt", "/home/lvuser/fourthAuxAutoAxes.txt", "/home/lvuser/fifthAuxAutoButtons.txt", "/home/lvuser/fifthAuxAutoAxes.txt"};
 
     std::vector<int> buttonsInt;
     std::vector<double> buttonsTime;

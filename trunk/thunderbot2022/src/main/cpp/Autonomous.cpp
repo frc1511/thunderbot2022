@@ -45,9 +45,24 @@ void Autonomous::resetToMode(MatchMode mode) {
                 startPosition = RIGHT;
                 break;
             case AUTO_FOR_TREVOR_ZERO:
+                startPosition = UNKNOWN;
+                controls->chooseAutoMode(0);
+                break;
             case AUTO_FOR_TREVOR_ONE:
+                startPosition = UNKNOWN;
+                controls->chooseAutoMode(1);
+                break;
             case AUTO_FOR_TREVOR_TWO:
                 startPosition = UNKNOWN;
+                controls->chooseAutoMode(2);
+                break;
+            case AUTO_FOR_TREVOR_THREE:
+                startPosition = UNKNOWN;
+                controls->chooseAutoMode(3);
+                break;
+            case AUTO_FOR_TREVOR_FOUR:
+                startPosition = UNKNOWN;
+                controls->chooseAutoMode(4);
                 break;
         }
         
@@ -97,6 +112,12 @@ void Autonomous::resetToMode(MatchMode mode) {
             case AUTO_FOR_TREVOR_TWO:
                 controls->chooseAutoMode(2);
                 break;
+            case AUTO_FOR_TREVOR_THREE:
+                controls->chooseAutoMode(3);
+                break;
+            case AUTO_FOR_TREVOR_FOUR:
+                controls->chooseAutoMode(4);
+                break;
         }
     }
 }
@@ -125,18 +146,20 @@ void Autonomous::sendFeedback() {
 
     handleDashboardString(ONE_BALL, "One ball: (Positioned facing the hub) Score ball in robot and drive backwards", buffer);
 
-    handleDashboardString(LEFT_TWO_BALL, "Left Two Ball: (Positioned left) Score ball in robot and 1", buffer);
-    handleDashboardString(CENTER_TWO_BALL, "Center Two Ball: (Positioned center) Score ball in robot, and 2", buffer);
-    handleDashboardString(RIGHT_TWO_BALL, "Right Two Ball: (Positioned right) Score ball in robot, and 3", buffer);
+    handleDashboardString(LEFT_TWO_BALL, "Left Two Ball: (Positioned left)", buffer);
+    handleDashboardString(CENTER_TWO_BALL, "Center Two Ball: (Positioned center)", buffer);
+    handleDashboardString(RIGHT_TWO_BALL, "Right Two Ball: (Positioned right)", buffer);
     //hi ishan
-    handleDashboardString(CENTER_THREE_BALL, "Center three ball: (Positioned center) Score ball 2, 4, and ball in robot", buffer);
-    handleDashboardString(RIGHT_SHORT_THREE_BALL, "Right short three ball: (Positioned right) Score ball in robot, 3, and 2", buffer);
-    handleDashboardString(RIGHT_FAR_THREE_BALL, "Right far three ball: (Positioned right) Score ball in robot, 3, and 4", buffer);
-    handleDashboardString(RIGHT_FOUR_BALL, "Right four ball: (Positioned right) Score ball in robot, 3, 2, and 4", buffer);
+    handleDashboardString(CENTER_THREE_BALL, "Center three ball: (Positioned center)", buffer);
+    handleDashboardString(RIGHT_SHORT_THREE_BALL, "Right short three ball: (Positioned right)", buffer);
+    handleDashboardString(RIGHT_FAR_THREE_BALL, "Right far three ball: (Positioned right)", buffer);
+    handleDashboardString(RIGHT_FOUR_BALL, "Right four ball: (Positioned right)", buffer);
 
-    handleDashboardString(AUTO_FOR_TREVOR_ZERO, "first auto for Trevor", buffer);
-    handleDashboardString(AUTO_FOR_TREVOR_ONE, "second auto for Trevor", buffer);
-    handleDashboardString(AUTO_FOR_TREVOR_TWO, "third auto for Trevor", buffer);
+    handleDashboardString(AUTO_FOR_TREVOR_ZERO, "First Auto For Trevor", buffer);
+    handleDashboardString(AUTO_FOR_TREVOR_ONE, "Second Auto For Trevor", buffer);
+    handleDashboardString(AUTO_FOR_TREVOR_TWO, "Third Auto For Trevor", buffer);
+    //handleDashboardString(AUTO_FOR_TREVOR_THREE, "Fourth Auto For Trevor", buffer);
+    //handleDashboardString(AUTO_FOR_TREVOR_FOUR, "Fifth Auto For Trevor", buffer);
 
     Feedback::sendString("thunderdashboard", "auto_list", buffer);
 }
@@ -181,12 +204,10 @@ void Autonomous::process() {
             rightFourBall();
             break;
         case AUTO_FOR_TREVOR_ZERO:
-            autoForTrevor();
-            break;
         case AUTO_FOR_TREVOR_ONE:
-            autoForTrevor();
-            break;
         case AUTO_FOR_TREVOR_TWO:
+        case AUTO_FOR_TREVOR_THREE:
+        case AUTO_FOR_TREVOR_FOUR:
             autoForTrevor();
             break;
     }
@@ -423,3 +444,4 @@ void Autonomous::alignAndShoot(Shooter::ShooterMode shooterMode, unsigned ballNu
 //                                       --- CAUTION ---
 // What lies below is ishan's weird code that he did before we planned anything. Proceed with immense caution!
     //trevor
+    //peter
