@@ -110,7 +110,6 @@ void Hang::sendFeedback(){
 }
 
 void Hang::process(){
-    #if 0
 #ifdef TEST_BOARD
     switch (targetStage){
         case STOP:
@@ -309,7 +308,6 @@ void Hang::pivot(bool armsForward)
         step++;
         hangTimer.Stop();
     }*/
-    #endif
 }
 
 void Hang::extend()
@@ -501,6 +499,8 @@ void Hang::commandAuto()
 {   
     switch(targetStage)
     {
+        case STOP: 
+            break;
         case NOT_ON_BAR:
             targetStage = MID;
             stepDone = false;
