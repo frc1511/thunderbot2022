@@ -35,7 +35,7 @@ void ControllerState::reset(){
         autoAxesFile = auxAutoFiles[(whichMode*2)+1];
     }
     normalOrRelay = true;
-    std::cout << "reset :D\n";
+    //std::cout << "reset :D\n";
     recordOrNot = false;
     buttons = {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,};
     axes = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -49,7 +49,7 @@ void ControllerState::process(){
             buttons[2*i] = myController.GetRawButton(i+1);
         }
         if(buttons[2*i] != buttons[(2*i)+1] && recordOrNot) { // the button changed its state and we are trying to record
-            std::cout << "which button:" << i << "pressed?" << buttons[2*i] << "\n";
+            //std::cout << "which button:" << i << "pressed?" << buttons[2*i] << "\n";
             recordButton(i+1,autoTimer.Get().value()); // loop starts at 0 but buttons start at 1 so add 1
         }
       
@@ -58,7 +58,7 @@ void ControllerState::process(){
                 axes[2*i] = myController.GetRawAxis(i); 
             }
             if(fabs(axes[2*i]-axes[(2*i)+1]) >=.05 && recordOrNot){ // the axis changed by .05 
-                std::cout << "which axis" << i << "where?" << axes[2*i] << "\n";
+                //std::cout << "which axis" << i << "where?" << axes[2*i] << "\n";
                 recordAxis(i,autoTimer.Get().value(), axes[2*i]);
                 axes[(2*i)+1] = axes[2*i];
             }
@@ -69,7 +69,7 @@ void ControllerState::process(){
                 axes[2*i] = myController.GetPOV();
             }
             if(axes[2*i] != axes[(2*i)+1] && recordOrNot){ // the POV changed from what it once was
-                std::cout << "which axis" << i << "where?" << axes[2*i] << "\n";
+                //std::cout << "which axis" << i << "where?" << axes[2*i] << "\n";
                 recordAxis(i,autoTimer.Get().value(), axes[2*i]);
                 
             }
@@ -86,7 +86,7 @@ void ControllerState::process(){
                 }
             }
             else{
-                std::cout << "buttons are done :D\n";
+                //std::cout << "buttons are done :D\n";
                 buttonsDone = true;
             }
         }
@@ -100,12 +100,12 @@ void ControllerState::process(){
                }
             }
             else{
-                std::cout << "axis are done :D\n";
+                //std::cout << "axis are done :D\n";
                 axisDone = true;
             }
         }
         if(buttonsDone && axisDone){
-            std::cout << "done :D\n";
+            //std::cout << "done :D\n";
             normalOrRelay = true;
         }
     }
@@ -133,7 +133,7 @@ void ControllerState::recordButton(int whichButton, double time){
     if(whichButton != 1){   
     std::ofstream AutoButtonsFile;
     AutoButtonsFile.open(autoButtonsFile, std::fstream::app);
-    AutoButtonsFile << std::to_string(whichButton) << ", " << std::to_string(time) << "\n";
+    //AutoButtonsFile << std::to_string(whichButton) << ", " << std::to_string(time) << "\n";
     AutoButtonsFile.close();
     }
 }
@@ -141,7 +141,7 @@ void ControllerState::recordButton(int whichButton, double time){
 void ControllerState::recordAxis(int whichAxis, double time, double position){
     std::ofstream AutoAxesFile;
     AutoAxesFile.open(autoAxesFile, std::fstream::app);
-    AutoAxesFile << std::to_string(whichAxis) << ", " << std::to_string(time) << ", " << std::to_string(position) << "\n";
+    //AutoAxesFile << std::to_string(whichAxis) << ", " << std::to_string(time) << ", " << std::to_string(position) << "\n";
     AutoAxesFile.close();
 }
 
@@ -179,7 +179,7 @@ void ControllerState::clearAuto(){
     std::ofstream AutoAxesFile(autoAxesFile);
     AutoAxesFile << "";
     AutoAxesFile.close();
-    std::cout << "cleared :D\n";
+    //std::cout << "cleared :D\n";
 }
 
 void ControllerState::replayAuto(){
@@ -213,7 +213,7 @@ void ControllerState::record(){
         autoTimer.Reset();
         autoTimer.Start();
         timerStartedYet = true;
-        std::cout << "recording :D\n";
+        //std::cout << "recording :D\n";
     }
 }
 
