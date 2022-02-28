@@ -281,8 +281,8 @@ frc::Rotation2d SwerveModule::getAbsoluteRotation() {
 
 // --- Drive commands ---
 
-#define POSE_X_THRESHOLD 1_in
-#define POSE_Y_THRESHOLD 1_in
+#define POSE_X_THRESHOLD 2_in
+#define POSE_Y_THRESHOLD 2_in
 #define POSE_ROT_THRESHOLD 4_deg
 
 PetersTrajectoryController::PetersTrajectoryController() { }
@@ -682,8 +682,8 @@ frc::Pose2d Drive::getPose() {
 }
 
 void Drive::zeroRotation() {
-    resetOdometry(getPose());
-    // resetIMU();
+    resetIMU();
+    resetOdometry({0_m, 0_m, 0_deg});
 }
 
 void Drive::calibrateIMU() {

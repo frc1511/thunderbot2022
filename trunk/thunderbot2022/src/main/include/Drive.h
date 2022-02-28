@@ -321,7 +321,7 @@ public:
      * Returns the configuration for all trajectories.
      */
     frc::TrajectoryConfig getTrajectoryConfig();
-
+    
     // --- Commands ---
 
     /**
@@ -347,7 +347,7 @@ public:
     /**
      * Begins a command to rotate to a specified angle.
      */
-    void cmdRotateToAngle(frc::Rotation2d angle, units::radians_per_second_t velocity);
+    void cmdRotateToAngle(frc::Rotation2d angle, units::radians_per_second_t velocity = DRIVE_CMD_MAX_ANGULAR_VELOCITY);
 
     /**
      * Begins a command to translate a specified distance and rotate to a
@@ -386,12 +386,12 @@ private:
      * Resets the IMU to 0.
      */
     void resetIMU();
-    
+
     /**
      * Returns the rotation of the robot on the field.
      */
     frc::Rotation2d getRotation();
-
+    
     /**
      * Executes manual drive instructions.
      */

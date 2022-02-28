@@ -31,6 +31,7 @@ void Robot::AutonomousPeriodic() {
 
 void Robot::TeleopInit() {
     reset(Mechanism::MODE_TELEOP);
+    drive.resetOdometry({0_m, 0_m, 0_deg});
 }
 
 void Robot::TeleopPeriodic() {

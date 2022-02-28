@@ -241,64 +241,40 @@ void Autonomous::oneBall() {
 }
 
 void Autonomous::leftTwoBall() {
-    if(step == 0) {
-        gamEpiece->setIntakeDirection(GamEpiece::INTAKE);
-        step++;
-    }
-    else if(step == 1) {
-        drive->cmdDriveTranslate(0_ft, 10_ft, 180_deg, {});
-
-        step++;
-    }
-    else if (step == 1 && drive->cmdIsFinished()) {
-        step++;
-    }
-    else if (step == 2) {
-        alignAndShoot(Shooter::TARMAC_LINE, 2);
-        if(shootingIsDone){
-            step++;
-        }
-    }
 }
 
 void Autonomous::centerTwoBall() {
-    if(step == 0) {
-        gamEpiece->setIntakeDirection(GamEpiece::INTAKE);
-        step++;
-    }
-    else if(step == 1) {
-        drive->cmdDriveTranslate(0_ft, 10_ft, 180_deg, {});
-
-        step++;
-    }
-    else if (step == 1 && drive->cmdIsFinished()) {
-        step++;
-    }
-    else if (step == 2) {
-        alignAndShoot(Shooter::TARMAC_LINE, 2);
-        if(shootingIsDone){
-            step++;
-        }
-    }
 }
 
 void Autonomous::rightTwoBall() {
     if(step == 0) {
-        // gamEpiece->setIntakeDirection(GamEpiece::INTAKE);
+        drive->cmdDriveTranslate(0_in, -37.5_in + 17_in, -90_deg);
         step++;
     }
-    else if(step == 1) {
-        drive->cmdDriveTranslate(0_in, -37.5_in, 0_deg);
+    else if (step == 1 && drive->cmdIsFinished()) {
+#ifndef HOMER
+        gamEpiece->setIntakeDirection(GamEpiece::INTAKE);
+#endif
         step++;
     }
-    else if (step == 2 && drive->cmdIsFinished()) {
+    else if (step == 2) {
+        drive->cmdDriveTranslate(42_in - 7_in, 0_in, -90_deg);
         step++;
     }
-    else if (step == 3) {
-        drive->cmdDriveTranslate(42_in, 0_in, 0_deg);
+    else if (step == 3 && drive->cmdIsFinished()) {
+#ifndef HOMER
+        gamEpiece->setIntakeDirection(GamEpiece::NOTTAKE);
+#endif
         step++;
     }
-    else if (step == 4 && drive->cmdIsFinished()) {
+    else if (step == 4) {
+        drive->cmdDriveTranslate(-10_in, 0_in, 90_deg);
+        step++;
+    }
+    else if (step == 5 && drive->cmdIsFinished()) {
+        step++;
+    }
+    else if (step == 6) {
         alignAndShoot(Shooter::TARMAC_LINE, 2);
         if(shootingIsDone){
             step++;
@@ -420,27 +396,27 @@ void Autonomous::autoForTrevor(){
 }
 
 void Autonomous::alignAndShoot(Shooter::ShooterMode shooterMode, unsigned ballNum) {
-    if (shootStep == 0) {/*
+    if (shootStep == 0) {
         // Start a command to align with high hub, and check if found by limelight.
-        if (drive->cmdAlignToHighHub()) {*/
-            shootStep++;/*
-        }
-        else {
-            // Abort mission when high hub not found.
-            currentMode = DO_NOTHING;
-        }*/
-    }
-    if (shootStep == 2 && !gamEpiece->isShotInProgress()) {
-        gamEpiece->setShooterWarmUpEnabled(Shooter::LOW_HUB_SHOT, false);
-        shootStep ++;
-        shootingIsDone = true;
-    }
-    else{
         shootingIsDone = false;
+        drive->cmdAlignToHighHub();
+        shootStep++;
     }
-    if (shootStep == 1) {
+    else if (shootStep == 1 && drive->cmdIsFinished()) {
+        shootStep++;
+#ifdef HOMER
+        shootStep = 0;
+        shootingIsDone = true;
+#endif
+    }
+    else if (shootStep == 2) {
         gamEpiece->shootABall(shooterMode);
         shootStep++;
+    }
+    else if (shootStep == 3 && !gamEpiece->isShotInProgress()) {
+        gamEpiece->setShooterWarmUpEnabled(shooterMode, false);
+        shootStep = 0;
+        shootingIsDone = true;
     }
 }
 
