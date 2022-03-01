@@ -43,7 +43,7 @@ void ControllerState::reset(){
 void ControllerState::process(){
 
     //records when each button is pressed and realeased
-    for (int i = 0; i < 14; i++) { // 14 buttons, 6 axis, 1 pov
+    for (int i = 0; i < 10; i++) { // 14 buttons, 6 axis, 1 pov
         buttons[(2*i)+1] = buttons[2*i];
         if(normalOrRelay){ // checks if it should look to the controller for the value of the button
             buttons[2*i] = myController.GetRawButton(i+1);
@@ -75,7 +75,7 @@ void ControllerState::process(){
             }
         }
     }
-    //std::cout << std::string(autoButtonsFile) << autoTimer.Get().value() << "\n";
+    ////std::cout << std::string(autoButtonsFile) << autoTimer.Get().value() << "\n";
     if(!normalOrRelay){ //under autonomous control :D
         if(buttonsDone == false){
             if(buttonsTime.size() > 0){ // make sure there is more buttons to change
@@ -133,7 +133,7 @@ void ControllerState::recordButton(int whichButton, double time){
     if(whichButton != 1){   
     std::ofstream AutoButtonsFile;
     AutoButtonsFile.open(autoButtonsFile, std::fstream::app);
-    //AutoButtonsFile << std::to_string(whichButton) << ", " << std::to_string(time) << "\n";
+    AutoButtonsFile << std::to_string(whichButton) << ", " << std::to_string(time) << "\n";
     AutoButtonsFile.close();
     }
 }
@@ -141,7 +141,7 @@ void ControllerState::recordButton(int whichButton, double time){
 void ControllerState::recordAxis(int whichAxis, double time, double position){
     std::ofstream AutoAxesFile;
     AutoAxesFile.open(autoAxesFile, std::fstream::app);
-    //AutoAxesFile << std::to_string(whichAxis) << ", " << std::to_string(time) << ", " << std::to_string(position) << "\n";
+    AutoAxesFile << std::to_string(whichAxis) << ", " << std::to_string(time) << ", " << std::to_string(position) << "\n";
     AutoAxesFile.close();
 }
 
@@ -150,24 +150,24 @@ void ControllerState::testStuff(){
     std::ifstream AutoAxesFile;
     AutoAxesFile.open(autoAxesFile);
     if(!AutoAxesFile){
-        std::cout << "errorrrrrrrrrrrrrrrrrrrrrrr\n";
+        //std::cout << "errorrrrrrrrrrrrrrrrrrrrrrr\n";
     }
-    std::cout << "Auto Axes:\n";
+    //std::cout << "Auto Axes:\n";
     while(getline(AutoAxesFile, testString)){
         
-        std::cout << testString << "\n";
+        //std::cout << testString << "\n";
     }
     AutoAxesFile.close();
     testString = "";
     std::ifstream AutoButtonsFile;
     AutoAxesFile.open(autoButtonsFile);
     if(!AutoAxesFile){
-        std::cout << "errorrrrrrrrrrrrrrrrrrrrrrr\n";
+        //std::cout << "errorrrrrrrrrrrrrrrrrrrrrrr\n";
     }
-    std::cout << "AutoButtons:\n";
+    //std::cout << "AutoButtons:\n";
     while(getline(AutoAxesFile, testString)){
         
-        std::cout << testString << "\n";
+        //std::cout << testString << "\n";
     }
     AutoButtonsFile.close();
 }
