@@ -148,7 +148,7 @@ void Autonomous::sendFeedback() {
 
     handleDashboardString(LEFT_TWO_BALL, "Left Two Ball: (Positioned left)", buffer);
     handleDashboardString(CENTER_TWO_BALL, "Center Two Ball: (Positioned center)", buffer);
-    handleDashboardString(RIGHT_TWO_BALL, "Right Two Ball: (Positioned right)", buffer);
+    handleDashboardString(RIGHT_TWO_BALL, "Rw 3221      ight Two Ball: (Positioned right)", buffer);
     //hi ishan
     handleDashboardString(CENTER_THREE_BALL, "Center three ball: (Positioned center)", buffer);
     handleDashboardString(RIGHT_SHORT_THREE_BALL, "Right short three ball: (Positioned right)", buffer);
