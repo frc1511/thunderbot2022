@@ -64,6 +64,26 @@ void Autonomous::resetToMode(MatchMode mode) {
                 startPosition = UNKNOWN;
                 controls->chooseAutoMode(4);
                 break;
+            case AUTO_FOR_TREVOR_FIVE:
+                startPosition = UNKNOWN;
+                controls->chooseAutoMode(5);
+                break;
+            case AUTO_FOR_TREVOR_SIX:
+                startPosition = UNKNOWN;
+                controls->chooseAutoMode(6);
+                break;
+            case AUTO_FOR_TREVOR_SEVEN:
+                startPosition = UNKNOWN;
+                controls->chooseAutoMode(7);
+                break;
+            case AUTO_FOR_TREVOR_EIGHT:
+                startPosition = UNKNOWN;
+                controls->chooseAutoMode(8);
+                break;
+            case AUTO_FOR_TREVOR_NINE:
+                startPosition = UNKNOWN;
+                controls->chooseAutoMode(9);
+                break;
         }
         
         drive->zeroRotation();
@@ -118,6 +138,21 @@ void Autonomous::resetToMode(MatchMode mode) {
             case AUTO_FOR_TREVOR_FOUR:
                 controls->chooseAutoMode(4);
                 break;
+            case AUTO_FOR_TREVOR_FIVE:
+                controls->chooseAutoMode(5);
+                break;
+            case AUTO_FOR_TREVOR_SIX:
+                controls->chooseAutoMode(6);
+                break;
+            case AUTO_FOR_TREVOR_SEVEN:
+                controls->chooseAutoMode(7);
+                break;
+            case AUTO_FOR_TREVOR_EIGHT:
+                controls->chooseAutoMode(8);
+                break;
+            case AUTO_FOR_TREVOR_NINE:
+                controls->chooseAutoMode(9);
+                break;
         }
     }
 }
@@ -160,6 +195,12 @@ void Autonomous::sendFeedback() {
     handleDashboardString(AUTO_FOR_TREVOR_TWO, "Third Auto For Trevor", buffer);
     //handleDashboardString(AUTO_FOR_TREVOR_THREE, "Fourth Auto For Trevor", buffer);
     //handleDashboardString(AUTO_FOR_TREVOR_FOUR, "Fifth Auto For Trevor", buffer);
+    //handleDashboardString(AUTO_FOR_TREVOR_FIVE, "Sixth Auto For Trevor", buffer);
+    //handleDashboardString(AUTO_FOR_TREVOR_SIX, "Seventh Auto For Trevor", buffer);
+    //handleDashboardString(AUTO_FOR_TREVOR_SEVEN, "Eighth Auto For Trevor", buffer);
+    //handleDashboardString(AUTO_FOR_TREVOR_EIGHT, "Ninth Auto For Trevor", buffer);
+    //handleDashboardString(AUTO_FOR_TREVOR_NINE, "Tenth Auto For Trevor", buffer);
+
 
     Feedback::sendString("thunderdashboard", "auto_list", buffer);
 }
@@ -208,6 +249,11 @@ void Autonomous::process() {
         case AUTO_FOR_TREVOR_TWO:
         case AUTO_FOR_TREVOR_THREE:
         case AUTO_FOR_TREVOR_FOUR:
+        case AUTO_FOR_TREVOR_FIVE:
+        case AUTO_FOR_TREVOR_SIX:
+        case AUTO_FOR_TREVOR_SEVEN:
+        case AUTO_FOR_TREVOR_EIGHT:
+        case AUTO_FOR_TREVOR_NINE:
             autoForTrevor();
             break;
     }
@@ -220,6 +266,7 @@ void Autonomous::doNothing() {
         //I agree with peter -L Wrench
     // Good function.
     // Very good function. - jeff downs
+    // Very bad function. - jeff ups
 }
 
 void Autonomous::uber() {
