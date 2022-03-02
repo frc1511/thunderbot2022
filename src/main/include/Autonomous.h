@@ -140,7 +140,7 @@ private:
     void rightFourBall();
     void autoForTrevor();
 
-    void alignAndShoot(Shooter::ShooterMode shooterMode, unsigned ballNum);
+    void alignAndShoot(Shooter::ShooterMode shooterMode);
 
     AutoMode currentMode = DO_NOTHING;
 
