@@ -532,6 +532,10 @@ void Drive::resetToMode(MatchMode mode) {
         setIdleMode(SwerveModule::COAST);
     }
     else {
+        if (!getIMUCalibrated()) {
+            calibrateIMU();
+        }
+        
         resetOdometry();
 
         // Set the drive motors to brake in teleop and autonomous modes because
@@ -900,10 +904,6 @@ frc::Rotation2d Drive::getRotation() {
 }
 
 void Drive::exeManual() {
-    if (!imuCalibrated) {
-        calibrateIMU();
-    }
-
     // Calculate the velocities.
     units::meters_per_second_t xVel    = manualData.xPct   * DRIVE_MANUAL_MAX_VELOCITY;
     units::meters_per_second_t yVel    = manualData.yPct   * DRIVE_MANUAL_MAX_VELOCITY;
