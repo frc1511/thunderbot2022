@@ -15,6 +15,7 @@
 #include "Autonomous.h"
 #include "BlinkyBlinky.h"
 #include "Camera.h"
+#include "RobotChess.h"
 #include <frc/Compressor.h>
 #include <frc/Timer.h>
 
@@ -65,6 +66,8 @@ private:
   Mechanism *allMechanisms[nMechanisms] = {
     /*&camera,*/ &limelight, &hang, &gamEpiece, &drive
   };
+
+  RobotChess robotChess {};
 
   frc::Compressor compressor { frc::PneumaticsModuleType::CTREPCM };
 #endif

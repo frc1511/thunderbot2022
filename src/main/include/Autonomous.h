@@ -101,7 +101,13 @@ public:
         AUTO_FOR_TREVOR_ONE,
         AUTO_FOR_TREVOR_TWO,
         AUTO_FOR_TREVOR_THREE,
-        AUTO_FOR_TREVOR_FOUR
+        AUTO_FOR_TREVOR_FOUR,
+        AUTO_FOR_TREVOR_FIVE,
+        AUTO_FOR_TREVOR_SIX,
+        AUTO_FOR_TREVOR_SEVEN,
+        AUTO_FOR_TREVOR_EIGHT,
+        AUTO_FOR_TREVOR_NINE,
+        
     };
 
     void resetToMode(MatchMode mode) override;
