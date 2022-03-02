@@ -107,9 +107,7 @@ void Autonomous::resetToMode(MatchMode mode) {
         timer.Start();
         step = 0;
         shootStep = 0;
-    }
-    if (mode == MODE_TELEOP) {
-        currentMode = (AutoMode)Feedback::getDouble("Auto", "Mode", 0);
+        shootingIsDone = false;
         
         switch (currentMode) {
             case DO_NOTHING:
@@ -209,7 +207,7 @@ void Autonomous::process() {
     // if (!gamEpiece)
     //     return;
 
-    if (timer.Get().value() <= Feedback::getEditableDouble("thunderdashboard", "auto_start_delay", 0)) {
+    if (timer.Get().value() <= Feedback::getDouble("thunderdashboard", "auto_start_delay", 0)) {
         return;
     }
 
@@ -277,15 +275,6 @@ void Autonomous::uber() {
     else if (step == 1 && drive->cmdIsFinished()) {
         step++;
     }
-    /*
-    else if (step == 2) {
-        drive->cmdDriveTranslate(-1_m, 0_m, 90_deg);
-        step++;
-    }
-    else if (step == 3 && drive->cmdIsFinished()) {
-        step++;
-    }
-    */
 }
 
 void Autonomous::oneBall() {
@@ -294,7 +283,7 @@ void Autonomous::oneBall() {
         step++;
     }
     else if (step == 2) {
-        alignAndShoot(Shooter::HIGH_HUB_SHOT, 1);
+        alignAndShoot(Shooter::HIGH_HUB_SHOT);
         if(shootingIsDone){
             step++;
         }
@@ -336,17 +325,21 @@ void Autonomous::rightTwoBall() {
         step++;
     }
     else if (step == 4) {
-        drive->cmdDriveTranslate(-10_in, 0_in, 90_deg);
+        drive->cmdRotateToAngle(90_deg);
         step++;
     }
     else if (step == 5 && drive->cmdIsFinished()) {
         step++;
     }
-    else if (step == 6) {
-        alignAndShoot(Shooter::TARMAC_LINE, 2);
+    else if (step == 6 || step == 7) {
+        alignAndShoot(Shooter::TARMAC_LINE);
         if(shootingIsDone){
             step++;
         }
+    }
+    else if (step == 8) {
+        drive->cmdRotateToAngle(0_deg);
+        drive->zeroRotation();
     }
 }
 
@@ -370,7 +363,7 @@ void Autonomous::centerThreeBall() {
         step++;
     }
     else if (step == 8) {
-        alignAndShoot(Shooter::TARMAC_LINE, 2);
+        alignAndShoot(Shooter::TARMAC_LINE);
         if(shootingIsDone){
             step++;
         }
@@ -399,7 +392,7 @@ void Autonomous::rightShortThreeBall() {
         step++;
     } 
     else if(step == 8) {
-        alignAndShoot(Shooter::TARMAC_LINE, 1);
+        alignAndShoot(Shooter::TARMAC_LINE);
         if(shootingIsDone){
             step++;
         }
@@ -426,7 +419,7 @@ void Autonomous::rightFarThreeBall() {
         step++;
     }
     else if(step == 8) {
-        alignAndShoot(Shooter::TARMAC_LINE, 1);
+        alignAndShoot(Shooter::TARMAC_LINE);
         if(shootingIsDone){
             step++;
         }
@@ -463,7 +456,7 @@ void Autonomous::autoForTrevor(){
     }
 }
 
-void Autonomous::alignAndShoot(Shooter::ShooterMode shooterMode, unsigned ballNum) {
+void Autonomous::alignAndShoot(Shooter::ShooterMode shooterMode) {
     if (shootStep == 0) {
         // Start a command to align with high hub, and check if found by limelight.
         shootingIsDone = false;
