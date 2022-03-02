@@ -40,6 +40,7 @@ public:
   void sendFeedback();
   
 private:
+  RobotChess robotChess {};
   Camera camera {};
   Limelight limelight {};
   Drive drive { &camera, &limelight };
@@ -67,7 +68,7 @@ private:
     /*&camera,*/ &limelight, &hang, &gamEpiece, &drive
   };
 
-  RobotChess robotChess {};
+  
 
   frc::Compressor compressor { frc::PneumaticsModuleType::CTREPCM };
 #endif
