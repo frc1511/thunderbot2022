@@ -850,7 +850,6 @@ bool Drive::cmdIsFinished() {
             return true;
         case TRAJECTORY:
             if (trajectoryController.atReference(getPose())) {
-                std::cout << "WE ARE FINISHED!!\n";
                 return true;
             }
             return false;
