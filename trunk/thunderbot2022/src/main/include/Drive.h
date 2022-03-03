@@ -47,6 +47,10 @@
 // The factor to multiply the angle by to accelerate and decelerate.
 #define DRIVE_CMD_ANGULAR_VELOCITY_FACTOR 5
 
+#define DRIVE_VISION_MAX_ANGULAR_VELOCITY 50_deg_per_s
+#define DRIVE_VISION_MIN_ANGULAR_VELOCITY 20_deg_per_s
+#define DRIVE_VISION_ANGULAR_VELOCITY_FACTOR 5
+
 #ifdef HOMER
 
 // The width of the robot.
@@ -433,11 +437,6 @@ private:
     void exeAlignToCargo();
 
     /**
-     * Executes the current align with high hub command.
-     */
-    void exeAlignToHighHub();
-
-    /**
      * Applies the current rotation of the swerve modules as the offset of the
      * magnetic encoders.
      */
@@ -462,11 +461,6 @@ private:
      * Sets the idle mode of the drive motors.
      */
     void setIdleMode(SwerveModule::IdleMode mode);
-
-    /**
-     * Returns the velocity required to align to the high hub.
-     */
-    units::radians_per_second_t getAlignVelocity();
 
     // The forward-facing camera.
     Camera* camera;
@@ -544,7 +538,6 @@ private:
         NONE,
         TRAJECTORY,        // Folow a trajectory.
         ALIGN_TO_CARGO,    // Align the robot with the cargo in front of the robot.
-        ALIGN_TO_HIGH_HUB, // Align the robot with the high hub.
     };
 
     // The type of command to be executing.
