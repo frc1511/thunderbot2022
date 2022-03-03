@@ -261,6 +261,27 @@ void Autonomous::doNothing() {
     // Good function.
     // Very good function. - jeff downs
     // Very bad function. - jeff ups
+
+    if (step == 0 && drive->cmdIsFinished()) {
+        drive->cmdDriveTranslate(0_m, 0_m, 90_deg);
+        step++;
+    }
+    if (step == 1 && drive->cmdIsFinished()) {
+        // drive->cmdDriveTranslate(0_m, 0_m, 180_deg);
+        step++;
+    }
+    if (step == 2 && drive->cmdIsFinished()) {
+        // drive->cmdDriveTranslate(0_m, 0_m, -90_deg);
+        step++;
+    }
+    if (step == 3 && drive->cmdIsFinished()) {
+        // drive->cmdDriveTranslate(0_m, 0_m, 0_deg);
+        step++;
+    }
+    else if (step == 4 && drive->cmdIsFinished()) {
+        step++;
+        std::cout << "WE FINISHED TURNING\n";
+    }
 }
 
 void Autonomous::uber() {
@@ -333,61 +354,25 @@ void Autonomous::rightTwoBall() {
             step++;
         }
     }
-    else if (step == 8) {
-        drive->cmdRotateToAngle(0_deg);
-        drive->zeroRotation();
-    }
 }
 
 void Autonomous::centerThreeBall() {
-    if(step == 3) {
-        centerTwoBall();
-        step++;
-    }
-    else if(step == 4) {
-        drive->cmdDriveTranslate(5_ft, 15_ft, 30_deg, {});
-        step++;
-    }
-    else if(step == 5 && drive->cmdIsFinished()){
-        step++;
-    }
-    else if(step == 6) {
-        drive->cmdDriveTranslate(5_ft, 15_ft, 150_deg, {});
-        step++;
-    }
-    else if(step == 7 && drive->cmdIsFinished()){
-        step++;
-    }
-    else if (step == 8) {
-        alignAndShoot(Shooter::TARMAC_LINE);
-        if(shootingIsDone){
-            step++;
-        }
-    }
-
 }
 
 void Autonomous::rightShortThreeBall() {
     //hi peter p. lilley iii
-    if(step == 3) {
+    if(step == 0) {
         rightTwoBall();
-        step++;
     }
-    else if(step == 4) {
-        drive->cmdDriveTranslate(5_ft, -5_ft, 45_deg, {});
-        step++;
-    }
-    else if(step == 5 && drive->cmdIsFinished()){
-        step++;
-    }
-    else if(step == 6) {
-       drive->cmdDriveTranslate(.5_ft, 0_ft, -45_deg, {});
-       step++;
-    }
-    else if(step == 7 && drive->cmdIsFinished()){
-        step++;
-    } 
     else if(step == 8) {
+        drive->cmdDriveTranslate(-38_in, -95_in, 2.76_rad);
+        step++;
+    }
+    else if(step == 9 && drive->cmdIsFinished()) {
+        drive->cmdDriveTranslate(-2_ft, 2_ft, 0.62_rad);
+        step++;
+    }
+    else if(step == 10) {
         alignAndShoot(Shooter::TARMAC_LINE);
         if(shootingIsDone){
             step++;
@@ -396,29 +381,8 @@ void Autonomous::rightShortThreeBall() {
 }
 
 void Autonomous::rightFarThreeBall() {
-    if(step == 3) {
+    if (step == 0) {
         rightTwoBall();
-        step++;
-    }
-    else if(step == 4) {
-        drive->cmdDriveTranslate(5_ft, 15_ft, 150_deg, {});
-        step++;
-    }
-    else if(step == 5 && drive->cmdIsFinished()){
-        step++;
-    }
-    else if(step == 6) {
-        drive->cmdDriveTranslate(10_ft, 10_ft, -100_deg, {});
-        step++;
-    }
-    else if(step == 7 && drive->cmdIsFinished()){
-        step++;
-    }
-    else if(step == 8) {
-        alignAndShoot(Shooter::TARMAC_LINE);
-        if(shootingIsDone){
-            step++;
-        }
     }
 }
 
