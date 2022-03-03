@@ -40,8 +40,12 @@
 #define DRIVE_CMD_MAX_VELOCITY 4_mps
 // The maximum acceleration of the chassis during a drive command.
 #define DRIVE_CMD_MAX_ACCELERATION 2_mps_sq
-// The maximum angular speed of the chassis during a drive command.
-#define DRIVE_CMD_MAX_ANGULAR_VELOCITY 80_deg_per_s
+// The maximum angular velocity of the chassis during a drive command.
+#define DRIVE_CMD_MAX_ANGULAR_VELOCITY 100_deg_per_s
+// The minimum angular velocity of the chassis during a drive command.
+#define DRIVE_CMD_MIN_ANGULAR_VELOCITY 20_deg_per_s
+// The factor to multiply the angle by to accelerate and decelerate.
+#define DRIVE_CMD_ANGULAR_VELOCITY_FACTOR 5
 
 #ifdef HOMER
 
@@ -174,6 +178,8 @@ struct PetersTrajectoryConfig {
     units::meters_per_second_t maxVelocity = DRIVE_CMD_MAX_VELOCITY;
     units::meters_per_second_squared_t maxAcceleration = DRIVE_CMD_MAX_ACCELERATION;
     units::radians_per_second_t maxAngularVelocity = DRIVE_CMD_MAX_ANGULAR_VELOCITY;
+    units::radians_per_second_t minAngularVelocity = DRIVE_CMD_MIN_ANGULAR_VELOCITY;
+    double angularVelocityFactor = DRIVE_CMD_ANGULAR_VELOCITY_FACTOR;
     units::meters_per_second_t startVelocity = 0_mps;
     units::meters_per_second_t endVelocity = 0_mps;
 };
@@ -229,8 +235,12 @@ private:
     units::meters_per_second_t maxVelocity = 0_mps;
     // The maximum acceleration.
     units::meters_per_second_squared_t maxAcceleration = 0_mps_sq;
-    // The maximum deceleration.
+    // The maximum angular velocity.
     units::radians_per_second_t maxAngularVelocity = 0_rad_per_s;
+    // The minimum angular velocity.
+    units::radians_per_second_t minAngularVelocity = 0_rad_per_s;
+    // The angular velocity acceleration and deceleration factor.
+    double angularVelocityFactor = 0;
     // The starting velocity.
     units::meters_per_second_t startVelocity = 0_mps;
     // The ending velocity.

@@ -282,7 +282,7 @@ frc::Rotation2d SwerveModule::getAbsoluteRotation() {
 // --- Drive commands ---
 
 #define DISTANCE_THRESHOLD 2_in
-#define ROTATION_THRESHOLD 4_deg
+#define ROTATION_THRESHOLD 1_deg
 
 PetersTrajectoryController::PetersTrajectoryController() { }
 
@@ -333,6 +333,8 @@ void PetersTrajectoryController::setTrajectory(frc::Pose2d currentPose, frc::Pos
     maxVelocity = config.maxVelocity;
     maxAcceleration = config.maxAcceleration;
     maxAngularVelocity = config.maxAngularVelocity;
+    minAngularVelocity = config.minAngularVelocity;
+    angularVelocityFactor = config.angularVelocityFactor;
     startVelocity = config.startVelocity;
     endVelocity = config.endVelocity;
     distanceTraveled = 0_m;
@@ -378,7 +380,7 @@ void PetersTrajectoryController::setTrajectory(frc::Pose2d currentPose, frc::Pos
 }
 
 bool PetersTrajectoryController::atReference(frc::Pose2d currentPose) {
-    if (driveState == UNKNOWN || (driveFinished && rotateFinished)) {
+    if (driveFinished && rotateFinished) {
         return true;
     }
     
@@ -394,12 +396,26 @@ frc::ChassisSpeeds PetersTrajectoryController::getVelocities(frc::Pose2d current
     units::meters_per_second_t yVel = 0_mps;
     units::radians_per_second_t angVel = 0_rad_per_s;
 
+    units::degree_t angleToTurn = end.Rotation().Degrees() - currentPose.Rotation().Degrees();
+
     if (!rotateFinished) {
-        if (end.Rotation().Degrees() - currentPose.Rotation().Degrees() > ROTATION_THRESHOLD) {
-            angVel = DRIVE_CMD_MAX_ANGULAR_VELOCITY;
-        }
-        else if (end.Rotation().Degrees() - currentPose.Rotation().Degrees() < -ROTATION_THRESHOLD) {
-            angVel = -DRIVE_CMD_MAX_ANGULAR_VELOCITY;
+        if (units::math::fabs(angleToTurn) > ROTATION_THRESHOLD) {
+            // Acceleration and deceleration.
+            angVel = units::degrees_per_second_t(angleToTurn.value() * angularVelocityFactor);
+
+            if (angVel > maxAngularVelocity) {
+                angVel = maxAngularVelocity;
+            }
+            else if (angVel < -maxAngularVelocity) {
+                angVel = -maxAngularVelocity;
+            }
+
+            if (angVel < minAngularVelocity && angVel > 0_deg_per_s) {
+                angVel = minAngularVelocity;
+            }
+            else if (angVel > -minAngularVelocity && angVel < 0_deg_per_s) {
+                angVel = -minAngularVelocity;
+            }
         }
         else {
             rotateFinished = true;
@@ -440,7 +456,7 @@ frc::ChassisSpeeds PetersTrajectoryController::getVelocities(frc::Pose2d current
             timer.Reset();
             timer.Start();
         }
-        
+
         units::meters_per_second_t vel = 0_mps;
         
         switch (driveState) {
@@ -936,8 +952,6 @@ void Drive::exeFollowTrajectory() {
     // Calculate chassis velocities that are required in order to reach the
     // desired state.
     frc::ChassisSpeeds targetChassisSpeeds = trajectoryController.getVelocities(getPose());
-
-    std::cout << "vel " << targetChassisSpeeds.vx.value() << " " << targetChassisSpeeds.vy.value() << " " << targetChassisSpeeds.omega.value() << '\n';
 
     // Drive!
     setModuleStates(targetChassisSpeeds);
