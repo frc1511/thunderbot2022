@@ -37,13 +37,15 @@ void ControllerState::reset(){
     normalOrRelay = true;
     //std::cout << "reset :D\n";
     recordOrNot = false;
-    buttons = {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,};
-    axes = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    //buttons = {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,};
+    buttons = std::vector<bool>(28, false);
+    //axes = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    axes = std::vector<double>(14,0);
 }
 void ControllerState::process(){
 
     //records when each button is pressed and realeased
-    for (int i = 0; i < 10; i++) { // 14 buttons, 6 axis, 1 pov
+    for (int i = 0; i < 14; i++) { // 14 buttons, 6 axis, 1 pov
         buttons[(2*i)+1] = buttons[2*i];
         if(normalOrRelay){ // checks if it should look to the controller for the value of the button
             buttons[2*i] = myController.GetRawButton(i+1);
