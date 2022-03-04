@@ -261,27 +261,6 @@ void Autonomous::doNothing() {
     // Good function.
     // Very good function. - jeff downs
     // Very bad function. - jeff ups
-
-    if (step == 0 && drive->cmdIsFinished()) {
-        drive->cmdDriveTranslate(0_m, 0_m, 90_deg);
-        step++;
-    }
-    if (step == 1 && drive->cmdIsFinished()) {
-        // drive->cmdDriveTranslate(0_m, 0_m, 180_deg);
-        step++;
-    }
-    if (step == 2 && drive->cmdIsFinished()) {
-        // drive->cmdDriveTranslate(0_m, 0_m, -90_deg);
-        step++;
-    }
-    if (step == 3 && drive->cmdIsFinished()) {
-        // drive->cmdDriveTranslate(0_m, 0_m, 0_deg);
-        step++;
-    }
-    else if (step == 4 && drive->cmdIsFinished()) {
-        step++;
-        std::cout << "WE FINISHED TURNING\n";
-    }
 }
 
 void Autonomous::uber() {
@@ -322,37 +301,50 @@ void Autonomous::centerTwoBall() {
 
 void Autonomous::rightTwoBall() {
     if(step == 0) {
-        drive->cmdDriveTranslate(0_in, -37.5_in + 17_in, -90_deg);
+        drive->cmdDriveTranslate(0_in, -37.5_in + 17_in + 6_in, -90_deg);
         step++;
     }
     else if (step == 1 && drive->cmdIsFinished()) {
 #ifndef HOMER
         gamEpiece->setIntakeDirection(GamEpiece::INTAKE);
+        gamEpiece->setShooterWarmUpEnabled(Shooter::TARMAC_LINE, true);
 #endif
         step++;
     }
     else if (step == 2) {
-        drive->cmdDriveTranslate(42_in - 7_in, 0_in, -90_deg);
+        drive->cmdDriveTranslate(42_in - 7_in - 3_in, 0_in, -90_deg);
         step++;
     }
-    else if (step == 3 && drive->cmdIsFinished()) {
+    else if (step == 3 && gamEpiece->ballAtStageOne()) {
+        step++;
+    }
+    else if (step == 4 && drive->cmdIsFinished()) {
 #ifndef HOMER
         gamEpiece->setIntakeDirection(GamEpiece::NOTTAKE);
 #endif
         step++;
     }
-    else if (step == 4) {
-        drive->cmdRotateToAngle(90_deg);
+    else if (step == 5) {
+        drive->cmdDriveTranslate(6_in, 0_in, 90_deg);
         step++;
     }
-    else if (step == 5 && drive->cmdIsFinished()) {
+    else if (step == 6 && drive->cmdIsFinished()) {
         step++;
     }
-    else if (step == 6 || step == 7) {
+    else if (step == 7 || step == 9) {
         alignAndShoot(Shooter::TARMAC_LINE);
         if(shootingIsDone){
             step++;
         }
+    }
+    else if(step == 8) {
+        drive->cmdDriveTranslate(0_in,0_in,95_deg);
+        step++;
+    }
+    else if (step == 10) {
+#ifndef HOMER
+        gamEpiece->setShooterWarmUpEnabled(Shooter::TARMAC_LINE, false);
+#endif
     }
 }
 
@@ -364,15 +356,15 @@ void Autonomous::rightShortThreeBall() {
     if(step == 0) {
         rightTwoBall();
     }
-    else if(step == 8) {
+    else if(step == 11) {
         drive->cmdDriveTranslate(-38_in, -95_in, 2.76_rad);
         step++;
     }
-    else if(step == 9 && drive->cmdIsFinished()) {
+    else if(step == 12 && drive->cmdIsFinished()) {
         drive->cmdDriveTranslate(-2_ft, 2_ft, 0.62_rad);
         step++;
     }
-    else if(step == 10) {
+    else if(step == 13) {
         alignAndShoot(Shooter::TARMAC_LINE);
         if(shootingIsDone){
             step++;
@@ -435,7 +427,6 @@ void Autonomous::alignAndShoot(Shooter::ShooterMode shooterMode) {
         shootStep++;
     }
     else if (shootStep == 3 && !gamEpiece->isShotInProgress()) {
-        gamEpiece->setShooterWarmUpEnabled(shooterMode, false);
         shootStep = 0;
         shootingIsDone = true;
     }
