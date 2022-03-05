@@ -55,7 +55,7 @@ void Hang::resetToMode(MatchMode mode){
     manual = ENGAGE_BRAKE;
     winchMotor->Set(0);
     //pistons are the opposite of what you think
-    hangPivot1.Set(frc::DoubleSolenoid::Value::kReverse);
+    hangPivot1.Set(frc::DoubleSolenoid::Value::kForward);
     hangPivot2.Set(frc::DoubleSolenoid::Value::kReverse);
     hangTimer.Reset();
     retractStep = 0;

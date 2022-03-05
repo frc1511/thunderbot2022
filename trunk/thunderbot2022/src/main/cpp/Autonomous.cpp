@@ -47,6 +47,7 @@ void Autonomous::resetToMode(MatchMode mode) {
             case AUTO_FOR_TREVOR_ONE:
                 startPosition = UNKNOWN;
                 controls->chooseAutoMode(1);
+                std::cout << "automode1\n";
                 break;
             case AUTO_FOR_TREVOR_TWO:
                 startPosition = UNKNOWN;
@@ -104,7 +105,8 @@ void Autonomous::resetToMode(MatchMode mode) {
         step = 0;
         shootStep = 0;
         shootingIsDone = false;
-        
+    }
+    if(mode == MODE_TELEOP){
         switch (currentMode) {
             case DO_NOTHING:
             case UBER:
@@ -149,6 +151,7 @@ void Autonomous::resetToMode(MatchMode mode) {
                 break;
         }
     }
+    
 }
 
 static void handleDashboardString(Autonomous::AutoMode mode, const char* description, char* buffer) {
@@ -200,8 +203,10 @@ void Autonomous::sendFeedback() {
 }
 
 void Autonomous::process() {
+    #ifndef HOMER
     if (!gamEpiece)
         return;
+    #endif
 
     if (timer.Get().value() <= Feedback::getDouble("thunderdashboard", "auto_start_delay", 0)) {
         return;
@@ -315,8 +320,11 @@ void Autonomous::rightTwoBall() {
         drive->cmdDriveTranslate(42_in - 7_in - 3_in, 0_in, -90_deg);
         step++;
     }
-    else if (step == 3 && gamEpiece->ballAtStageOne()) {
-        step++;
+    else if (step == 3) {
+#ifndef HOMER
+        if (gamEpiece->ballAtStageOne())
+#endif
+            step++;
     }
     else if (step == 4 && drive->cmdIsFinished()) {
 #ifndef HOMER
@@ -364,7 +372,7 @@ void Autonomous::rightShortThreeBall() {
         drive->cmdDriveTranslate(-2_ft, 2_ft, 0.62_rad);
         step++;
     }
-    else if(step == 13) {
+    else if(step == 1) {
         alignAndShoot(Shooter::TARMAC_LINE);
         if(shootingIsDone){
             step++;
