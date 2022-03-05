@@ -37,11 +37,11 @@ void Autonomous::resetToMode(MatchMode mode) {
                 startPosition = RIGHT;
                 break;
             case AUTO_FOR_TREVOR_ZERO:
-                startPosition = UNKNOWN;
+                startPosition = LEFT;
                 controls->chooseAutoMode(0);
                 break;
             case AUTO_FOR_TREVOR_ONE:
-                startPosition = UNKNOWN;
+                startPosition = LEFT;
                 controls->chooseAutoMode(1);
                 break;
             case AUTO_FOR_TREVOR_TWO:
@@ -49,7 +49,7 @@ void Autonomous::resetToMode(MatchMode mode) {
                 controls->chooseAutoMode(2);
                 break;
             case AUTO_FOR_TREVOR_THREE:
-                startPosition = UNKNOWN;
+                startPosition = RIGHT;
                 controls->chooseAutoMode(3);
                 break;
             case AUTO_FOR_TREVOR_FOUR:
