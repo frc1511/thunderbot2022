@@ -95,7 +95,6 @@ void Controls::process() {
 
 void Controls::doDrive() {
     driveController.process();
-    auxController.process();
     bool brickDrive = driveController.getRawButton(CROSS_BUTTON);
     bool viceGrip = driveController.getRawButton(CIRCLE_BUTTON);
     bool toggleCamera = driveController.getRawButtonPressed(SQUARE_BUTTON);
