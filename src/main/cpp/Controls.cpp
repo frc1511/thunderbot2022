@@ -1,7 +1,7 @@
 #include "Controls.h"
 #include <iostream>
 
- #define XBOX_CONTROLLER
+// #define XBOX_CONTROLLER
 
 #ifdef XBOX_CONTROLLER
 
@@ -219,16 +219,16 @@ void Controls::doAux() {
                 hang->commandAuto();
             }
         } else {
-            if (auxController.getRawButtonPressed(3)) {
+            if (auxController.getRawButtonPressed(CIRCLE_BUTTON)) {
                 hang->commandManual(Hang::EXTEND);
             }
-            else if (auxController.getRawButtonPressed(1)) {
+            else if (auxController.getRawButtonPressed(SQUARE_BUTTON)) {
                 hang->commandManual(Hang::RETRACT);
             }
-            else if (auxController.getRawButtonPressed(4)) {
+            else if (auxController.getRawButtonPressed(TRIANGLE_BUTTON)) {
                 hang->commandManual(Hang::ENGAGE_BRAKE);
             }
-            else if (auxController.getRawButtonPressed(2)) {
+            else if (auxController.getRawButtonPressed(CROSS_BUTTON)) {
                 hang->commandManual(Hang::EXTEND_A_LITTLE);
             }
             
