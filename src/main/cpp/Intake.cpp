@@ -381,6 +381,8 @@ void Intake::sendFeedback()
     case (STATE_INTAKE_TWO_BALL):
         currentstate = "Intake two ball";
         break;
+    case (STATE_PRE_COUNT):
+        currentstate = "Pre count";
     case (STATE_OUTTAKE):
         currentstate = "Outtake";
         break;

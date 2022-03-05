@@ -14,16 +14,12 @@ Autonomous::~Autonomous() {
 }
 
 void Autonomous::resetToMode(MatchMode mode) {
-    currentMode = AUTO_FOR_TREVOR_TWO;
+    currentMode = (AutoMode)Feedback::getDouble("Auto", "Mode", 0);
 
     if (mode == MODE_AUTO) {
-        currentMode = (AutoMode)Feedback::getDouble("Auto", "Mode", 0);
-        
         switch (currentMode) {
             case DO_NOTHING:
             case UBER:
-                startPosition = UNKNOWN;
-                break;
             case ONE_BALL:
                 startPosition = UNKNOWN;
                 break;
@@ -47,7 +43,6 @@ void Autonomous::resetToMode(MatchMode mode) {
             case AUTO_FOR_TREVOR_ONE:
                 startPosition = UNKNOWN;
                 controls->chooseAutoMode(1);
-                std::cout << "automode1\n";
                 break;
             case AUTO_FOR_TREVOR_TWO:
                 startPosition = UNKNOWN;
