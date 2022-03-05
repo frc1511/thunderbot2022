@@ -1,5 +1,5 @@
 #pragma once
-
+#include "Feedback.h"
 #include <frc/Joystick.h>
 #include <vector>
 #include <iostream>
@@ -14,6 +14,7 @@ class ControllerState{
 
     void process();
     void reset();
+    void sendFeedback();
 
     // .GetRawBUtton but with copntrollerState
     bool getRawButton(int buttonID);
@@ -74,7 +75,6 @@ class ControllerState{
     bool buttonsDone;
     bool axisDone;
 
-    bool timerStartedYet;
 
     bool recordOrNot;
 

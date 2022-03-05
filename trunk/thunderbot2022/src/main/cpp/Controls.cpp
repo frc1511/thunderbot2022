@@ -1,7 +1,7 @@
 #include "Controls.h"
 #include <iostream>
 
-// #define XBOX_CONTROLLER
+ #define XBOX_CONTROLLER
 
 #ifdef XBOX_CONTROLLER
 
@@ -95,6 +95,7 @@ void Controls::process() {
 
 void Controls::doDrive() {
     driveController.process();
+    auxController.process();
     bool brickDrive = driveController.getRawButton(CROSS_BUTTON);
     bool viceGrip = driveController.getRawButton(CIRCLE_BUTTON);
     bool toggleCamera = driveController.getRawButtonPressed(SQUARE_BUTTON);
@@ -375,8 +376,8 @@ void Controls::doSwitchPanel() {
     }
     highOrLow = switchPanel.GetRawButton(7);
     nearOrFar = switchPanel.GetRawButton(6);
-    recordController = switchPanel.GetRawButtonPressed(12) || switchPanel.GetRawButtonReleased(12);
-    clearController = switchPanel.GetRawButtonPressed(11) || switchPanel.GetRawButtonReleased(11);
+    recordController = switchPanel.GetRawButtonPressed(12) /*|| switchPanel.GetRawButtonReleased(12)*/;
+    clearController = switchPanel.GetRawButtonPressed(11) /*|| switchPanel.GetRawButtonReleased(11)*/;
     if(clearController){
         driveController.clearAuto();
         auxController.clearAuto();
@@ -423,6 +424,8 @@ void Controls::chooseAutoMode(int autoMode){
     std::cout << autoMode << "\n";
 }
 void Controls::sendFeedback(){
+    driveController.sendFeedback();
+    auxController.sendFeedback();
     std::string mode = "";
     switch(lastPressedMode){
         case(Shooter::TARMAC_LINE):

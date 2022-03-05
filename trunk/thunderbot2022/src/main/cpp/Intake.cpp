@@ -383,6 +383,7 @@ void Intake::sendFeedback()
         break;
     case (STATE_PRE_COUNT):
         currentstate = "Pre count";
+        break;
     case (STATE_OUTTAKE):
         currentstate = "Outtake";
         break;
