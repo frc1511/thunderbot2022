@@ -14,7 +14,7 @@
 extern bool isCraterMode;
 
 // #define HOMER // Comment out if not homer
-// #define TEST_BOARD // Enable for testing on test board
+ //#define TEST_BOARD // Enable for testing on test board
 
 //CAN
 #define CAN_HANG_WINCH_MOTOR 2
@@ -69,7 +69,7 @@ extern bool isCraterMode;
     #define PWM_SHOOTER_HOOD_SERVO 1
     #define PWM_BLINKY_BLINKY 2
     // Missing on Wiki
-    #define PWM_STRING_SERVO 3
+    #define PWM_STRING_SERVO_RIGHT 3
 
     //DIO
     #define DIO_HANG_OPTICAL_HOME_SENSOR 0
@@ -85,11 +85,11 @@ extern bool isCraterMode;
     #define INTAKE_PIVOT_EXTEND_PISTON 0
     #define INTAKE_PIVOT_RETRACT_PISTON 1
 
-    #define PCM1_HANG_PIVOT_1_RETRACT_ARMS 2
-    #define PCM1_HANG_PIVOT_1_EXTEND_ARMS 3
+    #define PCM1_HANG_PIVOT_1_EXTEND_PISTON 2
+    #define PCM1_HANG_PIVOT_1_RETRACT_PISTON 3
 
-    #define PCM1_HANG_PIVOT_2_RETRACT_ARMS 4
-    #define PCM1_HANG_PIVOT_2_EXTEND_ARMS 5
+    #define PCM1_HANG_PIVOT_2_EXTEND_PISTON 4
+    #define PCM1_HANG_PIVOT_2_RETRACT_PISTON 5
 
     #define PCM1_HANG_BRAKE_PISTON_RETRACT 6
     #define PCM1_HANG_BRAKE_PISTON_EXTEND 7
@@ -101,7 +101,8 @@ extern bool isCraterMode;
     #define PWM_SHOOTER_HOOD_SERVO 1            // Loose servo; non-hi-tec 
     #define PWM_BLINKY_BLINKY 6                 // Not present
     // Missing on Wiki
-    #define PWM_STRING_SERVO 7                  // Loose servo; hi-tec brand
+    #define PWM_STRING_SERVO_RIGHT 7 
+    #define PWM_STRING_SERVO_LEFT 8                 // Loose servo; hi-tec brand
 
     //DIO
     #define DIO_HANG_OPTICAL_HOME_SENSOR 5    // U-sensor floating on Rio
@@ -119,11 +120,11 @@ extern bool isCraterMode;
     #define INTAKE_PIVOT_EXTEND_PISTON 3
     #define INTAKE_PIVOT_RETRACT_PISTON 4
 
-    #define PCM1_HANG_PIVOT_1_RETRACT_ARMS 1
-    #define PCM1_HANG_PIVOT_1_EXTEND_ARMS 6
+    #define PCM1_HANG_PIVOT_1_EXTEND_PISTON 1
+    #define PCM1_HANG_PIVOT_1_RETRACT_PISTON 6
 
-    #define PCM1_HANG_PIVOT_2_RETRACT_ARMS 2
-    #define PCM1_HANG_PIVOT_2_EXTEND_ARMS 5
+    #define PCM1_HANG_PIVOT_2_EXTEND_PISTON 2
+    #define PCM1_HANG_PIVOT_2_RETRACT_PISTON 5
 
     #define PCM1_HANG_BRAKE_PISTON_RETRACT 0    // Not present
     #define PCM1_HANG_BRAKE_PISTON_EXTEND 7     // Not present

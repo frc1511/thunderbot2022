@@ -52,6 +52,40 @@ PART 2
 class Hang : public Mechanism {
 
 private:
+//sensors that are not servos
+    //encoder on winch to tell how far its gone
+#ifdef TEST_BOARD
+    frc::Encoder winchEncoder {DIO_HANG_ENCODER_A,  DIO_HANG_ENCODER_B};//change to something else
+#endif
+    /*sensor on the bottom of the arm to tell when fully retracted, doesnt matter which
+    could also be on the winch i dont know yet*/
+    frc::DigitalInput homeSensor {DIO_HANG_OPTICAL_HOME_SENSOR};
+
+    //actuator stuff
+    ThunderSparkMax *winchMotor;
+    //TOP PISTON CONNECTING hangPivot2 to the arm
+    frc::DoubleSolenoid hangPivot1{frc::PneumaticsModuleType::CTREPCM, PCM1_HANG_PIVOT_1_EXTEND_PISTON, PCM1_HANG_PIVOT_1_RETRACT_PISTON};
+    //frc::DoubleSolenoid brake{frc::PneumaticsModuleType::CTREPCM, /*hi jeff*/PCM1_HANG_BRAKE_PISTON_EXTEND, PCM1_HANG_BRAKE_PISTON_RETRACT};
+    //connects the robot to hangPivot1
+    frc::DoubleSolenoid hangPivot2{frc::PneumaticsModuleType::CTREPCM, PCM1_HANG_PIVOT_2_EXTEND_PISTON, PCM1_HANG_PIVOT_2_RETRACT_PISTON};
+    
+    //servos
+    frc::Servo ratchetServo{PWM_HANG_RACHET_AND_PAWL};
+    frc::Servo stringServoRight{PWM_STRING_SERVO_RIGHT};
+
+
+    //hi trevor
+
+    //timer
+    frc::Timer hangTimer;
+    bool isDone;
+    bool stepDone;
+    int hangBar = 0;
+    double manualStep;
+    bool test;
+    double highOrTraversal;
+
+    public:
     double currentEncoderValue;
     //pivots the extending arms forwards/backwards
     void pivot(bool armsForward);//working
@@ -61,6 +95,8 @@ private:
     void resetEncoder();
     //retract function if sensors broke
     void brokenRetract();
+    //resets functions for manual actions to make my life easier
+    void manualReset();
     //extend function if sensors broke
     void brokenExtend();
     //extendALittle function if sensors broke
@@ -75,7 +111,7 @@ private:
     void unwindString();
     //hi jeff
     //disengages brake to extend arms
-    void disengageBrake();//working
+    bool disengageBrake();//working
     //retracts arms
     void retract();
     //extends arms fully
@@ -99,37 +135,8 @@ private:
     //is the robot done/on traversal
     bool autoDone;
     bool extendALittleDone;
+    double disengageBrakeStart;
 
-//sensors that are not servos
-    //encoder on winch to tell how far its gone
-#ifdef TEST_BOARD
-    frc::Encoder winchEncoder {DIO_HANG_ENCODER_A,  DIO_HANG_ENCODER_B};//change to something else
-#endif
-    /*sensor on the bottom of the arm to tell when fully retracted, doesnt matter which
-    could also be on the winch i dont know yet*/
-    frc::DigitalInput homeSensor {DIO_HANG_OPTICAL_HOME_SENSOR};
-
-    //actuator stuff
-    ThunderSparkMax *winchMotor;
-    //TOP PISTON CONNECTING hangPivot2 to the arm
-    frc::DoubleSolenoid hangPivot1{frc::PneumaticsModuleType::CTREPCM, PCM1_HANG_PIVOT_1_EXTEND_ARMS, PCM1_HANG_PIVOT_1_RETRACT_ARMS};
-    //frc::DoubleSolenoid brake{frc::PneumaticsModuleType::CTREPCM, /*hi jeff*/PCM1_HANG_BRAKE_PISTON_EXTEND, PCM1_HANG_BRAKE_PISTON_RETRACT};
-    //connects the robot to hangPivot1
-    frc::DoubleSolenoid hangPivot2{frc::PneumaticsModuleType::CTREPCM, PCM1_HANG_PIVOT_2_EXTEND_ARMS, PCM1_HANG_PIVOT_2_RETRACT_ARMS};
-    
-    //servos
-    frc::Servo ratchetServo{PWM_HANG_RACHET_AND_PAWL};
-    frc::Servo stringServo{PWM_STRING_SERVO};
-
-    //hi trevor
-
-    //timer
-    frc::Timer hangTimer;
-    bool isDone;
-    bool stepDone;
-    int hangBar = 0;
-
-    public:
 
     //manual enumerator for actions
     enum Manual{EXTEND,  
@@ -145,8 +152,9 @@ private:
                 NOT};
     //enumerator variable thing
     Manual manual;
+    Manual currentManualState;
     //bar that the robot is going to
-    enum HangState{HIGH_TRAVERSAL, MID, NOT_ON_BAR, STOP};
+    enum HangState{HIGH_TRAVERSAL, MID, MID_2, NOT_ON_BAR, STOP};
     //enumerator variable thing
     HangState targetStage;
 
