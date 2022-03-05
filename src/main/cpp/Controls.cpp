@@ -375,8 +375,8 @@ void Controls::doSwitchPanel() {
     }
     highOrLow = switchPanel.GetRawButton(7);
     nearOrFar = switchPanel.GetRawButton(6);
-    recordController = switchPanel.GetRawButtonPressed(12);
-    clearController = switchPanel.GetRawButtonPressed(11);
+    recordController = switchPanel.GetRawButtonPressed(12) || switchPanel.GetRawButtonReleased(12);
+    clearController = switchPanel.GetRawButtonPressed(11) || switchPanel.GetRawButtonReleased(11);
     if(clearController){
         driveController.clearAuto();
         auxController.clearAuto();
@@ -420,6 +420,7 @@ void Controls::chooseAutoMode(int autoMode){
     driveController.chooseAutoMode(autoMode);
     auxController.chooseAutoMode(autoMode);
     theAutoMode = autoMode;
+    std::cout << autoMode << "\n";
 }
 void Controls::sendFeedback(){
     std::string mode = "";
