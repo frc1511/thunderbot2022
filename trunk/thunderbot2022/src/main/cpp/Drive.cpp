@@ -71,7 +71,7 @@
 #define DRIVE_I_ZONE_VALUE 0
 #define DRIVE_FF_VALUE 0.000187
 
-#define ROT_P_VALUE 0.4 //0.08
+#define ROT_P_VALUE 0.1
 #define ROT_I_VALUE 0
 #define ROT_D_VALUE 0
 #define ROT_I_ZONE_VALUE 0
@@ -396,7 +396,18 @@ frc::ChassisSpeeds PetersTrajectoryController::getVelocities(frc::Pose2d current
     units::meters_per_second_t yVel = 0_mps;
     units::radians_per_second_t angVel = 0_rad_per_s;
 
-    units::degree_t angleToTurn = end.Rotation().Degrees() - currentPose.Rotation().Degrees();
+    units::degree_t angle1 = end.Rotation().Degrees() - currentPose.Rotation().Degrees();
+    units::degree_t angle2;
+
+    if (end.Rotation().Degrees() > currentPose.Rotation().Degrees()) {
+        angle2 = end.Rotation().Degrees() - currentPose.Rotation().Degrees() - 360_deg;
+    }
+    else {
+        angle2 = end.Rotation().Degrees() - currentPose.Rotation().Degrees() + 360_deg;
+    }
+    
+    // Optimize!!
+    units::degree_t angleToTurn = units::math::fabs(angle1) < units::math::fabs(angle2) ? angle1 : angle2;
 
     if (!rotateFinished) {
         if (units::math::fabs(angleToTurn) > ROTATION_THRESHOLD) {
@@ -545,7 +556,7 @@ void Drive::resetToMode(MatchMode mode) {
     if (mode == MODE_DISABLED) {
         // Set the drive motors to coast when disabled so they can try to push
         // swerve drive (not going to happen but ok).
-        setIdleMode(SwerveModule::COAST);
+        setIdleMode(SwerveModule::BRAKE);
     }
     else {
         if (!getIMUCalibrated()) {
