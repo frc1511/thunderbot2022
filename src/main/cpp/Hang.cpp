@@ -69,6 +69,7 @@ void Hang::resetToMode(MatchMode mode){
     retractStep = 0;
     extendStep = 0;
     brokenStep = 0;
+    hangBar = 0;
     stringServoRight.Set(kServoStopped);
     stringServoLeft.Set(kServoStopped);
     ratchetServo.Set(kPawlForward);
@@ -148,6 +149,9 @@ void Hang::sendFeedback(){
         case RETRACT:
             targetManualString = "retracting";
             break;
+        case DRIVE_DOWN:
+            targetManualString = "drive down";
+            break;
         case NOT:
             targetManualString = "nothing";
             break;
@@ -166,6 +170,7 @@ void Hang::sendFeedback(){
     Feedback::sendBoolean("Hang", "is auto hang done", autoDone);
     Feedback::sendDouble("Hang", "broken step value - not useful most of the time", brokenStep);
     Feedback::sendDouble("thunderdashboard", "hang_bar", hangBar);
+    Feedback::sendDouble("Hang", "hang bar", hangBar);
     Feedback::sendDouble("thunderdashboard", "hang_status", hangStatus);
     Feedback::sendDouble("Hang", "manual step", manualStep);
     Feedback::sendDouble("Hang", "timer", hangTimer.Get().value());
@@ -173,12 +178,14 @@ void Hang::sendFeedback(){
     Feedback::sendDouble("Hang", "winch motor current", winchMotor->GetOutputCurrent());
     Feedback::sendDouble("Hang", "stickyfaults", winchMotor->GetStickyFaults());
     Feedback::sendDouble("Hang", "faults", winchMotor->GetFaults());
+    Feedback::sendDouble("Hang", "winch motor temp", winchMotor->GetMotorTemperatureFarenheit());
 }
 
 void Hang::process(){
 //std::cout << targetStage << "," << manual << '\n';
 if(autoDone == false && manual != NOT)
     {
+        hangBar = 0;
         switch (manual)
         {
             case EXTEND:
@@ -248,7 +255,6 @@ if(autoDone == false && manual != NOT)
             else if(step == 1)
             {   
                 extend();
-                std::cout << "extending" << '\n';
             }
             else if (step == 2)
             {
@@ -277,7 +283,7 @@ if(autoDone == false && manual != NOT)
                 stepDone = false;
                 retractStep = 0;
                 extendStep = 0;
-                if(hangTimer.Get().value() == .5)
+                if(hangTimer.Get().value() >= .5)
                 {
                     step++;
                 }
@@ -423,7 +429,7 @@ void Hang::extend()
         extendStep++;
     }
     else if(extendStep == 1 && disengageBrake()){
-            winchMotor->Set(kExtendBackdrive);
+           // winchMotor->Set(kExtendBackdrive);
             extendStep++;
     }
     else if (extendStep == 2){
@@ -445,9 +451,10 @@ void Hang::extend()
 
 void Hang::extendALittle()
 {
-    if ((homeSensor.Get() == 1 || readEncoder() <= kEncoderMin) && extendStep == 0){
+    if (extendStep == 0){
         disengageBrakeDone = false;
         disengageBrakeStart = readEncoder();
+
         extendStep++;
     }
     else if(extendStep == 1 && disengageBrake()){
@@ -532,6 +539,7 @@ bool Hang::disengageBrake()
         ratchetServo.Set(kPawlReverse);
         return false;
     }
+    return false;
     //make sure pawl is disengaged, pull servo
     //get direction down
 }
