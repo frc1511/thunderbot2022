@@ -563,11 +563,21 @@ void Drive::resetToMode(MatchMode mode) {
             calibrateIMU();
         }
         
-        resetOdometry();
 
         // Set the drive motors to brake in teleop and autonomous modes because
         // we want the robot to stop when we tell it to stop.
         setIdleMode(SwerveModule::BRAKE);
+    }
+    
+    static bool didAutoExist = false;
+
+    if (mode == MatchMode::MODE_AUTO)
+    {
+        didAutoExist = true;
+    }
+    if (mode == MatchMode::MODE_AUTO || (mode == MatchMode::MODE_TELEOP && didAutoExist == false)) //combo (ish) reset so it works when just doing tele, and when doing both
+    {
+        resetOdometry();
     }
 }
 

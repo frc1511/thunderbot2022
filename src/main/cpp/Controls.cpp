@@ -56,7 +56,7 @@
 #endif
 
 #define SLOW_DRIVE_FACTOR .2
-#define SLOW_ROTATE_FACTOR .3
+#define SLOW_ROTATE_FACTOR .1
 
 #define AXIS_DEADZONE .1
 
