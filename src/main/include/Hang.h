@@ -72,6 +72,7 @@ private:
     //servos
     frc::Servo ratchetServo{PWM_HANG_RACHET_AND_PAWL};
     frc::Servo stringServoRight{PWM_STRING_SERVO_RIGHT};
+    frc::Servo stringServoLeft{PWM_STRING_SERVO_LEFT};
 
 
     //hi trevor
@@ -95,8 +96,6 @@ private:
     void resetEncoder();
     //retract function if sensors broke
     void brokenRetract();
-    //resets functions for manual actions to make my life easier
-    void manualReset();
     //extend function if sensors broke
     void brokenExtend();
     //extendALittle function if sensors broke
@@ -118,6 +117,8 @@ private:
     void extend();//working
     //extends the extending arms a little to get off the bar
     void extendALittle();//working
+    //configure motor
+    void configureMotor();
     //step that the robot is on in the overall process: mid, high, traversal, and what it is doing in general
     int step;
     //broken step 
@@ -136,6 +137,9 @@ private:
     bool autoDone;
     bool extendALittleDone;
     double disengageBrakeStart;
+    bool disengageBrakeDone;
+    bool retractDone;
+    bool retractCurrentIncrease;
 
 
     //manual enumerator for actions
@@ -149,7 +153,8 @@ private:
                 PULL_STRING, 
                 UNWIND_STRING,
                 RETRACT,
-                NOT};
+                NOT,
+                DRIVE_DOWN};
     //enumerator variable thing
     Manual manual;
     Manual currentManualState;
