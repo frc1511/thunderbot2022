@@ -54,11 +54,11 @@ void GamEpiece::process() {
             // hi peter
             break;
     }
-    if(currentBallCount == 0){
+    if(currentBallCount == 0 && (shooterState == WANT_TO_SHOOT || shooterState == NOT_SHOOTING)){
         shooterState = NOT_SHOOTING;
     }
 
-    if(shooterState == NOT_SHOOTING){ // stage two is needed to intake and to shoot, so if you are trying to shoot dont let it intake
+    if(shooterState == NOT_SHOOTING || shooterState == WARMUP_SHOOTER){ // stage two is needed to intake and to shoot, so if you are trying to shoot dont let it intake
         switch(intakeDirection){
             case(INTAKE):
                 intake.setIntakeDirection(Intake::INTAKE);
@@ -125,9 +125,7 @@ void GamEpiece::shootABall(Shooter::ShooterMode shooterMode){
 }
 
 void GamEpiece::setIntakeDirection(IntakeDirection intDir){ // intState is a local variable which is a "copy of intakeDirection"
-    if(shooterState == NOT_SHOOTING){ // intake is part of the shooting process so make sure it isnt trying to move the ball when you intake
         intakeDirection = intDir;
-    }
 }
 
 void GamEpiece::setManualIntakeSpeed(double intakeSpeed){
