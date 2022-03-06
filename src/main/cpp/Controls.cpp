@@ -246,6 +246,9 @@ void Controls::doAux() {
             else if(auxController.getRawButton(SHARE_BUTTON)){
                 hang->commandManual(Hang::REVERSE_PIVOT);
             }
+            else if(auxController.getRawButton(OPTIONS_BUTTON)){
+                hang->commandManual(Hang::DRIVE_DOWN);
+            }
         }
     }
     else {
