@@ -70,6 +70,8 @@ class ThunderSparkMax {
 
         virtual void RestoreFactoryDefaults() = 0;
         virtual void BurnFlash() = 0;
+        virtual int GetStickyFaults() = 0;
+        virtual int GetFaults() = 0;
 
 
 

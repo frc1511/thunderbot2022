@@ -35,6 +35,8 @@ class ThunderSparkMaxImpl : public ThunderSparkMax {
 
         virtual void RestoreFactoryDefaults();
         virtual void BurnFlash();
+        virtual int GetStickyFaults();
+        virtual int GetFaults();
 
 
     protected:
@@ -194,6 +196,16 @@ void ThunderSparkMaxImpl::BurnFlash()
     printWarning(&printedFlashWarning, "RestoreFactoryDefaults/BurnFlash");
 }
 
+int ThunderSparkMaxImpl::GetFaults()
+{
+    return 0;
+}
+
+int ThunderSparkMaxImpl::GetStickyFaults()
+{
+    return 0;
+}
+
 void ThunderSparkMaxImpl::RestoreFactoryDefaults()
 {
     printWarning(&printedFlashWarning, "RestoreFactoryDefaults/BurnFlash");
@@ -275,6 +287,8 @@ class ThunderSMCANImpl : public ThunderSparkMaxImpl {
         virtual void SetEncoder(double rotations);
         virtual void SetAlternateEncoder(double rotations);
         virtual void SetInverted(bool invert);
+        virtual int GetStickyFaults();
+        virtual int GetFaults();
 
         virtual void SetIdleMode(IdleMode idleMode);
         virtual void Follow(ThunderSparkMax *leader, bool invertOutput = false);
@@ -634,6 +648,16 @@ void ThunderSMCANImpl::ConfigAlternateEncoder(int cpr)
         altEnc = nullptr;
     }
     altEnc = new rev::SparkMaxAlternateEncoder(spark.GetAlternateEncoder(cpr));
+}
+
+int ThunderSMCANImpl::GetStickyFaults()
+{
+    return spark.GetStickyFaults();
+}
+
+int ThunderSMCANImpl::GetFaults()
+{
+    return spark.GetFaults();
 }
 
 
