@@ -38,7 +38,7 @@ const double kServoForward = 0;
 const double kServoStopped = .5;
 
 const double kPawlForward = .8;
-const double kPawlReverse = .5;
+const double kPawlReverse = .57;
 
 const double kStringServoTime = 1.5;
 
@@ -55,34 +55,34 @@ void Hang::doPersistentConfiguration(){
 }
 
 void Hang::resetToMode(MatchMode mode){
-    if(mode != MatchMode::MODE_DISABLED)
-    {
-        resetEncoder();
-    }
-    step = 0;
-    targetStage = NOT_ON_BAR;
+    stringServoRight.Set(kServoStopped);
+    stringServoLeft.Set(kServoStopped);
+    ratchetServo.Set(kPawlForward);
     winchMotor->Set(0);
     //pistons are the opposite of what you think
     hangPivot1.Set(frc::DoubleSolenoid::Value::kForward);
     hangPivot2.Set(frc::DoubleSolenoid::Value::kReverse);
-    hangTimer.Reset();
-    retractStep = 0;
-    extendStep = 0;
-    brokenStep = 0;
-    hangBar = 0;
-    stringServoRight.Set(kServoStopped);
-    stringServoLeft.Set(kServoStopped);
-    ratchetServo.Set(kPawlForward);
-    autoDone = false;
-    manual = NOT;
-    stepDone = true;
-    currentEncoderValue = 0;
-    manualStep = 0;
-    highOrTraversal = 0;
-    currentManualState = NOT;
-    disengageBrakeDone = false;
-    retractDone = false;
-    retractCurrentIncrease = false;
+    if(mode != MatchMode::MODE_DISABLED)
+    {
+        resetEncoder();
+        step = 0;
+        targetStage = NOT_ON_BAR;
+        hangTimer.Reset();
+        retractStep = 0;
+        extendStep = 0;
+        brokenStep = 0;
+        hangBar = 0;
+        autoDone = false;
+        manual = NOT;
+        stepDone = true;
+        currentEncoderValue = 0;
+        manualStep = 0;
+        highOrTraversal = 0;
+        currentManualState = NOT;
+        disengageBrakeDone = false;
+        retractDone = false;
+        retractCurrentIncrease = false;
+    }
 }
 
 void Hang::sendFeedback(){
@@ -301,7 +301,7 @@ if(autoDone == false && manual != NOT)
             {
                 winchMotor->Set(0);
             }
-            if(step == 2)
+            if(step == 3)
             {
                 stepDone = true;
             }
@@ -426,6 +426,8 @@ void Hang::extend()
     {
         disengageBrakeStart = readEncoder();
         disengageBrakeDone = false;
+        hangTimer.Reset();
+        hangTimer.Start();
         extendStep++;
     }
     else if(extendStep == 1 && disengageBrake()){
@@ -453,6 +455,8 @@ void Hang::extendALittle()
 {
     if (extendStep == 0){
         disengageBrakeDone = false;
+        hangTimer.Reset();
+        hangTimer.Start();
         disengageBrakeStart = readEncoder();
 
         extendStep++;
@@ -527,6 +531,7 @@ bool Hang::disengageBrake()
 {  
     std::cout << "read encoder:" << readEncoder() << "dis+kDis" << disengageBrakeStart+kEncoderDisengageBrake << "\n";
     if(readEncoder() <= disengageBrakeStart+kEncoderDisengageBrake){
+        winchMotor->SetIdleMode(ThunderSparkMax::IdleMode::COAST);
         std::cout << "encoder read successfully\n";
         winchMotor->Set(0);
         std::cout << "disengaging brake if\n";
@@ -535,8 +540,12 @@ bool Hang::disengageBrake()
     }
     else if(disengageBrakeDone == false){
         std::cout << "disengaging brake else\n";
-        winchMotor->Set(-kRachetAndPawlBackdriveSpeed);
         ratchetServo.Set(kPawlReverse);
+        if(hangTimer.Get().value() >= .5)
+        {
+            winchMotor->SetIdleMode(ThunderSparkMax::IdleMode::BRAKE);
+            winchMotor->Set(-kRachetAndPawlBackdriveSpeed);
+        }
         return false;
     }
     return false;
