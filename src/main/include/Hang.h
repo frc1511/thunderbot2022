@@ -119,6 +119,8 @@ private:
     void extendALittle();//working
     //configure motor
     void configureMotor();
+    //modified retract function for high/traversal post-flr
+    void retractForHigh();
     //step that the robot is on in the overall process: mid, high, traversal, and what it is doing in general
     int step;
     //broken step 

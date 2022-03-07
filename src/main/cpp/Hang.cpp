@@ -31,6 +31,8 @@ const double kEncoderSlowerHeight = .5;
 const double kEncoderSmallExtension = 2;
 //disengage brake
 const double kEncoderDisengageBrake = -11/360.0;
+//disengage brake height at the end of retractForHigh so we can shift to static arms
+const double kEncoderDisenageInRetract = -2.23; //75% of the way to kEncoderMin from kEncoderSlowerHeight
 //hi ishan
 //servo speed constants
 const double kServoBackward = 1;
@@ -41,6 +43,7 @@ const double kPawlForward = .8;
 const double kPawlReverse = .57;
 
 const double kStringServoTime = 1.5;
+const double kShiftToStaticArmTime = 5;
 
 Hang::Hang() : winchMotor(ThunderSparkMax::create(ThunderSparkMax::MotorID::Hang)) {
     configureMotor();
@@ -194,7 +197,7 @@ if(autoDone == false && manual != NOT)
                 break;
             case EXTEND_A_LITTLE:
                 //brokenExtendALittle();
-                extendALittle();
+                //extendALittle();
                 break;
             case RETRACT:
                 if(retractDone == false){
@@ -313,7 +316,7 @@ if(autoDone == false && manual != NOT)
                 if(highOrTraversal == 1){
                     highOrTraversal++;
                 }
-                extendALittle();
+                //extendALittle();
                 std::cout << "extendALittle" << '\n';
                 stepDone = false;
                 autoDone = false;
@@ -377,6 +380,7 @@ if(autoDone == false && manual != NOT)
             {
                 pivot(true);
                 hangTimer.Reset();
+                hangTimer.Start();
                 std::cout << "pivot" << '\n';
             }
             else if(step == 12)
@@ -453,31 +457,21 @@ void Hang::extend()
 
 void Hang::extendALittle()
 {
-    if (extendStep == 0){
-        disengageBrakeDone = false;
-        hangTimer.Reset();
-        hangTimer.Start();
-        disengageBrakeStart = readEncoder();
-
-        extendStep++;
-    }
-    else if(extendStep == 1 && disengageBrake()){
-            extendStep++;
-    }
-    else if(extendStep == 2){
+    if(extendStep == 0){
         #ifdef TEST_BOARD
         winchMotor->Set(0.6);
         #endif
         extendStep++;
+        winchMotor->Set(kExtendBackdrive);
     }
-    else if (readEncoder() >= kEncoderSmallExtension && extendStep == 3)
+    else if (readEncoder() >= kEncoderSmallExtension && extendStep == 1)
     {
         winchMotor->Set(0);
         engageBrake();
         //std::cout << "completed" << '\n';
         extendStep++;
     }
-    else if(extendStep == 4){
+    else if(extendStep == 2){
         step++;
         manualStep++;
     }
@@ -656,3 +650,45 @@ void Hang::resetEncoder(){
     winchMotor->SetAlternateEncoder(0);
     #endif
 }
+
+
+/*void Hang::retractForHigh()
+{
+    double currentEncoderValue = readEncoder();
+    if(homeSensor.Get() == 1 || currentEncoderValue <= kEncoderMin){
+        winchMotor->Set(0);
+        retractDone = true;
+        hangTimer.Reset();
+        hangTimer.Start();
+    }
+    else if(hangTimer.Get().value() >= kShiftToStaticArmTime)
+    {
+        winchMotor->SetIdleMode(ThunderSparkMax::IdleMode::COAST);
+        manualStep++;
+        step++;
+    }
+    else if(retractCurrentIncrease == false){
+        winchMotor->Set(-kRetractLimitedSpeed);
+        if(winchMotor->GetOutputCurrent() >= 35)
+        {
+            retractCurrentIncrease = true;
+        }
+    }
+    else if(retractCurrentIncrease == true && retractDone == false) {
+        if(currentEncoderValue >= kEncoderSlowHeight){
+            winchMotor->Set(-kHangWinchSpeed);
+            ratchetServo.Set(kPawlForward);
+        }
+        else if(currentEncoderValue <= kEncoderSlowHeight && currentEncoderValue >= kEncoderSlowerHeight){
+            winchMotor->Set(-kHangWinchSlowSpeed); 
+        }
+        else if(currentEncoderValue <= kEncoderSlowerHeight && currentEncoderValue >= kEncoderDisenageInRetract){
+            winchMotor->Set(-kHangWinchSlowerSpeed);
+        }
+        else if(currentEncoderValue<=kEncoderDisenageInRetract && currentEncoderValue >= kEncoderMin){
+            winchMotor->Set(-kHangWinchSlowerSpeed);
+            ratchetServo.Set(kPawlReverse);
+            winchMotor->SetIdleMode(ThunderSparkMax::IdleMode::BRAKE);
+        }
+    }
+}*/
