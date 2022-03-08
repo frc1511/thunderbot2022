@@ -163,6 +163,10 @@ void GamEpiece::cancelShot(){
     intakeDirection = NOTTAKE;
 }
 
+void GamEpiece::recordShooterValues(){
+    shooter.recordShooterValues();
+}
+
 void GamEpiece::sendFeedback() {
     intake.sendFeedback();
     shooter.sendFeedback();

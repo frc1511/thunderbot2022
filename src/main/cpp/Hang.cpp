@@ -98,7 +98,7 @@ void Hang::sendFeedback(){
             targetString = "retracting onto mid bar";
             break;
         case HIGH_TRAVERSAL:
-            if(highOrTraversal == 0)
+            if(hangBar == 2)
             {
                 targetString = "going to/on high";
             }
@@ -295,16 +295,22 @@ if(autoDone == false && manual != NOT)
             }
             else if(step == 2)
             {
-                retract();
+                retract(); //retractForHigh()
                 stringServoRight.Set(kServoStopped);
                 stringServoLeft.Set(kServoStopped);
                 //std::cout << "retract" << '\n';
+            }
+            else if(step == 3)
+            {
+                //extendALittle();
+                stepDone = true;
+                
             }
             else
             {
                 winchMotor->Set(0);
             }
-            if(step == 3)
+            if(step == 4)
             {
                 stepDone = true;
             }
@@ -316,11 +322,10 @@ if(autoDone == false && manual != NOT)
                 if(highOrTraversal == 1){
                     highOrTraversal++;
                 }
-                //extendALittle();
-                std::cout << "extendALittle" << '\n';
                 stepDone = false;
                 autoDone = false;
-            }
+                step++;
+            }/*
             else if (step == 1)
             {
                 hangTimer.Reset();
@@ -391,7 +396,7 @@ if(autoDone == false && manual != NOT)
                 highOrTraversal++;
                 extendStep = 0;
                 std::cout << "windUpString" << '\n';
-            }
+            }*/
             else
             {
                 winchMotor->Set(0);
@@ -462,7 +467,6 @@ void Hang::extendALittle()
         winchMotor->Set(0.6);
         #endif
         extendStep++;
-        winchMotor->Set(kExtendBackdrive);
     }
     else if (readEncoder() >= kEncoderSmallExtension && extendStep == 1)
     {
@@ -652,7 +656,7 @@ void Hang::resetEncoder(){
 }
 
 
-/*void Hang::retractForHigh()
+void Hang::retractForHigh()
 {
     double currentEncoderValue = readEncoder();
     if(homeSensor.Get() == 1 || currentEncoderValue <= kEncoderMin){
@@ -691,4 +695,4 @@ void Hang::resetEncoder(){
             winchMotor->SetIdleMode(ThunderSparkMax::IdleMode::BRAKE);
         }
     }
-}*/
+}

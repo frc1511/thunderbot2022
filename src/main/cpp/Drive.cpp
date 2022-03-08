@@ -680,7 +680,7 @@ void Drive::process() {
     switch (driveMode) {
         case STOPPED:
             // Stop all the swerve modules.
-            setModuleStates({ 0_mps, 0_mps, 0_rad_per_s });
+            setModuleStates({ 0_mps, 0_mps, 0_deg_per_s });
             break;
         case MANUAL:
             // Execute the manual instructions.
@@ -948,7 +948,7 @@ void Drive::exeManual() {
                     angVel = -DRIVE_VISION_MAX_ANGULAR_VELOCITY;
                 }
 
-                if (angVel < DRIVE_VISION_MIN_ANGULAR_VELOCITY && angVel > 0_deg_per_s) {
+                if (angVel < DRIVE_VISION_MIN_ANGULAR_VELOCITY && angVel > 0_rad_per_s) {
                     angVel = DRIVE_VISION_MIN_ANGULAR_VELOCITY;
                 }
                 else if (angVel > -DRIVE_VISION_MIN_ANGULAR_VELOCITY && angVel < 0_deg_per_s) {

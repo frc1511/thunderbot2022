@@ -12,8 +12,8 @@
 #define SHOOTER_FF_VALUE .000187
 
 // Minimum / maximum hood servo positions.
-#define HOOD_MIN_POS 0.5541 //0.433
-#define HOOD_MAX_POS (HOOD_MIN_POS + .154) //0.7
+#define HOOD_MIN_POS 0.5547 //0.433
+#define HOOD_MAX_POS (HOOD_MIN_POS + .19) //0.7
 
 // The maximum RPM of the shooter wheels.
 #define SHOOTER_MAX_RPM 2700 // 5700
@@ -33,7 +33,7 @@
 // The hood position and shooter RPM when the robot is at the far wall.
 #define WALL_HOOD_POS (HOOD_MIN_POS + .1531)
 #define WALL_SHOOTER_RPM 2600
-#define WALL_LIMELIGHT_ANGLE -13.0377_deg
+#define WALL_LIMELIGHT_ANGLE -13.0377
 
 // The hood position and shooter RPM when the robot is at the launch pad.
 #define FAR_LAUNCH_PAD_HOOD_POS (HOOD_MIN_POS + .1311)
@@ -42,30 +42,30 @@
 // The hood position and shooter RPM when the robot is at the tarmac line.
 #define NEAR_LAUNCH_PAD_HOOD_POS (HOOD_MIN_POS + .1038) // .591
 #define NEAR_LAUNCH_PAD_SHOOTER_RPM 2000
-#define NEAR_LAUNCH_PAD_LIMELIGHT_ANGLE -4.3018_deg
+#define NEAR_LAUNCH_PAD_LIMELIGHT_ANGLE -4.3018
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
 #define TARMAC_LINE_HOOD_POS (HOOD_MIN_POS + .06) // .591
 #define TARMAC_LINE_SHOOTER_RPM 1800
-#define TARMAC_LINE_LIMELIGHT_ANGLE 4.025_deg
+#define TARMAC_LINE_LIMELIGHT_ANGLE 4.025
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
-#define HIGH_HUB_SHOT_HOOD_POS (HOOD_MIN_POS + .006) //.560
-#define HIGH_HUB_SHOT_SHOOTER_RPM 1600
+#define HIGH_HUB_SHOT_HOOD_POS (HOOD_MIN_POS + .015) //.560
+#define HIGH_HUB_SHOT_SHOOTER_RPM 1700
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
 #define LOW_HUB_SHOT_HOOD_POS (HOOD_MIN_POS + .111) // .641
 #define LOW_HUB_SHOT_SHOOTER_RPM 1100
-
-#define HUB_LIMELIGHT_ANGLE 17.0777_deg
+  
+#define HUB_LIMELIGHT_ANGLE 17.0777
 
 Shooter::Shooter(Limelight* limelight)
   : limelight(limelight),
     shooterLeftMotor(ThunderSparkMax::create(ThunderSparkMax::MotorID::ShooterLeft)),
     shooterRightMotor(ThunderSparkMax::create(ThunderSparkMax::MotorID::ShooterRight)),
     shooterLeftPID(shooterLeftMotor->GetPIDController()),
-    shooterRightPID(shooterRightMotor->GetPIDController()),
-    hoodInterpolation({
+    shooterRightPID(shooterRightMotor->GetPIDController())
+    /*hoodInterpolation({
         { HUB_LIMELIGHT_ANGLE,              HIGH_HUB_SHOT_HOOD_POS   },
         { TARMAC_LINE_LIMELIGHT_ANGLE,      TARMAC_LINE_HOOD_POS     },
         { NEAR_LAUNCH_PAD_LIMELIGHT_ANGLE,  NEAR_LAUNCH_PAD_HOOD_POS },
@@ -76,8 +76,11 @@ Shooter::Shooter(Limelight* limelight)
         { TARMAC_LINE_LIMELIGHT_ANGLE,      TARMAC_LINE_SHOOTER_RPM     },
         { NEAR_LAUNCH_PAD_LIMELIGHT_ANGLE,  NEAR_LAUNCH_PAD_SHOOTER_RPM },
         { WALL_LIMELIGHT_ANGLE,             WALL_SHOOTER_RPM            },
-    })
+    })*/
 {
+    varsDistance = {HUB_LIMELIGHT_ANGLE, TARMAC_LINE_LIMELIGHT_ANGLE, NEAR_LAUNCH_PAD_LIMELIGHT_ANGLE, WALL_LIMELIGHT_ANGLE};
+    varsHood = {HIGH_HUB_SHOT_HOOD_POS, TARMAC_LINE_HOOD_POS, NEAR_LAUNCH_PAD_HOOD_POS, WALL_HOOD_POS};
+    varsSpeed = {HIGH_HUB_SHOT_SHOOTER_RPM, TARMAC_LINE_SHOOTER_RPM, NEAR_LAUNCH_PAD_SHOOTER_RPM, WALL_SHOOTER_RPM};
     configureMotors();
 }
 
@@ -136,19 +139,20 @@ void Shooter::resetToMode(MatchMode mode) {
 void Shooter::process() {
     switch (shooterMode) {
         case ODOMETRY:
-            targetHoodPosition = hoodInterpolation[limelight->getAngleVertical()].value();
-            targetRPM = rpmInterpolation[limelight->getAngleVertical()].value();
-            /*
-            distance = limelight->getDistance();
-            for(unsigned int i = 0; i <= xVarsHood.size(); i++){
-                if(distance >= xVarsHood[i]){
+            /*targetHoodPosition = hoodInterpolation[limelight->getAngleVertical()].value();
+            targetRPM = rpmInterpolation[limelight->getAngleVertical()].value();*/
+            
+            //distance = limelight->getDistance();
+            distance = limelight->getAngleVertical().value();
+            for(unsigned int i = 0; i < varsDistance.size(); i++){
+                if(distance >= varsDistance[i]){
                     goodNumber = i;
                     break;
                 }
             }
-            targetHoodPosition = interpolation(xVarsHood[goodNumber], yVarsHood[goodNumber], xVarsHood[goodNumber+1], yVarsHood[goodNumber+1], distance);
-            targetRPM = interpolation(xVarsSpeed[goodNumber], yVarsSpeed[goodNumber], xVarsSpeed[goodNumber+1], yVarsSpeed[goodNumber+1], distance);
-            */
+            targetHoodPosition = interpolation(varsDistance[goodNumber], varsHood[goodNumber], varsDistance[goodNumber+1], varsHood[goodNumber+1], distance);
+            targetRPM = interpolation(varsDistance[goodNumber], varsSpeed[goodNumber], varsDistance[goodNumber+1], varsSpeed[goodNumber+1], distance);
+            
             break;
         case FAR_LAUNCH_PAD:
             targetHoodPosition = FAR_LAUNCH_PAD_HOOD_POS;
@@ -269,11 +273,11 @@ void Shooter::changeManualSpeed(bool increaseOrDecrease){
     }
     shooterMode = MANUAL;
 }
-/*
+
 double Shooter::interpolation(double firstX, double firstY, double lastX,  double lastY, double distance){
     return (((lastY-firstY)/(lastX-firstX))*distance)+firstY-(firstX*((lastY-firstY)/(lastX-firstX)));
 }
-*/
+
 
 double Shooter::readPotentiometer(){
     return hoodPotentiometer.Get();
@@ -289,6 +293,13 @@ void Shooter::spinInReverse(bool reverseOrNot){
         shooterRightPID->SetOutputRange(0,SHOOTER_MAX_RPM);
     }*/
     reverse = reverseOrNot;
+}
+
+void Shooter::recordShooterValues(){
+    std::ofstream MyFile;
+    MyFile.open("/home/lvuser/shooterValues.txt", std::fstream::app);
+    MyFile << "rpm: " << std::to_string(manualRPM) << ", pot value: " << std::to_string(readPotentiometer()) << ", limelight angle: " << std::to_string(limelight->getAngleVertical().value()) << ", limelight distance: " << std::to_string(limelight->getDistance()) << "\n";
+    MyFile.close();
 }
 
 void Shooter::sendFeedback() {
