@@ -9,6 +9,7 @@
 #include <frc/Servo.h>
 #include <frc/AnalogPotentiometer.h>
 #include <vector>
+#include <fstream>
 
 class Shooter : public Mechanism {
 public:
@@ -59,6 +60,10 @@ public:
     // changes the manual speed by 100, great for testing, true will increase, false will decrease.
     void changeManualSpeed(bool increaseOrDecrease);
 
+    // :D
+    void recordShooterValues();
+
+
 private:
     Limelight* limelight;
 
@@ -75,16 +80,17 @@ private:
 
     // The target position of the hood.
     double targetHoodPosition = 0;
+    
 
-    /*
+    
     double interpolation(double firstX, double firstY, double lastX,  double lastY, double distance);
     int goodNumber;
     double distance;
-    std::vector<double> xVarsHood = {};
-    std::vector<double> yVarsHood = {};
+    std::vector<double> varsDistance = {};
+    std::vector<double> varsHood = {};
     std::vector<double> xVarsSpeed = {};
-    std::vector<double> yVarsSpeed = {};
-    */
+    std::vector<double> varsSpeed = {};
+    
 
     // 
     double manualRPM = 0;
@@ -110,8 +116,8 @@ private:
     frc::Servo hoodServo {PWM_SHOOTER_HOOD_SERVO};
     frc::AnalogPotentiometer hoodPotentiometer {ANALOG_SHOOTER_HOOD_POTENTIOMETER};
 
-    InterpolatingTreeMap<units::radian_t, double> hoodInterpolation;
-    InterpolatingTreeMap<units::radian_t, double> rpmInterpolation;
+    InterpolatingTreeMap<double, double> hoodInterpolation;
+    InterpolatingTreeMap<double, double> rpmInterpolation;
 
 //hi jeff :D
 // trevor's weird comments below

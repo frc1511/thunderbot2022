@@ -119,14 +119,6 @@ void Controls::doDrive() {
     bool calibrateGyro = driveController.getRawButton(SHARE_BUTTON);
 
     bool driveDisabled = false;
-    
-    if(driveController.getRawButtonPressed(TOUCHPAD_BUTTON)){
-        driveController.testStuff();
-    }
-
-    if(auxController.getRawButtonPressed(TOUCHPAD_BUTTON)){
-        auxController.testStuff();
-    }
 
     if (brickDrive) {
         drive->makeBrick();
@@ -249,12 +241,17 @@ void Controls::doAux() {
             else if(auxController.getRawButton(OPTIONS_BUTTON)){
                 hang->commandManual(Hang::DRIVE_DOWN);
             }
+            else if(auxController.getRawButtonReleased(OPTIONS_BUTTON)){
+                hang->commandManual(Hang::NOT);
+            }
         }
     }
     else {
         
         // Manual and Normal Aux Controls
-        
+        if(auxController.getRawButtonPressed(TOUCHPAD_BUTTON)) {
+            gamEpiece->recordShooterValues();
+        }
         if (auxController.getRawButton(SQUARE_BUTTON)) {
             lastPressedMode = Shooter::TARMAC_LINE;
         }

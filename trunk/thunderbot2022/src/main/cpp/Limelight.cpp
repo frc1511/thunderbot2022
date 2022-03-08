@@ -1,10 +1,10 @@
 #include "Limelight.h"
 
-#define LIMELIGHT_ANGLE 30  // degrees
+#define LIMELIGHT_ANGLE 29.3  // degrees
 
 #define LIMELIGHT_HEIGHT 43 // inches
 
-#define HUB_HEIGHT 12 // inches
+#define HUB_HEIGHT 104 // inches
 
 Limelight::Limelight() {
     table = nt::NetworkTableInstance::GetDefault().GetTable("limelight-homer");

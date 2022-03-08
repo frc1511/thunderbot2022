@@ -101,6 +101,8 @@ public:
     // cancels the process of shooting, use when something goes wrong and it tries to shoot whne it shouldnt, has absolute control, very powerful
     void cancelShot();
 
+    void recordShooterValues();
+
 
 private:
     Limelight* limelight;
