@@ -178,6 +178,8 @@ private:
 //mutually exclusive
     //command to change the target bar
     void commandAuto();
+    // command to manually change the target bar
+    void setCommandAutoOverride();
     //command to do manual actions
     void commandManual(Manual manualCommands);
     //make command enum

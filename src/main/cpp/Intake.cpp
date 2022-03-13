@@ -152,14 +152,14 @@ void Intake::switchStates() // command switches
         }
         else
         {
-            if (countPending)
+            /*if (countPending)
             { // ball possibly there....
                 currentState = STATE_PRE_COUNT;
             }
             else
             { // else keep looking
-                currentState = STATE_INTAKE_ONE_BALL;
-            }
+                */currentState = STATE_INTAKE_ONE_BALL;
+            //}
         }
         break;
     case OUTTAKE:
@@ -182,12 +182,16 @@ void Intake::switchStates() // command switches
         }
         break;
     }
-    if (targetDirection != INTAKE)
+    if (countPending)
+    { // ball possibly there....
+        currentState = STATE_PRE_COUNT;
+    }
+    /*if (targetDirection != INTAKE)
     {
         ballCountFix.Stop();
         ballCountFix.Reset();
         countPending = false;
-    }
+    }*/
 }
 void Intake::process()
 {
