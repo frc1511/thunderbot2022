@@ -216,11 +216,14 @@ void Controls::doAux() {
             if (auxController.getRawButtonPressed(CIRCLE_BUTTON)) {
                 hang->commandManual(Hang::EXTEND);
             }
+            else if(auxController.getRawButtonReleased(CIRCLE_BUTTON)){
+                hang->commandManual(Hang::ENGAGE_BRAKE);
+            }
             else if (auxController.getRawButtonPressed(SQUARE_BUTTON)) {
                 hang->commandManual(Hang::RETRACT);
             }
             else if (auxController.getRawButtonPressed(TRIANGLE_BUTTON)) {
-                hang->commandManual(Hang::ENGAGE_BRAKE);
+                hang->commandManual(Hang::DISENGAGE_BRAKE);
             }
             else if (auxController.getRawButtonPressed(CROSS_BUTTON)) {
                 hang->commandManual(Hang::EXTEND_A_LITTLE);
@@ -367,6 +370,8 @@ void Controls::doSwitchPanel() {
     gamePieceManual = switchPanel.GetRawButton(1);
     if (hangActive) {
         hangManual = switchPanel.GetRawButton(3);
+        if(switchPanel.GetRawButton(4) == true)
+            hang->setIsLow(true);
     }
     isCraterMode = switchPanel.GetRawButton(10);
     robotCentric = switchPanel.GetRawButton(5);
