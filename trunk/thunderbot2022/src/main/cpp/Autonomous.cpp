@@ -321,7 +321,7 @@ void Autonomous::leftTwoBall() {
 #endif
     }
     else if (step == 3) {
-        drive->cmdDriveTranslate(0.1_in, 0.1_in + 3_in, -55_deg);
+        drive->cmdDriveTranslate(0.1_in - 2_in, 0.1_in, -55_deg);
         step++;
     }
     else if (step == 4 && drive->cmdIsFinished()) {
@@ -369,7 +369,7 @@ void Autonomous::centerTwoBall() {
     }
     else if(step == 3 && drive->cmdIsFinished()) {
         // Drive to the tarmac line.
-        drive->cmdDriveTranslate(-2_ft + 20_in - 14_in, 2_ft - 20_in + 11_in - 1.5_ft - 4_in - 4_in, 68_deg - 25_deg);
+        drive->cmdDriveTranslate(-2_ft + 20_in - 14_in, 2_ft - 20_in + 11_in - 1.5_ft - 4_in - 4_in, 68_deg - 15_deg - 10_deg/* 68_deg - 25_deg*/);
         step++;
     }
     else if(step == 4 || step == 5) {
@@ -482,7 +482,7 @@ void Autonomous::rightShortThreeBall() {
     }
     else if(step == 12 && drive->cmdIsFinished()) {
         // Drive to the tarmac line.
-        drive->cmdDriveTranslate(-2_ft + 20_in, 2_ft - 20_in - 3_in, 68_deg - 15_deg);
+        drive->cmdDriveTranslate(-2_ft + 20_in, 2_ft - 20_in - 3_in, 68_deg - 15_deg - 10_deg);
         step++;
     }
     else if(step == 13) {

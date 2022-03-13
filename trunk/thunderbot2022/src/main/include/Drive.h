@@ -47,7 +47,7 @@
 // The factor to multiply the angle by to accelerate and decelerate.
 #define DRIVE_CMD_ANGULAR_VELOCITY_FACTOR 5
 
-#define DRIVE_VISION_MAX_ANGULAR_VELOCITY 100_deg_per_s
+#define DRIVE_VISION_MAX_ANGULAR_VELOCITY 200_deg_per_s
 #define DRIVE_VISION_MIN_ANGULAR_VELOCITY 20_deg_per_s
 #define DRIVE_VISION_ANGULAR_VELOCITY_FACTOR 5
 

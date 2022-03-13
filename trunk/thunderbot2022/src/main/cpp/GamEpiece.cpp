@@ -1,6 +1,8 @@
 #include "GamEpiece.h"
 #include <iostream>
 
+#define SHOT_TIMER_TIME .5 //seconds
+
 GamEpiece::GamEpiece(Limelight* limelight)
   : limelight(limelight) {
 }
@@ -95,6 +97,20 @@ void GamEpiece::process() {
                 desiredShooterState = WARMUP_SHOOTER;
             }
             break;
+
+            /**
+            if(shotTimer.Get().value() >= SHOT_TIMER_TIME){
+                    shooterState = SHOOTING;
+                    intake.setIntakeDirection(Intake::SHOOTING);
+                    desiredShooterState = WARMUP_SHOOTER;
+                    shotTimer.Stop();
+                    shotTimer.Reset();
+                }
+                shotTimer.Start();
+            }
+            else{
+                shotTimer.Stop();
+                shotTimer.Reset();*/
         case(SHOOTING):
             if(intake.finishedShooting()){ // intake shot a ball so it is done 
                 intake.setIntakeDirection(Intake::NOTTAKE);

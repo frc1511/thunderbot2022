@@ -41,17 +41,17 @@
 // make button :D
 // The hood position and shooter RPM when the robot is at the tarmac line.
 #define NEAR_LAUNCH_PAD_HOOD_POS (HOOD_MIN_POS + .1038) // .591
-#define NEAR_LAUNCH_PAD_SHOOTER_RPM 2000
+#define NEAR_LAUNCH_PAD_SHOOTER_RPM 2300
 #define NEAR_LAUNCH_PAD_LIMELIGHT_ANGLE -4.3018
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
 #define TARMAC_LINE_HOOD_POS (HOOD_MIN_POS + .06) // .591
-#define TARMAC_LINE_SHOOTER_RPM 1800
+#define TARMAC_LINE_SHOOTER_RPM 1900
 #define TARMAC_LINE_LIMELIGHT_ANGLE 4.025
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
 #define HIGH_HUB_SHOT_HOOD_POS (HOOD_MIN_POS + .015) //.560
-#define HIGH_HUB_SHOT_SHOOTER_RPM 1700
+#define HIGH_HUB_SHOT_SHOOTER_RPM 1800
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
 #define LOW_HUB_SHOT_HOOD_POS (HOOD_MIN_POS + .111) // .641
@@ -65,7 +65,8 @@ Shooter::Shooter(Limelight* limelight)
     shooterRightMotor(ThunderSparkMax::create(ThunderSparkMax::MotorID::ShooterRight)),
     shooterLeftPID(shooterLeftMotor->GetPIDController()),
     shooterRightPID(shooterRightMotor->GetPIDController())
-    /*hoodInterpolation({
+#ifdef PETERS_INTERPOLATION
+    ,hoodInterpolation({
         { HUB_LIMELIGHT_ANGLE,              HIGH_HUB_SHOT_HOOD_POS   },
         { TARMAC_LINE_LIMELIGHT_ANGLE,      TARMAC_LINE_HOOD_POS     },
         { NEAR_LAUNCH_PAD_LIMELIGHT_ANGLE,  NEAR_LAUNCH_PAD_HOOD_POS },
@@ -76,11 +77,14 @@ Shooter::Shooter(Limelight* limelight)
         { TARMAC_LINE_LIMELIGHT_ANGLE,      TARMAC_LINE_SHOOTER_RPM     },
         { NEAR_LAUNCH_PAD_LIMELIGHT_ANGLE,  NEAR_LAUNCH_PAD_SHOOTER_RPM },
         { WALL_LIMELIGHT_ANGLE,             WALL_SHOOTER_RPM            },
-    })*/
+    })
+#endif
 {
+#ifndef PETERS_INTERPOLATION
     varsDistance = {HUB_LIMELIGHT_ANGLE, TARMAC_LINE_LIMELIGHT_ANGLE, NEAR_LAUNCH_PAD_LIMELIGHT_ANGLE, WALL_LIMELIGHT_ANGLE};
     varsHood = {HIGH_HUB_SHOT_HOOD_POS, TARMAC_LINE_HOOD_POS, NEAR_LAUNCH_PAD_HOOD_POS, WALL_HOOD_POS};
     varsSpeed = {HIGH_HUB_SHOT_SHOOTER_RPM, TARMAC_LINE_SHOOTER_RPM, NEAR_LAUNCH_PAD_SHOOTER_RPM, WALL_SHOOTER_RPM};
+#endif
     configureMotors();
 }
 
@@ -139,10 +143,13 @@ void Shooter::resetToMode(MatchMode mode) {
 void Shooter::process() {
     switch (shooterMode) {
         case ODOMETRY:
-            /*targetHoodPosition = hoodInterpolation[limelight->getAngleVertical()].value();
-            targetRPM = rpmInterpolation[limelight->getAngleVertical()].value();*/
+#ifdef PETERS_INTERPOLATION
+            targetHoodPosition = hoodInterpolation[limelight->getAngleVertical().value()].value();
+            targetRPM = rpmInterpolation[limelight->getAngleVertical().value()].value();
+#else
             
             //distance = limelight->getDistance();
+            
             distance = limelight->getAngleVertical().value();
             for(unsigned int i = 0; i < varsDistance.size(); i++){
                 if(distance >= varsDistance[i]){
@@ -152,7 +159,7 @@ void Shooter::process() {
             }
             targetHoodPosition = interpolation(varsDistance[goodNumber], varsHood[goodNumber], varsDistance[goodNumber+1], varsHood[goodNumber+1], distance);
             targetRPM = interpolation(varsDistance[goodNumber], varsSpeed[goodNumber], varsDistance[goodNumber+1], varsSpeed[goodNumber+1], distance);
-            
+#endif
             break;
         case FAR_LAUNCH_PAD:
             targetHoodPosition = FAR_LAUNCH_PAD_HOOD_POS;
@@ -274,9 +281,12 @@ void Shooter::changeManualSpeed(bool increaseOrDecrease){
     shooterMode = MANUAL;
 }
 
+#ifndef PETERS_INTERPOLATION
+
 double Shooter::interpolation(double firstX, double firstY, double lastX,  double lastY, double distance){
     return (((lastY-firstY)/(lastX-firstX))*distance)+firstY-(firstX*((lastY-firstY)/(lastX-firstX)));
 }
+#endif
 
 
 double Shooter::readPotentiometer(){

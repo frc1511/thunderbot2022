@@ -20,9 +20,9 @@ const double kExtendBackdrive = .1;
 //minimum the encoder will go
 const double kEncoderMin = -3.23;//-2.99121;
 //near max
-const double kEncoderNearMax = 13.1;
+const double kEncoderNearMax = 11.497; // max is really 13.1;
 //max height
-const double kEncoderMax = 13.64;
+const double kEncoderMax = 11.497; // max is really 13.64;
 //height corresponding to kHangWinchSlowSpeed
 const double kEncoderSlowHeight = kEncoderMax*.4;
 //height corresponding to kHangWinchSlowerSpeed
@@ -618,6 +618,12 @@ void Hang::commandAuto()
             }
             break;
     }
+}
+
+void Hang::setCommandAutoOverride() {
+    //overridingStep = override;
+    winchMotor->Set(0);
+    step++;                     
 }
 
 void Hang::commandManual(Manual manualCommands){

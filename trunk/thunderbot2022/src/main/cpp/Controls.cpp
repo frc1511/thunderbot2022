@@ -206,6 +206,9 @@ void Controls::doAux() {
         gamEpiece->setIntakeDirection(GamEpiece::NOTTAKE);
         gamEpiece->setShooterWarmUpEnabled(Shooter::TARMAC_LINE, false);
         if (!hangManual) {
+            if(auxController.getRawButtonPressed(LEFT_STICK_PRESS)) {
+                hang->setCommandAutoOverride();
+            }
             if (auxController.getRawButtonPressed(RIGHT_STICK_PRESS)) {   
                 hang->commandAuto();
             }
@@ -363,7 +366,7 @@ void Controls::doSwitchPanel() {
     hangActive = switchPanel.GetRawButton(8); 
     gamePieceManual = switchPanel.GetRawButton(1);
     if (hangActive) {
-        hangManual = switchPanel.GetRawButton(2);
+        hangManual = switchPanel.GetRawButton(3);
     }
     isCraterMode = switchPanel.GetRawButton(10);
     robotCentric = switchPanel.GetRawButton(5);

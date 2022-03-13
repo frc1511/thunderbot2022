@@ -11,6 +11,8 @@
 #include <vector>
 #include <fstream>
 
+#define PETERS_INTERPOLATION
+
 class Shooter : public Mechanism {
 public:
     Shooter(Limelight* limelight);
@@ -81,7 +83,7 @@ private:
     // The target position of the hood.
     double targetHoodPosition = 0;
     
-
+#ifndef PETERS_INTERPOLATION
     
     double interpolation(double firstX, double firstY, double lastX,  double lastY, double distance);
     int goodNumber;
@@ -90,6 +92,8 @@ private:
     std::vector<double> varsHood = {};
     std::vector<double> xVarsSpeed = {};
     std::vector<double> varsSpeed = {};
+
+#endif
     
 
     // 
@@ -116,8 +120,12 @@ private:
     frc::Servo hoodServo {PWM_SHOOTER_HOOD_SERVO};
     frc::AnalogPotentiometer hoodPotentiometer {ANALOG_SHOOTER_HOOD_POTENTIOMETER};
 
+#ifdef PETERS_INTERPOLATION
+
     InterpolatingTreeMap<double, double> hoodInterpolation;
     InterpolatingTreeMap<double, double> rpmInterpolation;
+
+#endif
 
 //hi jeff :D
 // trevor's weird comments below
