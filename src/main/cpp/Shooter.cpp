@@ -46,12 +46,12 @@
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
 #define TARMAC_LINE_HOOD_POS (HOOD_MIN_POS + .06) // .591
-#define TARMAC_LINE_SHOOTER_RPM 1900
-#define TARMAC_LINE_LIMELIGHT_ANGLE 4.025
+#define TARMAC_LINE_SHOOTER_RPM 1750
+#define TARMAC_LINE_LIMELIGHT_ANGLE 4.23 // 4.025
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
-#define HIGH_HUB_SHOT_HOOD_POS (HOOD_MIN_POS + .015) //.560
-#define HIGH_HUB_SHOT_SHOOTER_RPM 1800
+#define HIGH_HUB_SHOT_HOOD_POS (HOOD_MIN_POS + .012) //.564
+#define HIGH_HUB_SHOT_SHOOTER_RPM 1600
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
 #define LOW_HUB_SHOT_HOOD_POS (HOOD_MIN_POS + .111) // .641

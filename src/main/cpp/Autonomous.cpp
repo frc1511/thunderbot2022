@@ -369,7 +369,7 @@ void Autonomous::centerTwoBall() {
     }
     else if(step == 3 && drive->cmdIsFinished()) {
         // Drive to the tarmac line.
-        drive->cmdDriveTranslate(-2_ft + 20_in - 14_in, 2_ft - 20_in + 11_in - 1.5_ft - 4_in - 4_in, 68_deg - 15_deg - 10_deg/* 68_deg - 25_deg*/);
+        drive->cmdDriveTranslate(-2_ft + 20_in - 14_in, 2_ft - 20_in + 11_in - 1.5_ft - 4_in - 4_in, 68_deg - 15_deg - 10_deg);
         step++;
     }
     else if(step == 4 || step == 5) {

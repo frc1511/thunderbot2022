@@ -267,7 +267,7 @@ void Controls::doAux() {
             }
         }
         else if (auxController.getRawButton(CROSS_BUTTON)) {
-            // lastPressedMode = Shooter::ODOMETRY;
+            lastPressedMode = Shooter::ODOMETRY;
         }
         else if(auxController.getRawButton(TRIANGLE_BUTTON)) {
             if(highOrLow){
