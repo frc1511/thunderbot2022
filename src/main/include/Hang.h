@@ -92,6 +92,8 @@ private:
     void pivot(bool armsForward);//working
     //reads encoder
     double readEncoder();
+    //low bar extend
+    void lowExtend();
     //sets encoder
     void resetEncoder();
     //retract function if sensors broke
@@ -142,6 +144,9 @@ private:
     bool disengageBrakeDone;
     bool retractDone;
     bool retractCurrentIncrease;
+    void setIsLow(bool isLow);
+    bool getIsLow();
+    bool isLowHeight;
 
 
     //manual enumerator for actions
@@ -161,9 +166,13 @@ private:
     Manual manual;
     Manual currentManualState;
     //bar that the robot is going to
-    enum HangState{HIGH_TRAVERSAL, MID, MID_2, NOT_ON_BAR, STOP};
+    enum HangState{HIGH_TRAVERSAL, MID, MID_2, NOT_ON_BAR, STOP, LOW, LOW_2};
     //enumerator variable thing
     HangState targetStage;
+
+    enum ExtendLevel{LOW_HEIGHT, MID_HEIGHT, HIGH_TRAVERSAL_HEIGHT};
+    ExtendLevel extendLevel;
+
 
     Hang();
     ~Hang();
@@ -182,6 +191,7 @@ private:
     void setCommandAutoOverride();
     //command to do manual actions
     void commandManual(Manual manualCommands);
+    void commandHeight(ExtendLevel extendLevelCommand);
     //make command enum
 };
 
