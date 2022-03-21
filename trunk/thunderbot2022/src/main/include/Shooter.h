@@ -48,6 +48,7 @@ public:
         FAR_LAUNCH_PAD,        // shooting with back of robot contacting the far launch pad
         NEAR_LAUNCH_PAD,   // shooting with back of robot contacting the near launch pad
         TARMAC_LINE,       // shooting with front edge of robot on line at outer edge of tarmac
+        TARMAC,
         HIGH_HUB_SHOT,     // shooting with the front edge of the robot at the hub 
         LOW_HUB_SHOT,      // shooting with the front edge of the robot at the hub 
         MANUAL,            // will be controlled manually using manual function for the hood and

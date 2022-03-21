@@ -22,7 +22,8 @@ const double kEncoderMin = -3.23;//-2.99121;
 //near max
 const double kEncoderMidHeight = 11.497; // max is really 13.1;
 //max height
-const double kEncoderMax = 11.497; // max is really 13.64;
+const double kEncoderMax = 13.64; // max is really 13.64;
+const double kEncoderHalfRetracted = 5.205;
 //height corresponding to kHangWinchSlowSpeed
 const double kEncoderSlowHeight = kEncoderMax*.4;
 //height corresponding to kHangWinchSlowerSpeed
@@ -89,6 +90,7 @@ void Hang::resetToMode(MatchMode mode){
         retractDone = false;
         retractCurrentIncrease = false;
         isLowHeight = false;
+        goingForHigh = false;
     }
 }
 
@@ -170,7 +172,7 @@ void Hang::sendFeedback(){
             break;
     }
 
-
+    Feedback::sendBoolean("Hang", "going for high bar", goingForHigh);
     Feedback::sendDouble("Hang", "encoder value", readEncoder());
     Feedback::sendDouble("Hang", "winch motor speed", winchMotor->Get());
     Feedback::sendDouble("Hang", "Max extending arm height", hangMaxHeight);
@@ -309,12 +311,16 @@ if(autoDone == false && manual != NOT)
                 stringServoRight.Set(kServoStopped);
                 stringServoLeft.Set(kServoStopped);
             }
+            else if(step == 3){
+                stepDone = true;
+            }
             break;
         case MID:
             if (step == 0)
             {   
                 pivot(true);
                 extendStep = 0;
+                extendLevel = MID_HEIGHT;
                 std::cout << "reset" << '\n';
             }
             else if(step == 1)
@@ -356,9 +362,35 @@ if(autoDone == false && manual != NOT)
                 std::cout << "reset" << '\n';
             }
             else if(step == 2){
-                retract();
+                if(goingForHigh){
+                    retractForHigh();
+                    std::cout << winchMotor->GetOutputCurrent() << "          1" << '\n';
+                    extendStep = 0;
+                }
+                else{
+                    retract();
+                }
                 stringServoRight.Set(kServoStopped);
                 stringServoLeft.Set(kServoStopped);
+            }
+            else if((step == 3 && !goingForHigh) || (step == 6 && goingForHigh)){ // for normal mid it is step 3, for high bar mid it is 6
+                stepDone = true;
+            }
+            if(goingForHigh)
+            {
+                if(step == 3){
+                    extendALittle();
+                    std::cout << winchMotor->GetOutputCurrent() << "       2" << '\n';
+                }
+                else if(step == 4){
+                    hangTimer.Reset();
+                    hangTimer.Start();
+                    step++;
+                    //resetting
+                }
+                else if(step == 5){
+                    unwindString();
+                }
             }
             break;
         case HIGH_TRAVERSAL:
@@ -371,7 +403,7 @@ if(autoDone == false && manual != NOT)
                 stepDone = false;
                 autoDone = false;
                 step++;
-            }/*
+            }
             else if (step == 1)
             {
                 hangTimer.Reset();
@@ -383,6 +415,10 @@ if(autoDone == false && manual != NOT)
             {
                 //both functions add 1 to step
                 unwindString();
+                
+            }
+            else if(step == 3)
+            {
                 pivot(false);
                 std::cout << "pivot" << '\n';
             }
@@ -390,6 +426,7 @@ if(autoDone == false && manual != NOT)
             {
                 extendStep = 0;
                 step++;
+                extendLevel = HIGH_TRAVERSAL_HEIGHT;
                 std::cout << "resetting" << '\n';
             }
             else if (step == 5)
@@ -424,25 +461,45 @@ if(autoDone == false && manual != NOT)
             }
             else if(step == 10)
             {
-                retract();
-                std::cout << "retract" << '\n';
+                retractMaxToHalf();
+                //pivot(true);
+                //hangTimer.Reset();
+                //hangTimer.Start();
+                std::cout << "retracting max to half" << '\n';
             }
             else if(step == 11)
             {
                 pivot(true);
                 hangTimer.Reset();
                 hangTimer.Start();
-                std::cout << "pivot" << '\n';
+                
+                //windUpString();
+                std::cout << "pivoting" << '\n';
+                
             }
             else if(step == 12)
             {
-                windUpString();
+                    windUpString();
+                /*retract();
+                std::cout << "retract" << '\n';
+                autoDone = true;
+                stepDone = true;
+                highOrTraversal++;
+                extendStep = 0;*/
+                retractCurrentIncrease = false;
+                std::cout << "winding string" << '\n';
+            }
+            else if(step == 13)
+            {
+                retractHalfToFull();
+                std::cout <<"retracting half to full" << "\n";
+            }
+            else if(step == 14){
                 autoDone = true;
                 stepDone = true;
                 highOrTraversal++;
                 extendStep = 0;
-                std::cout << "windUpString" << '\n';
-            }*/
+            }
             else
             {
                 winchMotor->Set(0);
@@ -512,6 +569,11 @@ void Hang::extend()
                 }
                 break;
             case HIGH_TRAVERSAL_HEIGHT:
+                if(readEncoder() >= kEncoderMax){
+                    step++;
+                    manualStep++;
+                    winchMotor->Set(0);
+                }
                 break;
         }
         #ifdef TEST_BOARD
@@ -527,10 +589,10 @@ void Hang::extendALittle()
         winchMotor->Set(0.6);
         #endif
         extendStep++;
+        winchMotor->Set(0);
     }
     else if (readEncoder() >= kEncoderSmallExtension && extendStep == 1)
     {
-        winchMotor->Set(0);
         engageBrake();
         //std::cout << "completed" << '\n';
         extendStep++;
@@ -678,10 +740,10 @@ void Hang::commandAuto()
             }
             break;
         case MID_2:
-            if(stepDone == true)
+            if(stepDone == true && goingForHigh == true)
             {   
                 hangBar++;
-               // targetStage = HIGH_TRAVERSAL;
+                targetStage = HIGH_TRAVERSAL;
                 step = 0;
                 stepDone = false;
             }
@@ -748,6 +810,7 @@ void Hang::retractForHigh()
     double currentEncoderValue = readEncoder();
     if(homeSensor.Get() == 1 || currentEncoderValue <= kEncoderMin){
         winchMotor->Set(0);
+        std::cout <<"finished" << '\n';
         retractDone = true;
         hangTimer.Reset();
         hangTimer.Start();
@@ -789,4 +852,62 @@ void Hang::setIsLow(bool isLow){
 }
 bool Hang::getIsLow(){
     return isLowHeight;
+}
+
+void Hang::setGoingForHigh(bool highOrNot){
+    if(targetStage == NOT_ON_BAR)
+    {
+        goingForHigh = highOrNot;
+    }
+}
+
+void Hang::retractMaxToHalf()
+{
+    ratchetServo.Set(kPawlForward);
+    double currentEncoderValue = readEncoder();
+    if(currentEncoderValue <= kEncoderHalfRetracted){
+        winchMotor->Set(0);
+        manualStep++;
+        step++;
+        retractDone = true;
+    }
+    else if(retractCurrentIncrease == false){
+        winchMotor->Set(-kRetractLimitedSpeed);
+        if(winchMotor->GetOutputCurrent() >= 35)
+        {
+            retractCurrentIncrease = true; 
+        }
+    }
+    else if(retractCurrentIncrease == true) {
+        if(currentEncoderValue >= kEncoderHalfRetracted){
+            winchMotor->Set(-kHangWinchSpeed);
+        }
+    }
+}
+
+void Hang::retractHalfToFull()
+{
+    ratchetServo.Set(kPawlForward);
+    double currentEncoderValue = readEncoder();
+    if(homeSensor.Get() == 1 || currentEncoderValue <= kEncoderMin){
+        winchMotor->Set(0);
+        manualStep++;
+        step++;
+        retractDone = true;
+    }
+    else if(retractCurrentIncrease == false){
+        winchMotor->Set(-kRetractLimitedSpeed);
+        if(winchMotor->GetOutputCurrent() >= 35)
+        {
+            retractCurrentIncrease = true; 
+        }
+    }
+    else if(retractCurrentIncrease == true) {
+        if(currentEncoderValue <= kEncoderHalfRetracted && currentEncoderValue >= kEncoderSlowerHeight){
+            winchMotor->Set(-kHangWinchSpeed);
+        }
+    }
+    else if(currentEncoderValue <= kEncoderSlowerHeight && currentEncoderValue >= kEncoderMin){
+        winchMotor->Set(-kHangWinchSlowerSpeed);
+    }
 }

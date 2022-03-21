@@ -175,10 +175,10 @@ void Controls::doDrive() {
     // If driving regular.
     if (fabs(xDriveVelocity) > AXIS_DEADZONE || fabs(yDriveVelocity) > AXIS_DEADZONE) {
         if (fabs(xDriveVelocity) > AXIS_DEADZONE) {
-            finalXVelocity = xDriveVelocity;
+            finalXVelocity = xDriveVelocity * .957;
         }
         if (fabs(yDriveVelocity) > AXIS_DEADZONE) {
-            finalYVelocity = yDriveVelocity;
+            finalYVelocity = yDriveVelocity * .957;
         }
     }
     // If driving slow.
@@ -190,6 +190,9 @@ void Controls::doDrive() {
             finalYVelocity = ySlowDriveVelocity * SLOW_DRIVE_FACTOR;
         }
     }
+
+    std::pow(finalXVelocity, 3);
+    std::pow(finalYVelocity, 3);
 
     if (!driveDisabled) {
         drive->manualDrive(finalXVelocity, -finalYVelocity, -finalRotateVelocity);
@@ -259,7 +262,7 @@ void Controls::doAux() {
             gamEpiece->recordShooterValues();
         }
         if (auxController.getRawButton(SQUARE_BUTTON)) {
-            lastPressedMode = Shooter::TARMAC_LINE;
+            lastPressedMode = Shooter::TARMAC;
         }
         else if (auxController.getRawButton(CIRCLE_BUTTON)) {
             if(nearOrFar){
@@ -370,8 +373,8 @@ void Controls::doSwitchPanel() {
     gamePieceManual = switchPanel.GetRawButton(1);
     if (hangActive) {
         hangManual = switchPanel.GetRawButton(3);
-        if(switchPanel.GetRawButton(4) == true)
-            hang->setIsLow(true);
+        hang->setIsLow(switchPanel.GetRawButton(4));
+        hang->setGoingForHigh(switchPanel.GetRawButton(2)); // pressed means high bar
     }
     isCraterMode = switchPanel.GetRawButton(10);
     robotCentric = switchPanel.GetRawButton(5);
