@@ -459,6 +459,9 @@ void Controls::sendFeedback(){
         case(Shooter::MANUAL):
             mode = "manual";
             break;
+        case(Shooter::TARMAC):
+            mode = "tarmac";
+            break;
     }
     Feedback::sendString("controls", "last pressed shooter mode", mode.c_str());
     Feedback::sendDouble("thunderdashboard", "frontcamera", whichCamera);
