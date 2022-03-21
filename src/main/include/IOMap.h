@@ -78,6 +78,7 @@ extern bool isCraterMode;
     #define DIO_STORAGE_BANNER_STAGE_ONE 2
     #define DIO_STORAGE_BANNER_STAGE_TWO 3
     #define DIO_SHOOTER_BANNER_LEFT_ROBOT 4
+    #define DIO_HANG_REFLECTIVE_SENSOR 5
 
     //ANALOG
     #define ANALOG_SHOOTER_HOOD_POTENTIOMETER 0
@@ -92,8 +93,8 @@ extern bool isCraterMode;
     #define PCM1_HANG_PIVOT_2_EXTEND_PISTON 4
     #define PCM1_HANG_PIVOT_2_RETRACT_PISTON 5
 
-    #define PCM1_HANG_BRAKE_PISTON_RETRACT 6
-    #define PCM1_HANG_BRAKE_PISTON_EXTEND 7
+    #define PCM1_HANG_STATIC_PISTON_RETRACT 6
+    #define PCM1_HANG_STATIC_PISTON_EXTEND 7
 
 #else // for test board
 
