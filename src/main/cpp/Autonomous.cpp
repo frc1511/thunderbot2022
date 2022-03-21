@@ -465,7 +465,7 @@ void Autonomous::rightShortThreeBall() {
     }
     else if(step == 10) {
         // Drive to ball 2.
-        drive->cmdDriveTranslate(-28_in - 3_in - 8_in, -31_in - 27_in - 3_in - 8_in, 158_deg - 15_deg - 10_deg);
+        drive->cmdDriveTranslate(-28_in - 3_in - 8_in, -31_in - 27_in - 3_in - 8_in, 158_deg - 15_deg - 10_deg + 7_deg);
         step++;
     }
     else if (step == 11) {

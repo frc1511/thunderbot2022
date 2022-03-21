@@ -123,6 +123,10 @@ private:
     void configureMotor();
     //modified retract function for high/traversal post-flr
     void retractForHigh();
+    //retracts from max extension to halfway
+    void retractMaxToHalf();
+    //retracts from half extension to fully in
+    void retractHalfToFull();
     //step that the robot is on in the overall process: mid, high, traversal, and what it is doing in general
     int step;
     //broken step 
@@ -146,6 +150,8 @@ private:
     bool retractCurrentIncrease;
     void setIsLow(bool isLow);
     bool getIsLow();
+    void setGoingForHigh(bool highOrNot);
+    bool goingForHigh; // true is going for high, false is going for mid
     bool isLowHeight;
 
 

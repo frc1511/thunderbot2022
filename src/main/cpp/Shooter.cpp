@@ -45,9 +45,13 @@
 #define NEAR_LAUNCH_PAD_LIMELIGHT_ANGLE -4.3018
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
-#define TARMAC_LINE_HOOD_POS (HOOD_MIN_POS + .06) // .591
-#define TARMAC_LINE_SHOOTER_RPM 1750
+#define TARMAC_LINE_HOOD_POS (HOOD_MIN_POS + .0703) // .625
+#define TARMAC_LINE_SHOOTER_RPM 1800
 #define TARMAC_LINE_LIMELIGHT_ANGLE 4.23 // 4.025
+
+#define TARMAC_HOOD_POS (HOOD_MIN_POS + .0573) // 0.612   0.598   0.586
+#define TARMAC_SHOOTER_RPM 1600
+#define TARMAC_LIMELIGHT_ANGLE 4.0
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
 #define HIGH_HUB_SHOT_HOOD_POS (HOOD_MIN_POS + .012) //.564
@@ -172,6 +176,10 @@ void Shooter::process() {
         case TARMAC_LINE:
             targetHoodPosition = TARMAC_LINE_HOOD_POS;
             targetRPM = TARMAC_LINE_SHOOTER_RPM;
+            break;
+        case TARMAC:
+            targetHoodPosition = TARMAC_HOOD_POS;
+            targetRPM = TARMAC_SHOOTER_RPM;
             break;
         case HIGH_HUB_SHOT:
             targetHoodPosition = HIGH_HUB_SHOT_HOOD_POS;
@@ -326,6 +334,9 @@ void Shooter::sendFeedback() {
             break;
         case TARMAC_LINE:
             modeString = "Tarmac Line";
+            break;
+        case TARMAC:
+            modeString = "Tarmac";
             break;
         case HIGH_HUB_SHOT:
             modeString = "High Hub Shot";

@@ -32,9 +32,9 @@
 #include <iostream>
 
 // The maximum speed of the chassis during manual drive.
-#define DRIVE_MANUAL_MAX_VELOCITY 6_mps
+#define DRIVE_MANUAL_MAX_VELOCITY 5_mps
 // The maximum angular speed of the chassis during manual drive.
-#define DRIVE_MANUAL_MAX_ANGULAR_VELOCITY 3.14_rad_per_s * 2
+#define DRIVE_MANUAL_MAX_ANGULAR_VELOCITY 3.14_rad_per_s * 2 * .75
 
 // The maximum speed of the chassis during a drive command.
 #define DRIVE_CMD_MAX_VELOCITY 4_mps
