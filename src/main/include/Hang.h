@@ -89,8 +89,7 @@ private:
     bool test;
     double highOrTraversal;
 
-    public:
-    double currentEncoderValue;
+     double currentEncoderValue;
     //pivots the extending arms forwards/backwards
     void pivot(bool armsForward);//working
     //reads encoder
@@ -130,6 +129,8 @@ private:
     void retractMaxToHalf();
     //retracts from half extension to fully in
     void retractHalfToFull();
+    //retracts from half extension to fully in and switches to moving arms
+    void retractHalfToStaticArms();
     //step that the robot is on in the overall process: mid, high, traversal, and what it is doing in general
     int step;
     //broken step 
@@ -151,12 +152,18 @@ private:
     bool disengageBrakeDone;
     bool retractDone;
     bool retractCurrentIncrease;
-    void setIsLow(bool isLow);
+    bool highDone;
+    bool pauseEnabled;
+    bool pauseDisabled;
+
+    public:
+   
     bool getIsLow();
     void setGoingForHigh(bool highOrNot);
+    void setPause(bool paused, bool unpaused);
     bool goingForHigh; // true is going for high, false is going for mid
     bool isLowHeight;
-
+    void setIsLow(bool isLow);
 
     //manual enumerator for actions
     enum Manual{EXTEND,  
@@ -171,13 +178,15 @@ private:
                 RETRACT,
                 NOT,
                 DRIVE_DOWN};
+
     //enumerator variable thing
     Manual manual;
     Manual currentManualState;
     //bar that the robot is going to
-    enum HangState{HIGH_TRAVERSAL, MID, MID_2, NOT_ON_BAR, STOP, LOW, LOW_2};
+    enum HangState{HIGH_TRAVERSAL, MID, MID_2, NOT_ON_BAR, PAUSE, LOW, LOW_2};
     //enumerator variable thing
     HangState targetStage;
+    HangState completedTargetStage;
 
     enum ExtendLevel{LOW_HEIGHT, MID_HEIGHT, HIGH_TRAVERSAL_HEIGHT};
     ExtendLevel extendLevel;
@@ -196,13 +205,10 @@ private:
 //mutually exclusive
     //command to change the target bar
     void commandAuto();
-    // command to manually change the target bar
+    // command to override the current action
     void setCommandAutoOverride();
     //command to do manual actions
     void commandManual(Manual manualCommands);
+    //command to set height of moving arm extension
     void commandHeight(ExtendLevel extendLevelCommand);
-    //make command enum
 };
-
-/** code errors
- * **/

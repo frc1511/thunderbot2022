@@ -215,6 +215,12 @@ void Controls::doAux() {
             if (auxController.getRawButtonPressed(RIGHT_STICK_PRESS)) {   
                 hang->commandAuto();
             }
+            if(auxController.getRawButtonPressed(RIGHT_BUMPER)){
+                hang->setPause(true, false);
+            }
+            if(auxController.getRawButtonPressed(LEFT_BUMPER)){
+                hang->setPause(false, true);
+            }
         } else {
             if (auxController.getRawButtonPressed(CIRCLE_BUTTON)) {
                 hang->commandManual(Hang::EXTEND);
