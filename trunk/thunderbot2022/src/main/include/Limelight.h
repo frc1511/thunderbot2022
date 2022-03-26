@@ -6,6 +6,8 @@
 #include <networktables/NetworkTable.h>
 #include <networktables/NetworkTableInstance.h>
 #include <units/math.h>
+#include <units/angle.h>
+#include <units/length.h>
 #include <memory>
 
 /**
@@ -29,7 +31,7 @@ public:
      */
     units::radian_t getAngleHorizontal();
 
-    double getDistance();
+    units::meter_t getDistance();
 
     /**
      * Returns the vertical angle to the target.

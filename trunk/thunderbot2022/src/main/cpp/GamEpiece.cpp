@@ -183,6 +183,10 @@ void GamEpiece::recordShooterValues(){
     shooter.recordShooterValues();
 }
 
+void GamEpiece::setShotOdometryMode(Shooter::OdometryMode mode) {
+    shooter.setOdometryMode(mode);
+}
+
 void GamEpiece::sendFeedback() {
     intake.sendFeedback();
     shooter.sendFeedback();

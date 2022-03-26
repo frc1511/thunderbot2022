@@ -402,6 +402,13 @@ void Controls::doSwitchPanel() {
         driveController.record();
         auxController.record();
     }
+    peterCentric = switchPanel.GetRawButton(9);
+    if (peterCentric) {
+        gamEpiece->setShotOdometryMode(Shooter::CRAZY_MATH);
+    }
+    else {
+        gamEpiece->setShotOdometryMode(Shooter::INTERPOLATION);
+    }
 }
 
 bool Controls::getShouldPersistConfig() {
