@@ -103,6 +103,7 @@ public:
 
     void recordShooterValues();
 
+    void setShotOdometryMode(Shooter::OdometryMode mode);
 
 private:
     Limelight* limelight;

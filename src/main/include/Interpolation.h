@@ -12,12 +12,12 @@
  * Requires a key type: K, and a value type V.
  */
 template<typename K, typename V>
-class InterpolatingTreeMap {
+class Interpolation {
 public:
-    InterpolatingTreeMap()
+    Interpolation()
     : map({}) { }
     
-    InterpolatingTreeMap(std::map<K, V> _map)
+    Interpolation(std::map<K, V> _map)
     : map(_map) { }
     
     /**

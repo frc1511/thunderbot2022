@@ -5,11 +5,19 @@
 #include "Feedback.h"
 #include "Limelight.h"
 #include "Interpolation.h"
+#include "ShotMath.h"
 #include "ThunderSparkMax.h"
 #include <frc/Servo.h>
 #include <frc/AnalogPotentiometer.h>
 #include <vector>
 #include <fstream>
+
+// Minimum / maximum hood servo positions.
+#define HOOD_MIN_POS 0.5547 //0.433
+#define HOOD_MAX_POS (HOOD_MIN_POS + .19) //0.7
+
+// The maximum RPM of the shooter wheels.
+#define SHOOTER_MAX_RPM 2700 // 5700
 
 #define PETERS_INTERPOLATION
 
@@ -63,6 +71,13 @@ public:
     // changes the manual speed by 100, great for testing, true will increase, false will decrease.
     void changeManualSpeed(bool increaseOrDecrease);
 
+    enum OdometryMode {
+        CRAZY_MATH,
+        INTERPOLATION,
+    };
+
+    void setOdometryMode(OdometryMode mode);
+
     // :D
     void recordShooterValues();
 
@@ -83,6 +98,8 @@ private:
 
     // The target position of the hood.
     double targetHoodPosition = 0;
+
+    OdometryMode odometryMode = INTERPOLATION;
     
 #ifndef PETERS_INTERPOLATION
     
@@ -123,8 +140,10 @@ private:
 
 #ifdef PETERS_INTERPOLATION
 
-    InterpolatingTreeMap<double, double> hoodInterpolation;
-    InterpolatingTreeMap<double, double> rpmInterpolation;
+    ShotMath shotMath {};
+
+    Interpolation<double, double> hoodInterpolation;
+    Interpolation<double, double> rpmInterpolation;
 
 #endif
 

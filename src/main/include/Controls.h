@@ -53,6 +53,7 @@ private:
     bool nearFarShot = false;
     bool highOrLow = false; //true = high hub shot, false = low hub shot
     bool nearOrFar = false; //for launch pad true = near launch pad shot, false = far launch pad shot
+    bool peterCentric = false;
 
     bool recordController = false;
     bool clearController = false;

@@ -1,10 +1,10 @@
 #include "Limelight.h"
 
-#define LIMELIGHT_ANGLE 29.3  // degrees
+#define LIMELIGHT_ANGLE 29.3_deg
 
-#define LIMELIGHT_HEIGHT 43 // inches
+#define LIMELIGHT_HEIGHT 43_in
 
-#define HUB_HEIGHT 104 // inches
+#define HUB_HEIGHT (8_ft + 8_in)
 
 Limelight::Limelight() {
     table = nt::NetworkTableInstance::GetDefault().GetTable("limelight-homer");
@@ -28,8 +28,8 @@ void Limelight::resetToMode(MatchMode mode) {
 }
 
 void Limelight::sendFeedback() {
-    Feedback::sendDouble("limelight", "distance (in?)", getDistance());
-    Feedback::sendDouble("limelight", "vertical angle", getAngleVertical().value());
+    Feedback::sendDouble("limelight", "distance (meters)", getDistance().value());
+    Feedback::sendDouble("limelight", "vertical angle (radians)", getAngleVertical().value());
 }
 
 bool Limelight::hasTarget() {
@@ -60,6 +60,6 @@ Limelight::CameraMode Limelight::getCameraMode() {
     return (CameraMode)(int)table->GetNumber("camMode", 0.0);
 }
 
-double Limelight::getDistance(){
-    return (HUB_HEIGHT - LIMELIGHT_HEIGHT) / tan(LIMELIGHT_ANGLE + units::degree_t(getAngleVertical()).value());
+units::meter_t Limelight::getDistance(){
+    return units::meter_t(units::meter_t(HUB_HEIGHT - LIMELIGHT_HEIGHT).value() / units::math::tan(LIMELIGHT_ANGLE + getAngleVertical()).value());
 }

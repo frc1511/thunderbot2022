@@ -11,13 +11,6 @@
 #define SHOOTER_I_ZONE_VALUE 0
 #define SHOOTER_FF_VALUE .000187
 
-// Minimum / maximum hood servo positions.
-#define HOOD_MIN_POS 0.5547 //0.433
-#define HOOD_MAX_POS (HOOD_MIN_POS + .19) //0.7
-
-// The maximum RPM of the shooter wheels.
-#define SHOOTER_MAX_RPM 2700 // 5700
-
 // The tolerance of the hood position.
 #define HOOD_TOLERANCE .005
 
@@ -147,23 +140,32 @@ void Shooter::resetToMode(MatchMode mode) {
 void Shooter::process() {
     switch (shooterMode) {
         case ODOMETRY:
+            if (odometryMode == INTERPOLATION) {
 #ifdef PETERS_INTERPOLATION
-            targetHoodPosition = hoodInterpolation[limelight->getAngleVertical().value()].value();
-            targetRPM = rpmInterpolation[limelight->getAngleVertical().value()].value();
+                targetHoodPosition = hoodInterpolation[limelight->getAngleVertical().value()].value();
+                targetRPM = rpmInterpolation[limelight->getAngleVertical().value()].value();
 #else
-            
-            //distance = limelight->getDistance();
-            
-            distance = limelight->getAngleVertical().value();
-            for(unsigned int i = 0; i < varsDistance.size(); i++){
-                if(distance >= varsDistance[i]){
-                    goodNumber = i;
-                    break;
+                
+                //distance = limelight->getDistance();
+                
+                distance = limelight->getAngleVertical().value();
+                for(unsigned int i = 0; i < varsDistance.size(); i++){
+                    if(distance >= varsDistance[i]){
+                        goodNumber = i;
+                        break;
+                    }
+                }
+                targetHoodPosition = interpolation(varsDistance[goodNumber], varsHood[goodNumber], varsDistance[goodNumber+1], varsHood[goodNumber+1], distance);
+                targetRPM = interpolation(varsDistance[goodNumber], varsSpeed[goodNumber], varsDistance[goodNumber+1], varsSpeed[goodNumber+1], distance);
+#endif
+            }
+            else if (odometryMode == CRAZY_MATH) {
+                if (limelight->hasTarget()) {
+                    ShotMath::Shot shot = shotMath.calculateShot(limelight->getDistance(), 0_mps);
+                    targetHoodPosition = shot.hoodPos;
+                    targetRPM = shot.shooterRPM;
                 }
             }
-            targetHoodPosition = interpolation(varsDistance[goodNumber], varsHood[goodNumber], varsDistance[goodNumber+1], varsHood[goodNumber+1], distance);
-            targetRPM = interpolation(varsDistance[goodNumber], varsSpeed[goodNumber], varsDistance[goodNumber+1], varsSpeed[goodNumber+1], distance);
-#endif
             break;
         case FAR_LAUNCH_PAD:
             targetHoodPosition = FAR_LAUNCH_PAD_HOOD_POS;
@@ -313,10 +315,14 @@ void Shooter::spinInReverse(bool reverseOrNot){
     reverse = reverseOrNot;
 }
 
+void Shooter::setOdometryMode(OdometryMode mode) {
+    odometryMode = mode;
+}
+
 void Shooter::recordShooterValues(){
     std::ofstream MyFile;
     MyFile.open("/home/lvuser/shooterValues.txt", std::fstream::app);
-    MyFile << "rpm: " << std::to_string(manualRPM) << ", pot value: " << std::to_string(readPotentiometer()) << ", limelight angle: " << std::to_string(limelight->getAngleVertical().value()) << ", limelight distance: " << std::to_string(limelight->getDistance()) << "\n";
+    MyFile << "rpm: " << std::to_string(manualRPM) << ", pot value: " << std::to_string(readPotentiometer()) << ", limelight angle: " << std::to_string(limelight->getAngleVertical().value()) << ", limelight distance: " << std::to_string(limelight->getDistance().value()) << "\n";
     MyFile.close();
 }
 
