@@ -68,15 +68,17 @@ private:
     //frc::DoubleSolenoid brake{frc::PneumaticsModuleType::CTREPCM, /*hi jeff*/PCM1_HANG_BRAKE_PISTON_EXTEND, PCM1_HANG_BRAKE_PISTON_RETRACT};
     //connects the robot to hangPivot1
     frc::DoubleSolenoid hangPivot2{frc::PneumaticsModuleType::CTREPCM, PCM1_HANG_PIVOT_2_EXTEND_PISTON, PCM1_HANG_PIVOT_2_RETRACT_PISTON};
-
+#ifndef TEST_BOARD
     frc::DoubleSolenoid staticPivot{frc::PneumaticsModuleType::CTREPCM, PCM1_HANG_STATIC_PISTON_EXTEND, PCM1_HANG_STATIC_PISTON_RETRACT};
-    
+#endif
+
     //servos
     frc::Servo ratchetServo{PWM_HANG_RACHET_AND_PAWL};
     frc::Servo stringServoRight{PWM_STRING_SERVO_RIGHT};
     frc::Servo stringServoLeft{PWM_STRING_SERVO_LEFT};
+#ifndef TEST_BOARD
     frc::DigitalInput staticSensor {DIO_HANG_REFLECTIVE_SENSOR};
-
+#endif
 
     //hi trevor
 
