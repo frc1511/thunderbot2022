@@ -269,6 +269,9 @@ void Controls::doAux() {
         }
         if (auxController.getRawButton(SQUARE_BUTTON)) {
             lastPressedMode = Shooter::TARMAC;
+            /*
+            ShotMath::Shot shot = shotmath.calculateShot(units::meter_t(3.5), units::meters_per_second_t(0));
+            */
         }
         else if (auxController.getRawButton(CIRCLE_BUTTON)) {
             if(nearOrFar){
@@ -279,7 +282,10 @@ void Controls::doAux() {
             }
         }
         else if (auxController.getRawButton(CROSS_BUTTON)) {
-            lastPressedMode = Shooter::ODOMETRY;
+            /*
+            ShotMath::Shot shot = shotmath.calculateShot(units::meter_t(5), units::meters_per_second_t(1.2));
+            */
+           lastPressedMode = Shooter::ODOMETRY;
         }
         else if(auxController.getRawButton(TRIANGLE_BUTTON)) {
             if(highOrLow){
@@ -449,6 +455,7 @@ void Controls::chooseAutoMode(int autoMode){
 void Controls::sendFeedback(){
     driveController.sendFeedback();
     auxController.sendFeedback();
+    shotmath.Feedback();
     std::string mode = "";
     switch(lastPressedMode){
         case(Shooter::TARMAC_LINE):

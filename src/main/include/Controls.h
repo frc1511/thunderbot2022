@@ -7,6 +7,7 @@
 #include "Hang.h"
 #include "Limelight.h"
 #include "ControllerState.h"
+#include "ShotMath.h"
 #include <frc/Joystick.h>
 
 class Controls : public Mechanism {
@@ -34,6 +35,7 @@ private:
     Drive* drive;
     GamEpiece* gamEpiece;
     Hang* hang;
+    ShotMath shotmath{};
     bool cameraWasToggled = false;
     bool offsetsWereConfigured = false;
 

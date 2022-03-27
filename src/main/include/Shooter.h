@@ -138,9 +138,9 @@ private:
     frc::Servo hoodServo {PWM_SHOOTER_HOOD_SERVO};
     frc::AnalogPotentiometer hoodPotentiometer {ANALOG_SHOOTER_HOOD_POTENTIOMETER};
 
+    ShotMath shotMath {};
 #ifdef PETERS_INTERPOLATION
 
-    ShotMath shotMath {};
 
     Interpolation<double, double> hoodInterpolation;
     Interpolation<double, double> rpmInterpolation;

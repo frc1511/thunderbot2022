@@ -57,30 +57,30 @@ ShotMath::~ShotMath() {
 }
 
 ShotMath::Shot ShotMath::calculateShot(units::meter_t distance, units::meters_per_second_t yVel) {
-    // const double x1 = 0;
-    const double y1 = units::meter_t(SHOOTER_HEIGHT).value();
-    const double x2 = units::meter_t(distance).value();
-    const double y2 = units::meter_t(HIGH_HUB_HEIGHT - (HIGH_HUB_SIZE / 2)).value();
-
+    x1 = 0;
+    y1 = units::meter_t(SHOOTER_HEIGHT).value();
+    x2 = units::meter_t(distance + (HIGH_HUB_RADIUS/2)).value();
+    y2 = units::meter_t(HIGH_HUB_HEIGHT).value();
+    
+    if(x1){
+        // hi
+    }
     /**
      * Because the distance is calculated from the edge of the high hub,
      * subtract the radius of the hub to get the distance to the center.
      */
-    distance += HIGH_HUB_RADIUS;
     
     // --- Step 1: Determine the impact angle of the cargo to the high hub ---
     
-    units::degree_t impactAngle = DISTANCE_2_IMPACT_ANGLE(distance);
+    impactAngle = DISTANCE_2_IMPACT_ANGLE(x2);
 
     // --- Step 2: Determine the equation of the parabola using the initial point and the tangent line at the impact point ---
-    
-    double a, b, c; // y = ax^2 + bx + c
     
     {
         // --- Step 2.1: Find the derivative of the parabola ---
 
         // Get the slope of the tangent line.
-        double m = (-units::math::tan(impactAngle)).value();
+        m = (-units::math::tan(impactAngle)).value();
         
         /**
          * y' = 2ax + b
@@ -103,21 +103,22 @@ ShotMath::Shot ShotMath::calculateShot(units::meter_t distance, units::meters_pe
         /**
          * Use quadratic equation with target point for x and y.
          * y2 = a(x2)^2 + b(x2) + c
-         * 
+         * y2 = a(x2)^2 +b(x2) + c
          * Use derivarive with target point and slope for x and y'.
          * m = 2a(x2) + b
+         * m(x2) = 2a(x2)^2 = b(x2)
          * 
          * Subtract equations to eliminate b.
          * x2 * (m = 2a(x2) + b) = (m(x2) = 2a(x2)^2 + b(x2))
          * 
-         *   m(x2) = 2a(x2)^2 + b(x2)
-         * -  y2   =  a(x2)^2 + b(x2) + c
+         *   m(x2) = 2a(x2)^2 + b(x2) + 0c
+         * +  (-y2   =  -a(x2)^2 - b(x2) - c)
          * ––––––––––––––––––––––––––––––––
-         * m(x2) - y2 = a(x2)^2 + c
+         * m(x2) - y2 = a(x2)^2 - c
          * 
-         * a = (m(x2) - y2 - c) / (x2)^2
+         * a = (m(x2) - y2 + c) / (x2)^2
          */
-        a = ((m * x2) - y2 - c) / std::pow(x2, 2);
+        a = ((m * x2) - y2 + c) / (x2 * x2);
 
         // --- Step 2.4: Find b ---
         /**
@@ -125,50 +126,59 @@ ShotMath::Shot ShotMath::calculateShot(units::meter_t distance, units::meters_pe
          * 
          * b = (y2 - a(x2)^2 - c) / x2
          */
-        b = (y2 - (a * std::pow(x2, 2)) - c) / x2;
+        b = (y2 - (a * (x2 * x2)) - c) / x2;
     }
 
-    // --- Step 3: Using the derivative, determine the the distance to the vertex of the parabola ---
+    // --- Step 3: Using the derivative, determine the the horizontal distance to the vertex of the parabola ---
 
     /**
      * y' = 2ax + b
      * 
      * 0 = 2ax + b
      * 
-     * a = -b / 2a
+     * x = -b / 2a
      */
-    units::meter_t dv(-b / (2 * a));
+    xVertexDistance = units::meter_t((-b) / (2 * a));
+
+    // --- Step 3.5: Find the vertical distance to the vertex of the parabola ---
+
+    /**
+     * y = ax^2 + bx + c
+     * 
+     * dvy = a(dvx)^2 + b(dvx) + c
+     */
+    yVertexDistance = units::meter_t(a * (xVertexDistance.value() * xVertexDistance.value()) + (b * xVertexDistance.value()) + c);
 
     // --- Step 4: Determine the initial vertical velocity of the cargo ---
 
     /**
      * Vf^2 = Vi^2 + 2ad
      * 
-     * 0 = Vi^2 + 2(-9.81)(dv)
+     * 0 = Vi^2 + 2(-9.81)(dvy)
      * 
-     * Vyi = √(-2(-9.81)(dv))
+     * Vyi = √(-2(-9.81)(dvy))
      */
-    units::meters_per_second_t vyi(std::sqrt(-2 * -9.81 * dv.value()));
+    yVelocity = units::meters_per_second_t(std::sqrt(-2 * -9.81 * (yVertexDistance.value()) - y1));
 
     // --- Step 5: Determine time to the vertex ---
 
     /**
      * v = d/t
      * 
-     * vi = dv/t
+     * vi = dvy/t
      * 
-     * t = dv/vyi
+     * t = dvy/vyi
      */
-    units::second_t tv(dv.value() / vyi.value());
+    vertexTime = units::second_t((yVertexDistance.value() - y1) / yVelocity.value());
 
     // --- Step 6: Determine the initial horizontal velocity of the cargo ---
 
     /**
      * v = d/t
      * 
-     * vxi = dv/tv
+     * vxi = dvx/tv
      */
-    units::meters_per_second_t vxi(dv.value() / tv.value());
+    xVelocity = units::meters_per_second_t(xVertexDistance.value() / vertexTime.value());
 
     // --- Step 6.5: Adjust the horizontal velocity of the cargo based on the robot's velocity ---
 
@@ -177,64 +187,84 @@ ShotMath::Shot ShotMath::calculateShot(units::meter_t distance, units::meters_pe
      * because the velocity of the robot will be directly translated to the
      * velocity of the cargo.
      */
-    vxi -= yVel;
+    // yVel is correct, peter calls it yVel for no reason, but yVel is the x velocity. D:
+    xVelocity -= yVel;
 
     // --- Step 7: Determine the exit angle of the cargo from the shooter ---
 
     /**
      * θ = arctan(vy / vx)
      */
-    units::degree_t exitAngle(units::math::atan(vyi / vxi));
+    hoodAngle = units::math::atan(yVelocity / xVelocity);
 
-    exitAngle *= HOOD_ANGLE_GOOD_NUMBER;
+    hoodAngle *= HOOD_ANGLE_GOOD_NUMBER;
 
     // --- Step 8: Determine the exit velocity of the cargo from the shooter ---
 
     /**
      * a^2 + b^2 = c^2
      */
-    units::meters_per_second_t exitVelocity = units::math::hypot(vxi, vyi);
+    shooterVelocity = units::math::hypot(xVelocity, yVelocity);
 
-    exitVelocity *= VELOCITY_GOOD_NUMBER;
+    shooterVelocity *= VELOCITY_GOOD_NUMBER;
 
     Shot shot {};
 
     // --- Step 9: Determine the hood position based on the desired exit angle ---
 
-    if (exitAngle > HOOD_MAX_ANGLE) {
-        shot.hoodPos = HOOD_MAX_POS;
-    }
-    else if (exitAngle < HOOD_MIN_ANGLE) {
-        shot.hoodPos = HOOD_MIN_POS;
-    }
-    else {
-        // Get the target percentage of the hood range.
-        double pct = ((exitAngle - HOOD_MIN_ANGLE) / (HOOD_MAX_ANGLE - HOOD_MIN_ANGLE)).value();
 
-        // Get the full range of the hood position.
-        double range = HOOD_MAX_POS - HOOD_MIN_POS;
+    // Get the target percentage of the hood range.
+    double pct = ((hoodAngle - HOOD_MIN_ANGLE) / (HOOD_MAX_ANGLE - HOOD_MIN_ANGLE)).value();
 
-        shot.hoodPos = pct * range + HOOD_MIN_POS;
-    }
+    // Get the full range of the hood position.
+    double range = HOOD_MAX_POS - HOOD_MIN_POS;
+
+    shot.hoodPos = pct * range + HOOD_MIN_POS;
+    
 
     // --- Step 10: Determine the shooter RPM based on the desired exit velocity ---
 
     /**
-     * VELOCITY_PER_100_RPM   exitVelocity
+     * VELOCITY_PER_100_RPM   shooterVelocity
      * –––––––––––––––––––– = ––––––––––––
      *         100             shooterRPM
      */
-    shot.shooterRPM = ((100 * exitVelocity) / VELOCITY_PER_100_RPM).value();
+    shot.shooterRPM = ((100 * shooterVelocity) / VELOCITY_PER_100_RPM).value();
 
-    shot.shooterRPM = std::clamp(shot.shooterRPM, 0.0, (double)SHOOTER_MAX_RPM);
+    //shot.shooterRPM = std::clamp(shot.shooterRPM, 0.0, (double)SHOOTER_MAX_RPM);
 
     return shot;
+
+    // Air resistance!! :D
+
+    
 }
 
 units::degree_t ShotMath::calculateAngleCompensation(units::meters_per_second_t xVel) {
     // TODO: Do this.
 
     return 0_deg;
+}
+
+void ShotMath::Feedback(){
+    Feedback::sendDouble("a shotMath", "x1", x1);
+    Feedback::sendDouble("a shotMath", "y1", y1);
+    Feedback::sendDouble("a shotMath", "x2", x2);
+    Feedback::sendDouble("a shotMath", "y2", y2);
+    Feedback::sendDouble("a shotMath", "x distance", xVertexDistance.value());
+    Feedback::sendDouble("a shotMath", "y distance", yVertexDistance.value());
+    Feedback::sendDouble("a shotMath", "x velocity", xVelocity.value());
+    Feedback::sendDouble("a shotMath", "y velocity", yVelocity.value());
+    Feedback::sendDouble("a shotMath", "time", vertexTime.value());
+    Feedback::sendDouble("a shotMath", "impact angle", impactAngle.value());
+    Feedback::sendDouble("a shotMath", "a", a);
+    Feedback::sendDouble("a shotMath", "b", b);
+    Feedback::sendDouble("a shotMath", "c", c);
+    Feedback::sendDouble("a shotMath", "m", m);
+    Feedback::sendDouble("a shotMath", "hood angle", hoodAngle.value());
+    Feedback::sendDouble("a shotMath", "shooter velocity", shooterVelocity.value());
+    Feedback::sendDouble("a shotMath", "hood position", hoodPosition);
+    Feedback::sendDouble("a shotMath", "shooter RPM", shooterRPM);
 }
 
 // bye jeff

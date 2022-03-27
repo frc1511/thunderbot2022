@@ -14,6 +14,8 @@ class ShotMath {
 public:
     ShotMath();
     ~ShotMath();
+    
+    void Feedback();
 
     struct Shot {
         double hoodPos = 0;
@@ -33,4 +35,24 @@ public:
      * sideways velocity of the robot.
      */
     units::degree_t calculateAngleCompensation(units::meters_per_second_t xVel);
+    
+private:
+    double x1 = 0;
+    double y1 = 0;
+    double x2 = 0;
+    double y2 = 0;
+    units::meter_t xVertexDistance = 0_m;
+    units::meters_per_second_t xVelocity = 0_mps;
+    units::meter_t yVertexDistance = 0_m;
+    units::meters_per_second_t yVelocity = 0_mps;
+    units::second_t vertexTime = 0_s;
+    units::degree_t impactAngle = 0_deg;
+    double a = 0;
+    double b = 0;
+    double c = 0;
+    double m = 0;
+    units::degree_t hoodAngle = 0_deg;
+    units::meters_per_second_t shooterVelocity = 0_mps;
+    double hoodPosition = 0;
+    double shooterRPM = 0;
 };
