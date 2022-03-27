@@ -4,7 +4,7 @@
 #define INTAKE_MAX_AMPERAGE 30
 
 const double kSpeedStageOne = .7;         // used for intaking
-const double kSpeedStageOneLimbo = .2;    // used for when waiting at stage one when intaking
+const double kSpeedStageOneLimbo = .2;    // used for when waiting at stage one when intaking   maybe turn it up to get the ball in further
 const double kSpeedStageTwo = .9;         // used for shooting
 const double kSpeedStageTwoSlow = .14;    // used for intaking into stage two
 const double kReverseSpeedStageOne = -.4; // used for outtaking
@@ -121,7 +121,7 @@ void Intake::ballCountIntake(bool currentSensorOneInput, bool currentSensorTwoIn
     }
 
     if (stageTwoSensorPrevious == true && currentSensorTwoInput == false)
-    {
+    { 
         stageTwoOccupied = true;
     }
 }
