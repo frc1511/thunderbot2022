@@ -14,7 +14,7 @@ const double kHangWinchSlowerSpeed = .75;//.75;
 const double kRachetAndPawlBackdriveSpeed = .3;
 const double kDriveDownSpeed = .1;
 const double kRetractLimitedSpeed = .2;
-const double kExtendBackdrive = .1;
+const double kExtendBackdrive = .6;
 
 //encoder constants
 //minimum the encoder will go
@@ -255,8 +255,8 @@ if(autoDone == false && manual != NOT)
     switch (targetStage){
         case PAUSE:
             ratchetServo.Set(kPawlForward);
-            stringServoLeft.Set(kServoStopped);
-            stringServoRight.Set(kServoStopped);
+            //stringServoLeft.Set(kServoStopped);
+            //stringServoRight.Set(kServoStopped);
             winchMotor->Set(0);
             break;
         case NOT_ON_BAR:
@@ -291,8 +291,8 @@ if(autoDone == false && manual != NOT)
             {
                 hangTimer.Reset();
                 hangTimer.Start();
-                stringServoLeft.Set(kServoForward);
-                stringServoRight.Set(kServoBackward);
+                //stringServoLeft.Set(kServoForward);
+                //stringServoRight.Set(kServoBackward);
                 step++;
             }
             else if (step == 1)
@@ -308,8 +308,8 @@ if(autoDone == false && manual != NOT)
             }
             else if(step == 2){
                 retract();
-                stringServoRight.Set(kServoStopped);
-                stringServoLeft.Set(kServoStopped);
+                //stringServoRight.Set(kServoStopped);
+                //stringServoLeft.Set(kServoStopped);
             }
             else if(step == 3){
                 stepDone = true;
@@ -345,8 +345,8 @@ if(autoDone == false && manual != NOT)
             {
                 hangTimer.Reset();
                 hangTimer.Start();
-                stringServoLeft.Set(kServoForward);
-                stringServoRight.Set(kServoBackward);
+                //stringServoLeft.Set(kServoForward);
+                //stringServoRight.Set(kServoBackward);
                 step++;
             }
             else if (step == 1)
@@ -367,8 +367,8 @@ if(autoDone == false && manual != NOT)
                 else{
                     retract();
                 }
-                stringServoRight.Set(kServoStopped);
-                stringServoLeft.Set(kServoStopped);
+                //stringServoRight.Set(kServoStopped);
+                //stringServoLeft.Set(kServoStopped);
             }
             else if((step == 3 && !goingForHigh) || (step == 5 && goingForHigh)){ // for normal mid it is step 3, for high bar mid it is 6
                 stepDone = true;
@@ -382,9 +382,9 @@ if(autoDone == false && manual != NOT)
                     hangTimer.Start();
                     step++;
                 }
-                else if(step == 4){
+                /*else if(step == 4){
                     unwindString();
-                }
+                }*/
             }
             break;
         case HIGH_TRAVERSAL:
@@ -404,59 +404,58 @@ if(autoDone == false && manual != NOT)
                 step++;
                 std::cout << "resetting" << '\n';
             }
-            else if(step == 2)
+            /*else if(step == 2)
             {
                 unwindString();
-                
-            }
-            else if(step == 3)
+            }*/
+            else if(step == 2)
             {
                 pivot(false);
                 std::cout << "pivot" << '\n';
             }
-            else if (step == 4)
+            else if (step == 3)
             {
                 extendStep = 0;
                 step++;
                 extendLevel = HIGH_TRAVERSAL_HEIGHT;
                 std::cout << "resetting" << '\n';
             }
-            else if (step == 5)
+            else if (step == 4)
             {
                 extend();
                 std::cout << "extending" << '\n';
             }
-            else if (step == 6)
+            else if (step == 5)
             {
                 hangTimer.Reset();
                 hangTimer.Start();
                 step++;
                 std::cout << "resetting" << '\n';
             }
-            else if (step == 7)
+            else if (step == 6)
             {
                 reversePivot();
                 std::cout << "reverse pivot" << '\n';
             }
-            else if (step == 8)
+            else if (step == 7)
             {
                 engageBrake();
                 step++;
                 std::cout << "engage brake" << '\n';
             }
-            else if (step == 9)
+            else if (step == 8)
             {
                 retractStep = 0;
                 retractCurrentIncrease = false;
                 step++;
                 std::cout << "reset" << '\n';
             }
-            else if(step == 10)
+            else if(step == 9)
             {
                 retractMaxToHalf();
                 std::cout << "retracting max to half" << '\n';
             }
-            else if(step == 11)
+            else if(step == 10)
             {
                 pivot(true);
                 hangTimer.Reset();
@@ -464,11 +463,12 @@ if(autoDone == false && manual != NOT)
                 std::cout << "pivoting" << '\n';
                 
             }
-            else if(step == 12)
+            else if(step == 11)
             {
-                windUpString();
+                //windUpString();
                 retractCurrentIncrease = false;
                 std::cout << "winding string" << '\n';
+                step++;
             }
             else if(step == 13)
             {
