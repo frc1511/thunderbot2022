@@ -47,6 +47,7 @@ const double kPawlReverse = .57;
 
 const double kStringServoTime = 3;
 const double kShiftToStaticArmTime = 5;
+const int kDisengageBrakeTime = .2;
 
 Hang::Hang() : winchMotor(ThunderSparkMax::create(ThunderSparkMax::MotorID::Hang)) {
     configureMotor();
@@ -418,6 +419,8 @@ if(autoDone == false && manual != NOT)
                 extendStep = 0;
                 step++;
                 extendLevel = HIGH_TRAVERSAL_HEIGHT;
+                hangTimer.Reset();
+                hangTimer.Start();
                 std::cout << "resetting" << '\n';
             }
             else if (step == 4)
@@ -530,8 +533,10 @@ void Hang::extend()
         extendStep++;
     }
     else if(extendStep == 1 && disengageBrake()){
-           // winchMotor->Set(kExtendBackdrive);
+        if(hangTimer.Get().value() >= kDisengageBrakeTime){
+            winchMotor->Set(kExtendBackdrive);
             extendStep++;
+        }
     }
     else if (extendStep == 2){
         #ifdef TEST_BOARD
