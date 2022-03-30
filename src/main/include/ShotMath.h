@@ -28,7 +28,7 @@ public:
      * Will only work consistently if the robot is aligned with the hub,
      * perferably through the vice grip mechanism.
      */
-    Shot calculateShot(units::meter_t distance, units::meters_per_second_t yVel);
+    Shot calculateShot(units::meter_t distance, units::meters_per_second_t yVel, units::degree_t theAngle);
 
     /**
      * Calculates the angle for the drive base to be compensated by based on the
@@ -55,4 +55,8 @@ private:
     units::meters_per_second_t shooterVelocity = 0_mps;
     double hoodPosition = 0;
     double shooterRPM = 0;
+    double velocityY = 0;
+    double velocityX = 0;
+    double velocity = 0;
+    double angle = 0;
 };

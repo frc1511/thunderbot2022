@@ -56,10 +56,10 @@ ShotMath::~ShotMath() {
 
 }
 
-ShotMath::Shot ShotMath::calculateShot(units::meter_t distance, units::meters_per_second_t yVel) {
+ShotMath::Shot ShotMath::calculateShot(units::meter_t distance, units::meters_per_second_t yVel, units::degree_t theAngle) {
     x1 = 0;
     y1 = units::meter_t(SHOOTER_HEIGHT).value();
-    x2 = units::meter_t(distance + (HIGH_HUB_RADIUS/2)).value();
+    x2 = units::meter_t((((distance + (HIGH_HUB_RADIUS/2))).value())/ units::math::cos(theAngle).value()).value();
     y2 = units::meter_t(HIGH_HUB_HEIGHT).value();
     
     if(x1){
@@ -208,9 +208,50 @@ ShotMath::Shot ShotMath::calculateShot(units::meter_t distance, units::meters_pe
 
     shooterVelocity *= VELOCITY_GOOD_NUMBER;
 
+    velocityX = x2 / (((-9.81 * std::sqrt((2*(y2+(x2/12)+.1)/9.81))) - std::sqrt(((9.81*std::sqrt((2*(y2+(x2/12)+.1)/9.81))) * (9.81*std::sqrt((2*(y2+(x2/12)+.1)/9.81))) ) - (4 * (-4.905) * (-y2))))/(-9.81));
+    velocityY = 9.81 * std::sqrt((2*(y2+(x2/12)+.1))/9.81);
+    velocity = std::sqrt((velocityX * velocityX) + (velocityY * velocityY));
+    angle = (180 * 3.1415926535897932384626433832795028841971693993751048289) * std::atan(velocityY / velocityX);
+    // --- Step 9: Air resistance!! :D ---
+
+    /**
+     * Cargo volume:
+     * V = (4/3)π(r^3)
+     * 
+     * V = (4/3)π(0.12065^3)
+     * 
+     * V = 0.007356 m^2
+     * 
+     * 
+     * m = 0.299371 kg
+     * 
+     * p = m/v
+     * 
+     * p = 0.2993 / 0.007356
+     * 
+     * p = 40.68788
+     * 
+     * Half of the surface area of the cargo.
+     * SA = 2πr^2
+     * 
+     * SA = 2π(0.12065^2)
+     * 
+     * SA = 0.09146
+     * 
+     * Drag coefficient of a sphere.
+     * Cd = 0.47
+     * 
+     * Fp = 0.5p(v^2)Cd*A
+     * 
+     * Fp = 0.5(1.225)(0.47)(0.09146)(V^2)
+     * 
+     * Fp = 0.0263290475(V^2)
+     * a = 0.0439843v^2
+     */
+
     Shot shot {};
 
-    // --- Step 9: Determine the hood position based on the desired exit angle ---
+    // --- Step 10: Determine the hood position based on the desired exit angle ---
 
 
     // Get the target percentage of the hood range.
@@ -222,7 +263,7 @@ ShotMath::Shot ShotMath::calculateShot(units::meter_t distance, units::meters_pe
     shot.hoodPos = pct * range + HOOD_MIN_POS;
     
 
-    // --- Step 10: Determine the shooter RPM based on the desired exit velocity ---
+    // --- Step 11: Determine the shooter RPM based on the desired exit velocity ---
 
     /**
      * VELOCITY_PER_100_RPM   shooterVelocity
@@ -234,10 +275,6 @@ ShotMath::Shot ShotMath::calculateShot(units::meter_t distance, units::meters_pe
     //shot.shooterRPM = std::clamp(shot.shooterRPM, 0.0, (double)SHOOTER_MAX_RPM);
 
     return shot;
-
-    // Air resistance!! :D
-
-    
 }
 
 units::degree_t ShotMath::calculateAngleCompensation(units::meters_per_second_t xVel) {
@@ -265,6 +302,10 @@ void ShotMath::Feedback(){
     Feedback::sendDouble("a shotMath", "shooter velocity", shooterVelocity.value());
     Feedback::sendDouble("a shotMath", "hood position", hoodPosition);
     Feedback::sendDouble("a shotMath", "shooter RPM", shooterRPM);
+    Feedback::sendDouble("a shotMath", "trevor good xVel", velocityX);
+    Feedback::sendDouble("a shotMath", "trevor good yVel", velocityY);
+    Feedback::sendDouble("a shotMath", "trevor good Vel", velocity);
+    Feedback::sendDouble("a shotMath", "trevor good Angle", angle);
 }
 
 // bye jeff

@@ -19,7 +19,7 @@
 // The maximum RPM of the shooter wheels.
 #define SHOOTER_MAX_RPM 2700 // 5700
 
-#define PETERS_INTERPOLATION
+//#define PETERS_INTERPOLATION
 
 class Shooter : public Mechanism {
 public:
@@ -81,6 +81,8 @@ public:
     // :D
     void recordShooterValues();
 
+    // true increases, false decreases
+    void changeShooterPid(bool goUp); 
 
 private:
     Limelight* limelight;
@@ -98,6 +100,8 @@ private:
 
     // The target position of the hood.
     double targetHoodPosition = 0;
+
+    double shooterP = .0015;
 
     OdometryMode odometryMode = INTERPOLATION;
     

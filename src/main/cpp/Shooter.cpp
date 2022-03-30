@@ -161,7 +161,7 @@ void Shooter::process() {
             }
             else if (odometryMode == CRAZY_MATH) {
                 if (limelight->hasTarget()) {
-                    ShotMath::Shot shot = shotMath.calculateShot(limelight->getDistance(), 0_mps);
+                    ShotMath::Shot shot = shotMath.calculateShot(limelight->getDistance(), 0_mps, 0_deg);
                     targetHoodPosition = shot.hoodPos;
                     targetRPM = shot.shooterRPM;
                 }
@@ -326,6 +326,17 @@ void Shooter::recordShooterValues(){
     MyFile.close();
 }
 
+void Shooter::changeShooterPid(bool goUp){
+    if(goUp){
+        shooterP += .0001;
+    }
+    else{
+        shooterP += -.0001;
+    }
+    shooterLeftPID->SetP(shooterP, 0);
+    shooterRightPID->SetP(shooterP, 0);
+}
+
 void Shooter::sendFeedback() {
     std::string modeString = "";
     switch (shooterMode) {
@@ -369,6 +380,7 @@ void Shooter::sendFeedback() {
     Feedback::sendDouble("shooter", "left temperature (F)", shooterLeftMotor->GetMotorTemperatureFarenheit());
     Feedback::sendDouble("shooter", "right temperature (F)", shooterRightMotor->GetMotorTemperatureFarenheit());
     Feedback::sendBoolean("shooter", "ready to shoot", isShooterReady());
+    Feedback::sendDouble("shooter", "shooter p value for pid", shooterP);
 
     Feedback::sendDouble("thunderdashboard", "shooter_hood", (readPotentiometer() * 100));
 }

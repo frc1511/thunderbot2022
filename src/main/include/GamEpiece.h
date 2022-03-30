@@ -105,6 +105,9 @@ public:
 
     void setShotOdometryMode(Shooter::OdometryMode mode);
 
+    // true is increase, false is decrease
+    void shooterPIDChange(bool goUp);
+
 private:
     Limelight* limelight;
 

@@ -1,7 +1,7 @@
 #include "Controls.h"
 #include <iostream>
 
-// #define XBOX_CONTROLLER
+// define moved to controllerstate
 
 #ifdef XBOX_CONTROLLER
 
@@ -333,13 +333,23 @@ void Controls::doAux() {
         else {
             gamEpiece->setManualHoodSpeed(0);
         }
-        if(auxController.getRawButtonPressed(SHARE_BUTTON)){
-            gamEpiece->changeShooterSpeed(false);
-            lastPressedMode = Shooter::MANUAL;
+        if(!isCraterMode){
+            if(auxController.getRawButtonPressed(SHARE_BUTTON)){
+                gamEpiece->changeShooterSpeed(false);
+                lastPressedMode = Shooter::MANUAL;
+            }
+            if(auxController.getRawButtonPressed(OPTIONS_BUTTON)){
+                gamEpiece->changeShooterSpeed(true);
+                lastPressedMode = Shooter::MANUAL;
+            }
         }
-        if(auxController.getRawButtonPressed(OPTIONS_BUTTON)){
-            gamEpiece->changeShooterSpeed(true);
-            lastPressedMode = Shooter::MANUAL;
+        else{
+            if(auxController.getRawButtonPressed(SHARE_BUTTON)){
+                gamEpiece->shooterPIDChange(false);
+            }
+            if(auxController.getRawButtonPressed(OPTIONS_BUTTON)){
+                gamEpiece->shooterPIDChange(true);
+            }
         }
 
 
@@ -435,6 +445,7 @@ void Controls::controllerInDisable(){
         drive->zeroRotation();
         drive->resetOdometry();
     }
+    doSwitchPanel();
 }
 
 void Controls::autoForTrevor(){
@@ -487,4 +498,5 @@ void Controls::sendFeedback(){
     Feedback::sendDouble("thunderdashboard", "frontcamera", whichCamera);
     Feedback::sendBoolean("controls", "warmup, true = yes", shoot);
     Feedback::sendDouble("controls", "whichAutoMode", theAutoMode);
+    Feedback::sendDouble("thunderdashboard", "inpitmode", isCraterMode);
 }
