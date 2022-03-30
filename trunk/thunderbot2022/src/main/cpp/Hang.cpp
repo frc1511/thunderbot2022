@@ -46,8 +46,8 @@ const double kPawlForward = .8;
 const double kPawlReverse = .57;
 
 const double kStringServoTime = 3;
-const double kShiftToStaticArmTime = 3;
-const int kDisengageBrakeTime = .2;
+const double kShiftToStaticArmTime = 5;
+const int kDisengageBrakeTime = 1;
 
 Hang::Hang() : winchMotor(ThunderSparkMax::create(ThunderSparkMax::MotorID::Hang)) {
     configureMotor();
@@ -357,15 +357,10 @@ if(autoDone == false && manual != NOT)
                 stepDone = false;
                 retractStep = 0;
                 extendStep = 0;
-                if(hangTimer.Get().value() >= .5)
-                {
-                    step++;
-                }
                 retractCurrentIncrease = false;
-                /*
                 hangTimer.Stop();
                 hangTimer.Reset();
-                */
+                step++;
             }
             else if(step == 2){
                 if(goingForHigh){
@@ -819,8 +814,12 @@ void Hang::retractForHigh()
     else if (readEncoder() >= kEncoderSmallExtension && retractDone == true)
     {
         engageBrake();
-        winchMotor->SetIdleMode(ThunderSparkMax::IdleMode::COAST);
         step++;
+    }
+    else if(hangTimer.Get().value() >= kShiftToStaticArmTime)
+    {
+        winchMotor->SetIdleMode(ThunderSparkMax::IdleMode::COAST);
+        manualStep++;
     }
     else if(retractCurrentIncrease == false){
         winchMotor->Set(-kRetractLimitedSpeed);
@@ -846,12 +845,6 @@ void Hang::retractForHigh()
             winchMotor->SetIdleMode(ThunderSparkMax::IdleMode::BRAKE);
         }
     }
-    /*
-    if(hangTimer.Get().value() >= kShiftToStaticArmTime)
-    {
-        winchMotor->SetIdleMode(ThunderSparkMax::IdleMode::COAST);
-        manualStep++;
-    }*/
 }
 
 void Hang::setIsLow(bool isLow){
