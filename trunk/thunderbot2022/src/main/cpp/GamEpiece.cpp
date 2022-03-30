@@ -187,6 +187,10 @@ void GamEpiece::setShotOdometryMode(Shooter::OdometryMode mode) {
     shooter.setOdometryMode(mode);
 }
 
+void GamEpiece::shooterPIDChange(bool goUp){
+    shooter.changeShooterPid(goUp);
+}
+
 void GamEpiece::sendFeedback() {
     intake.sendFeedback();
     shooter.sendFeedback();

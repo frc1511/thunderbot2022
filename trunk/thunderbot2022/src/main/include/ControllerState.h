@@ -6,6 +6,8 @@
 #include <fstream>
 #include <frc/Timer.h>
 
+//#define XBOX_CONTROLLER
+
 class ControllerState{
     public:
 
@@ -75,7 +77,7 @@ class ControllerState{
     bool buttonsDone;
     bool axisDone;
 
-
+    int amountOfButtons = 14;
     bool recordOrNot;
 
     

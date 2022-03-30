@@ -25,6 +25,11 @@ ControllerState::~ControllerState(){
 
 }
 void ControllerState::reset(){
+    #ifdef XBOX_CONTROLLER
+        amountOfButtons = 10;
+    #else
+        amountOfButtons = 14;
+    #endif
     if(whichController == 0){
         autoButtonsFile = driverAutoFiles[(whichMode)*2];
         autoAxesFile = driverAutoFiles[(whichMode*2)+1];
@@ -44,7 +49,7 @@ void ControllerState::reset(){
 void ControllerState::process(){
 
     //records when each button is pressed and realeased
-    for (int i = 0; i < 14; i++) { // 14 buttons, 6 axis, 1 pov
+    for (int i = 0; i < amountOfButtons; i++) { // 14 buttons, 6 axis, 1 pov
         buttons[(2*i)+1] = buttons[2*i];
         if(normalOrRelay){ // checks if it should look to the controller for the value of the button
             buttons[2*i] = myController.GetRawButton(i+1);
