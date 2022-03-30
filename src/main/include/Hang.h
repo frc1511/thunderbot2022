@@ -60,7 +60,6 @@ private:
     /*sensor on the bottom of the arm to tell when fully retracted, doesnt matter which
     could also be on the winch i dont know yet*/
     frc::DigitalInput homeSensor {DIO_HANG_OPTICAL_HOME_SENSOR};
-
     //actuator stuff
     ThunderSparkMax *winchMotor;
     //TOP PISTON CONNECTING hangPivot2 to the arm
@@ -90,8 +89,7 @@ private:
     double manualStep;
     bool test;
     double highOrTraversal;
-
-     double currentEncoderValue;
+    double currentEncoderValue;
     //pivots the extending arms forwards/backwards
     void pivot(bool armsForward);//working
     //reads encoder
