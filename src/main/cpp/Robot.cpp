@@ -7,7 +7,7 @@ void Robot::RobotInit() {
     feedbackTimer.Start();
 }
 void Robot::RobotPeriodic() {
-    if(feedbackTimer.Get().value() >= .5){
+    if(feedbackTimer.Get().value() >= .1){
         for (int i = 0; i < nMechanisms; ++i)
             allMechanisms[i]->sendFeedback();
         autonomous.sendFeedback();
