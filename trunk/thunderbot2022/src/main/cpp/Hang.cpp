@@ -22,7 +22,7 @@ const double kEncoderMin = -3.23;//-2.99121;
 //near max
 const double kEncoderMidHeight = 11.497; // max is really 13.1;
 //max height
-const double kEncoderMax = 13.64; // max is really 13.64;
+const double kEncoderMax = 14.65; // max is really 13.64;
 const double kEncoderHalfRetracted = 5.205;
 //height corresponding to kHangWinchSlowSpeed
 const double kEncoderSlowHeight = kEncoderMax*.4;
@@ -46,7 +46,7 @@ const double kPawlForward = .8;
 const double kPawlReverse = .57;
 
 const double kStringServoTime = 3;
-const double kShiftToStaticArmTime = 5;
+const double kShiftToStaticArmTime = 3;
 const int kDisengageBrakeTime = 1;
 
 Hang::Hang() : winchMotor(ThunderSparkMax::create(ThunderSparkMax::MotorID::Hang)) {
@@ -66,6 +66,7 @@ void Hang::resetToMode(MatchMode mode){
     stringServoLeft.Set(kServoStopped);
     ratchetServo.Set(kPawlForward);
     winchMotor->Set(0);
+    teleopOrNo = false;
     //pistons are the opposite of what you think
     hangPivot1.Set(frc::DoubleSolenoid::Value::kForward);
     hangPivot2.Set(frc::DoubleSolenoid::Value::kReverse);
@@ -95,10 +96,19 @@ void Hang::resetToMode(MatchMode mode){
         highDone = false;
         pauseEnabled = false;
         pauseDisabled = false;
+        teleopOrNo = true;
+        currentTimer.Reset();
+        currentTimer.Start();
+        std::ofstream HangCurrentLogs("/home/lvuser/hangCurrentLogs.txt");
+        HangCurrentLogs << "";
+        HangCurrentLogs.close();
     }
 }
 
 void Hang::sendFeedback(){
+    if(teleopOrNo){
+        currentLog();
+    }
     std::string targetString = "";
     switch (targetStage){
         case LOW:
@@ -122,11 +132,26 @@ void Hang::sendFeedback(){
                 targetString = "going to/on traversal bar";
             }
             break;
+        case HIGH_TRAVERSAL_2:
+            targetString = "pulling onto high/traversal bar";
+            break;
         case NOT_ON_BAR:
             targetString = "not currently on a bar";
             break;
         case PAUSE:
             targetString = "stopped";
+            break;
+    }
+    std::string targetHeight = "";
+    switch (extendLevel){
+        case LOW_HEIGHT:
+            targetHeight = "low bar";
+            break;
+        case MID_HEIGHT:
+            targetHeight = "Mid bar";
+            break;
+        case HIGH_TRAVERSAL_HEIGHT:
+            targetHeight = "high/traversal";
             break;
     }
     int hangStatus = 0;
@@ -195,16 +220,18 @@ void Hang::sendFeedback(){
     Feedback::sendDouble("thunderdashboard", "hang_status", hangStatus);
     Feedback::sendDouble("Hang", "manual step", manualStep);
     Feedback::sendDouble("Hang", "timer", hangTimer.Get().value());
+    Feedback::sendDouble("Hang", "timer for current tracking", currentTimer.Get().value());
     Feedback::sendDouble("Hang", "disengage brake start", disengageBrakeStart);
     Feedback::sendDouble("Hang", "winch motor current", winchMotor->GetOutputCurrent());
     Feedback::sendDouble("Hang", "stickyfaults", winchMotor->GetStickyFaults());
     Feedback::sendDouble("Hang", "faults", winchMotor->GetFaults());
     Feedback::sendDouble("Hang", "winch motor temp", winchMotor->GetMotorTemperatureFarenheit());
     Feedback::sendBoolean("Hang", "is high done", highDone);
+    Feedback::sendString("Hang", "ideal arm height", targetHeight.c_str());
 }
 
 void Hang::process(){
-//std::cout << targetStage << "," << manual << '\n';
+////std::cout << targetStage << "," << manual << '\n';
 if(autoDone == false && manual != NOT)
     {
         hangBar = 0;
@@ -404,7 +431,7 @@ if(autoDone == false && manual != NOT)
                 hangTimer.Reset();
                 hangTimer.Start();
                 step++;
-                std::cout << "resetting" << '\n';
+                //std::cout << "resetting" << '\n';
             }
             /*else if(step == 2)
             {
@@ -413,7 +440,7 @@ if(autoDone == false && manual != NOT)
             else if(step == 2)
             {
                 pivot(false);
-                std::cout << "pivot" << '\n';
+                //std::cout << "pivot" << '\n';
             }
             else if (step == 3)
             {
@@ -422,69 +449,82 @@ if(autoDone == false && manual != NOT)
                 extendLevel = HIGH_TRAVERSAL_HEIGHT;
                 hangTimer.Reset();
                 hangTimer.Start();
-                std::cout << "resetting" << '\n';
+                //std::cout << "resetting" << '\n';
             }
             else if (step == 4)
             {
                 extend();
-                std::cout << "extending" << '\n';
+                //std::cout << "extending" << '\n';
             }
             else if (step == 5)
             {
                 hangTimer.Reset();
                 hangTimer.Start();
                 step++;
-                std::cout << "resetting" << '\n';
+                //std::cout << "resetting" << '\n';
             }
             else if (step == 6)
             {
                 reversePivot();
-                std::cout << "reverse pivot" << '\n';
+                //std::cout << "reverse pivot" << '\n';
+                stepDone = true;
             }
-            else if (step == 7)
+            else
+            {
+                winchMotor->Set(0);
+            }
+            break;
+        case HIGH_TRAVERSAL_2:
+            if (step == 0)
             {
                 engageBrake();
                 step++;
-                std::cout << "engage brake" << '\n';
+                //std::cout << "engage brake" << '\n';
             }
-            else if (step == 8)
+            else if (step == 1)
             {
                 retractStep = 0;
                 retractCurrentIncrease = false;
                 step++;
-                std::cout << "reset" << '\n';
+                //std::cout << "reset" << '\n';
             }
-            else if(step == 9)
+            else if(step == 2)
             {
                 retractMaxToHalf();
-                std::cout << "retracting max to half" << '\n';
+                //std::cout << "retracting max to half" << '\n';
             }
-            else if(step == 10)
+            else if(step == 3)
             {
                 pivot(true);
                 hangTimer.Reset();
                 hangTimer.Start();
-                std::cout << "pivoting" << '\n';
+                //std::cout << "pivoting" << '\n';
                 
             }
-            else if(step == 11)
+            else if(step == 4)
             {
                 //windUpString();
                 retractCurrentIncrease = false;
-                std::cout << "winding string" << '\n';
-                step++;
+                retractDone = false;
+                //std::cout << "winding string" << '\n';
+                if(hangTimer.Get().value() >= kShiftToStaticArmTime){
+                    step++;
+                    hangTimer.Reset();
+                    hangTimer.Start();
+                }
             }
-            else if(step == 13)
+            else if(step == 5)
             {
                 if(highDone == false){
                     retractHalfToStaticArms();
+                    //std::cout << "going to static arms" << '\n';
                 }
                 else{
-                    retractHalfToFull();
+                    step++;
                 }
-                std::cout <<"retracting half to full" << "\n";
+                ////std::cout <<"retracting half to full" << "\n";
             }
-            else if(step == 14){
+            else if(step == 6){
                 autoDone = true;
                 stepDone = true;
                 highDone = true;
@@ -534,10 +574,11 @@ void Hang::extend()
         extendStep++;
     }
     else if(extendStep == 1 && disengageBrake()){
-        if(hangTimer.Get().value() >= kDisengageBrakeTime){
+        /*if(hangTimer.Get().value() >= kDisengageBrakeTime){
             winchMotor->Set(kExtendBackdrive);
             extendStep++;
-        }
+        }*/
+        extendStep++;
     }
     else if (extendStep == 2){
         #ifdef TEST_BOARD
@@ -702,6 +743,9 @@ void Hang::commandAuto()
                             targetStage = HIGH_TRAVERSAL;
                         }
                         break;
+                    case HIGH_TRAVERSAL_2:
+                        // bye warning
+                        break;
                 }
             }
             break;
@@ -748,8 +792,18 @@ void Hang::commandAuto()
             if(stepDone == true)
             {   
                 hangBar++;
+                targetStage = HIGH_TRAVERSAL_2;
+                step = 0;
+                stepDone = false;
+            }
+            break;
+        case HIGH_TRAVERSAL_2:
+            if(stepDone == true)
+            {   
+                hangBar++;
                 targetStage = HIGH_TRAVERSAL;
                 step = 0;
+                stepDone = false;
             }
             break;
     }
@@ -806,7 +860,7 @@ void Hang::retractForHigh()
     double currentEncoderValue = readEncoder();
     if(homeSensor.Get() == 1 || currentEncoderValue <= kEncoderMin){
         winchMotor->Set(0);
-        std::cout <<"finished" << '\n';
+        //std::cout <<"finished" << '\n';
         retractDone = true;
         hangTimer.Reset();
         hangTimer.Start();
@@ -922,20 +976,20 @@ void Hang::retractHalfToStaticArms(){
     double currentEncoderValue = readEncoder();
     if(homeSensor.Get() == 1 || currentEncoderValue <= kEncoderMin){
         winchMotor->Set(0);
-        std::cout <<"finished" << '\n';
+        //std::cout <<"finished" << '\n';
         retractDone = true;
         hangTimer.Reset();
         hangTimer.Start();
-    }
-    else if(hangTimer.Get().value() >= kShiftToStaticArmTime)
-    {
-        winchMotor->SetIdleMode(ThunderSparkMax::IdleMode::COAST);
-        manualStep++;
     }
     else if (readEncoder() >= kEncoderSmallExtension && retractDone == true)
     {
         engageBrake();
         step++;
+    }
+    else if(hangTimer.Get().value() >= kShiftToStaticArmTime && retractDone == true)
+    {
+        winchMotor->SetIdleMode(ThunderSparkMax::IdleMode::COAST);
+        manualStep++;
     }
     else if(retractCurrentIncrease == false){
         winchMotor->Set(-kRetractLimitedSpeed);
@@ -958,4 +1012,11 @@ void Hang::retractHalfToStaticArms(){
             winchMotor->SetIdleMode(ThunderSparkMax::IdleMode::BRAKE);
         }
     }
+}
+
+void Hang::currentLog(){
+    std::ofstream HangCurrentLogs;
+    HangCurrentLogs.open("/home/lvuser/hangCurrentLogs.txt", std::fstream::app);
+    HangCurrentLogs << "time: " << std::to_string(currentTimer.Get().value()) << ", current: " << std::to_string(winchMotor->GetOutputCurrent()) << "\n";
+    HangCurrentLogs.close();
 }

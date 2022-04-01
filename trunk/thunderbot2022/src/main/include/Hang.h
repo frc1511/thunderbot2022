@@ -5,6 +5,7 @@
 #include "IOMap.h"
 #include "ThunderSparkMax.h"
 #include <frc/DoubleSolenoid.h>
+#include <fstream>
 //hi jeff
 #include <frc/Encoder.h>
 #include <frc/DigitalSource.h>
@@ -183,7 +184,7 @@ private:
     Manual manual;
     Manual currentManualState;
     //bar that the robot is going to
-    enum HangState{HIGH_TRAVERSAL, MID, MID_2, NOT_ON_BAR, PAUSE, LOW, LOW_2};
+    enum HangState{HIGH_TRAVERSAL, HIGH_TRAVERSAL_2, MID, MID_2, NOT_ON_BAR, PAUSE, LOW, LOW_2};
     //enumerator variable thing
     HangState targetStage;
     HangState completedTargetStage;
@@ -211,4 +212,8 @@ private:
     void commandManual(Manual manualCommands);
     //command to set height of moving arm extension
     void commandHeight(ExtendLevel extendLevelCommand);
+
+    bool teleopOrNo = false;
+    frc::Timer currentTimer;
+    void currentLog();
 };
