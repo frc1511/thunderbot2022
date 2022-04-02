@@ -19,7 +19,7 @@
 #define HOOD_SPEED_FORWARD .5
 #define HOOD_SPEED_BACKWARD -.5
 
-#define SHOOTER_TOLERANCE 40
+#define SHOOTER_TOLERANCE 10
 
 // --- Preset values ---
 
@@ -225,7 +225,7 @@ void Shooter::process() {
     else if (fabs(hoodPosition - targetHoodPosition) <= HOOD_TOLERANCE) {
         servoSpeed = HOOD_SPEED_STOPPED;
     }
-    // Below the target position.
+    // Below the target position. hi peter :D
     else if (hoodPosition < targetHoodPosition) {
         servoSpeed = HOOD_SPEED_FORWARD;
     }
