@@ -74,7 +74,7 @@ void Hang::resetToMode(MatchMode mode){
     teleopOrNo = false;
     //pistons are the opposite of what you think
     hangPivot1.Set(frc::DoubleSolenoid::Value::kForward);
-    hangPivot2.Set(frc::DoubleSolenoid::Value::kForward); // kReverse);
+    hangPivot2.Set(frc::DoubleSolenoid::Value::kReverse);
     if(mode != MatchMode::MODE_DISABLED)
     {
         resetEncoder();
@@ -301,6 +301,7 @@ if(autoDone == false && manual != NOT)
             break;
         case NOT_ON_BAR:
             winchMotor->Set(0);
+            //ratchetServo.Set(kPawlForward);
             break;
         case LOW:
             if (step == 0)
@@ -431,10 +432,11 @@ if(autoDone == false && manual != NOT)
             {
                 if(highOrTraversal == 1){
                     highOrTraversal++;
+                    //haveWeTraversed = true;
                 }
                 stepDone = false;
                 autoDone = false;
-                step++;
+                step++;      
             }
             else if (step == 1)
             {
@@ -567,8 +569,8 @@ void Hang::pivot(bool armsForward)
         step++;
     }
     else{
-        hangPivot1.Set(frc::DoubleSolenoid::kForward); // kReverse);
-        hangPivot2.Set(frc::DoubleSolenoid::kForward); // kReverse);
+        hangPivot1.Set(frc::DoubleSolenoid::kReverse);
+        hangPivot2.Set(frc::DoubleSolenoid::kReverse);
         step++;
     }
 }
@@ -685,7 +687,7 @@ void Hang::retract()
 void Hang::reversePivot()
 { 
     hangPivot1.Set(frc::DoubleSolenoid::Value::kForward);
-    hangPivot2.Set(frc::DoubleSolenoid::Value::kForward); // kReverse);
+    hangPivot2.Set(frc::DoubleSolenoid::Value::kReverse);
     step++;
 }
 
@@ -827,7 +829,7 @@ void Hang::commandAuto()
             break;
         case HIGH_TRAVERSAL:
             if(stepDone == true)
-            {   
+            {
                 hangBar++;
                 targetStage = HIGH_TRAVERSAL_2;
                 step = 0;
@@ -838,6 +840,12 @@ void Hang::commandAuto()
             if(stepDone == true)
             {   
                 hangBar++;
+                /*if(haveWeTraversed == true){
+                    targetStage = NOT_ON_BAR;
+                }
+                else{
+                    targetStage = HIGH_TRAVERSAL;
+                }*/
                 targetStage = HIGH_TRAVERSAL;
                 step = 0;
                 stepDone = false;
