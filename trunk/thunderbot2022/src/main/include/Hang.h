@@ -156,6 +156,7 @@ private:
     bool highDone;
     bool pauseEnabled;
     bool pauseDisabled;
+    bool haveWeTraversed;
 
     public:
    
