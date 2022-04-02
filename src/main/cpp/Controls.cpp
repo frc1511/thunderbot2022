@@ -60,8 +60,8 @@
 
 #define AXIS_DEADZONE .1
 
-Controls::Controls(Drive *drive, GamEpiece *gamEpiece, Hang *hang)
-    : drive(drive), gamEpiece(gamEpiece), hang(hang) {
+Controls::Controls(Drive *drive, GamEpiece *gamEpiece, Hang *hang, Limelight* limelight)
+    : drive(drive), gamEpiece(gamEpiece), hang(hang), limelight(limelight) {
     
 }
 
@@ -397,6 +397,10 @@ void Controls::doSwitchPanel() {
         hangManual = switchPanel.GetRawButton(3);
         hang->setIsLow(switchPanel.GetRawButton(4));
         hang->setGoingForHigh(switchPanel.GetRawButton(2)); // pressed means high bar
+        limelight->setLEDMode(Limelight::LEDMode::OFF);
+    }
+    else {
+        limelight->setLEDMode(Limelight::LEDMode::ON);
     }
     isCraterMode = switchPanel.GetRawButton(10);
     robotCentric = switchPanel.GetRawButton(5);
