@@ -46,7 +46,7 @@ private:
   Drive drive { &camera, &limelight };
 
 #ifdef HOMER
-  Controls controls { &drive, nullptr, nullptr };
+  Controls controls { &drive, nullptr, nullptr, &limelight };
   Autonomous autonomous { &drive, nullptr, &controls };
 
   static const int nMechanisms = 2;
@@ -59,7 +59,7 @@ private:
 
 
   BlinkyBlinky blinkyBlinky {};
-  Controls controls { &drive, &gamEpiece, &hang };
+  Controls controls { &drive, &gamEpiece, &hang, &limelight };
 
   Autonomous autonomous { &drive, &gamEpiece, &controls };
 

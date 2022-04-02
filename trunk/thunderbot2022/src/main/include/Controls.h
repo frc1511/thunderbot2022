@@ -12,7 +12,7 @@
 
 class Controls : public Mechanism {
 public:
-    Controls(Drive* drive, GamEpiece* gamEpiece, Hang* hang);
+    Controls(Drive* drive, GamEpiece* gamEpiece, Hang* hang, Limelight* limelight);
 
     ~Controls();
 
@@ -35,6 +35,7 @@ private:
     Drive* drive;
     GamEpiece* gamEpiece;
     Hang* hang;
+    Limelight* limelight;
     ShotMath shotmath{};
     bool cameraWasToggled = false;
     bool offsetsWereConfigured = false;
