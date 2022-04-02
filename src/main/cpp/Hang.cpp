@@ -27,7 +27,7 @@ const double kEncoder70percentMid = kEncoderMidHeight*.7;
 //max height
 const double kEncoderMax = 14.65; // max is really 13.64;
 const double kEncoder70percentMax = kEncoderMax * .7;
-const double kEncoderHalfRetracted = 5.205;
+const double kEncoderHalfRetracted = 8.94;
 //height corresponding to kHangWinchSlowSpeed
 const double kEncoderSlowHeight = kEncoderMax*.4;
 //height corresponding to kHangWinchSlowerSpeed
@@ -53,6 +53,7 @@ const double kPawlReverse = .57;
 const double kStringServoTime = 3;
 const double kShiftToStaticArmTime = 3;
 const int kDisengageBrakeTime = 1;
+const double kSwingToStaticArmsTime = 3;
 
 Hang::Hang() : winchMotor(ThunderSparkMax::create(ThunderSparkMax::MotorID::Hang)) {
     configureMotor();
@@ -362,7 +363,7 @@ if(autoDone == false && manual != NOT)
             {   
                 pivot(true);
                 extendStep = 0;
-                extendLevel = HIGH_TRAVERSAL_HEIGHT;
+                extendLevel = MID_HEIGHT;
             }
             else if(step == 1)
             {   
@@ -519,7 +520,7 @@ if(autoDone == false && manual != NOT)
                 retractCurrentIncrease = false;
                 retractDone = false;
                 //std::cout << "winding string" << '\n';
-                if(hangTimer.Get().value() >= kShiftToStaticArmTime){
+                if(hangTimer.Get().value() >= kSwingToStaticArmsTime){
                     step++;
                     hangTimer.Reset();
                     hangTimer.Start();
