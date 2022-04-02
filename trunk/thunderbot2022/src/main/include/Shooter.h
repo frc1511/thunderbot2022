@@ -19,7 +19,7 @@
 // The maximum RPM of the shooter wheels.
 #define SHOOTER_MAX_RPM 2700 // 5700
 
-//#define PETERS_INTERPOLATION
+#define PETERS_INTERPOLATION
 
 class Shooter : public Mechanism {
 public:

@@ -223,7 +223,7 @@ void Controls::doAux() {
             }
         } else {
             if (auxController.getRawButtonPressed(CIRCLE_BUTTON)) {
-                hang->commandManual(Hang::EXTEND);
+                hang->commandManual(Hang::DISENGAGE_BRAKE);
             }
             else if(auxController.getRawButtonReleased(CIRCLE_BUTTON)){
                 hang->commandManual(Hang::ENGAGE_BRAKE);
