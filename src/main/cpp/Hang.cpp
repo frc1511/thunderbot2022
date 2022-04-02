@@ -14,15 +14,19 @@ const double kHangWinchSlowerSpeed = .75;//.75;
 const double kRachetAndPawlBackdriveSpeed = .3;
 const double kDriveDownSpeed = .1;
 const double kRetractLimitedSpeed = .2;
-const double kExtendBackdrive = .6;
+const double kExtendBackdrive = .8;
+const double kExtendSlowerBackdrive = .2;
+const double kExtendLowSpeed = .2;
 
 //encoder constants
 //minimum the encoder will go
 const double kEncoderMin = -3.23;//-2.99121;
 //near max
 const double kEncoderMidHeight = 11.497; // max is really 13.1;
+const double kEncoder70percentMid = kEncoderMidHeight*.7;
 //max height
 const double kEncoderMax = 14.65; // max is really 13.64;
+const double kEncoder70percentMax = kEncoderMax * .7;
 const double kEncoderHalfRetracted = 5.205;
 //height corresponding to kHangWinchSlowSpeed
 const double kEncoderSlowHeight = kEncoderMax*.4;
@@ -35,7 +39,8 @@ const double kEncoderDisengageBrake = -11/360.0;
 //disengage brake height at the end of retractForHigh so we can shift to static arms
 const double kEncoderDisenageInRetract = -2.23; //75% of the way to kEncoderMin from kEncoderSlowerHeight
 //low bar max
-const double kEncoderLowHeight = 4.75244;
+const double kEncoderLowHeight = 2.7397;
+const double kEncoder70percentLow = kEncoderLowHeight*.7;
 //hi ishan
 //servo speed constants
 const double kServoBackward = 1;
@@ -69,7 +74,7 @@ void Hang::resetToMode(MatchMode mode){
     teleopOrNo = false;
     //pistons are the opposite of what you think
     hangPivot1.Set(frc::DoubleSolenoid::Value::kForward);
-    hangPivot2.Set(frc::DoubleSolenoid::Value::kReverse);
+    hangPivot2.Set(frc::DoubleSolenoid::Value::kForward); // kReverse);
     if(mode != MatchMode::MODE_DISABLED)
     {
         resetEncoder();
@@ -161,7 +166,10 @@ void Hang::sendFeedback(){
     else{
         hangStatus = 1;
     }
-    std::string targetManualString = "";
+        std::string targetManualString = "";
+
+    if(manual != NOT)
+    {
     switch (manual){
         case EXTEND:
             targetManualString = "extending";
@@ -199,6 +207,7 @@ void Hang::sendFeedback(){
         case NOT:
             targetManualString = "nothing";
             break;
+        }
     }
 
     Feedback::sendBoolean("Hang", "step done", stepDone);
@@ -238,6 +247,7 @@ if(autoDone == false && manual != NOT)
         switch (manual)
         {
             case EXTEND:
+                extendLevel = HIGH_TRAVERSAL_HEIGHT;
                 extend();
                 break;
             case EXTEND_A_LITTLE:
@@ -351,7 +361,7 @@ if(autoDone == false && manual != NOT)
             {   
                 pivot(true);
                 extendStep = 0;
-                extendLevel = MID_HEIGHT;
+                extendLevel = HIGH_TRAVERSAL_HEIGHT;
             }
             else if(step == 1)
             {   
@@ -557,8 +567,8 @@ void Hang::pivot(bool armsForward)
         step++;
     }
     else{
-        hangPivot1.Set(frc::DoubleSolenoid::kReverse);
-        hangPivot2.Set(frc::DoubleSolenoid::kReverse);
+        hangPivot1.Set(frc::DoubleSolenoid::kForward); // kReverse);
+        hangPivot2.Set(frc::DoubleSolenoid::kForward); // kReverse);
         step++;
     }
 }
@@ -567,6 +577,7 @@ void Hang::extend()
 {
     if (extendStep == 0)
     {
+        winchMotor->SetIdleMode(ThunderSparkMax::COAST);
         disengageBrakeStart = readEncoder();
         disengageBrakeDone = false;
         hangTimer.Reset();
@@ -574,25 +585,42 @@ void Hang::extend()
         extendStep++;
     }
     else if(extendStep == 1 && disengageBrake()){
-        /*if(hangTimer.Get().value() >= kDisengageBrakeTime){
-            winchMotor->Set(kExtendBackdrive);
-            extendStep++;
-        }*/
+        std::cout << "extending\n";
         extendStep++;
     }
-    else if (extendStep == 2){
+    else if(hangTimer.Get().value() >= kDisengageBrakeTime && extendStep == 2){
+            switch (extendLevel){
+                case LOW_HEIGHT:
+                    winchMotor->Set(kExtendLowSpeed);
+                    break;
+                case MID_HEIGHT:
+                    winchMotor->Set(kExtendBackdrive);
+                    break;
+                case HIGH_TRAVERSAL_HEIGHT:
+                    winchMotor->Set(kExtendBackdrive);
+                    break;
+            }
+            std::cout << "full speed\n";
+            extendStep++;
+    }
+    else if (extendStep == 3){
         #ifdef TEST_BOARD
         winchMotor->Set(.5);
         #endif
         extendStep++;
     }
-    else if (extendStep == 3) {
+    else if(extendStep == 4){
+        winchMotor->SetIdleMode(ThunderSparkMax::BRAKE);
+        extendStep++;
+    }
+    else if (extendStep == 5) {
         switch (extendLevel){
             case LOW_HEIGHT:
                 if(readEncoder() >= kEncoderLowHeight){
                     step++;
                     manualStep++;
                     winchMotor->Set(0);
+                    winchMotor->SetIdleMode(ThunderSparkMax::COAST);
                 }
                 break;
             case MID_HEIGHT:
@@ -600,6 +628,10 @@ void Hang::extend()
                     step++;
                     manualStep++;
                     winchMotor->Set(0);
+                    winchMotor->SetIdleMode(ThunderSparkMax::COAST);
+                }
+                else if(readEncoder() >= kEncoder70percentMid){
+                    winchMotor->Set(kExtendSlowerBackdrive);
                 }
                 break;
             case HIGH_TRAVERSAL_HEIGHT:
@@ -607,6 +639,10 @@ void Hang::extend()
                     step++;
                     manualStep++;
                     winchMotor->Set(0);
+                    winchMotor->SetIdleMode(ThunderSparkMax::COAST);
+                }
+                else if(readEncoder() >= kEncoder70percentMax){
+                    winchMotor->Set(kExtendSlowerBackdrive);
                 }
                 break;
         }
@@ -649,13 +685,14 @@ void Hang::retract()
 void Hang::reversePivot()
 { 
     hangPivot1.Set(frc::DoubleSolenoid::Value::kForward);
-    hangPivot2.Set(frc::DoubleSolenoid::Value::kReverse);
+    hangPivot2.Set(frc::DoubleSolenoid::Value::kForward); // kReverse);
     step++;
 }
 
 void Hang::engageBrake()
 {                  
     ratchetServo.Set(kPawlForward);
+    winchMotor->Set(0);
 
 }
 
@@ -829,6 +866,8 @@ void Hang::commandManual(Manual manualCommands){
         retractDone = false;
         disengageBrakeStart = readEncoder();
         retractCurrentIncrease = false;
+        winchMotor->Set(0);
+        targetStage = NOT_ON_BAR;
     }
     currentManualState = manual;
 }
