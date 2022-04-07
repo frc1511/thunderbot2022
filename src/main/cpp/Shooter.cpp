@@ -142,8 +142,10 @@ void Shooter::process() {
         case ODOMETRY:
             if (odometryMode == INTERPOLATION) {
 #ifdef PETERS_INTERPOLATION
-                targetHoodPosition = hoodInterpolation[limelight->getAngleVertical().value()].value();
-                targetRPM = rpmInterpolation[limelight->getAngleVertical().value()].value();
+                if (limelight->hasTarget()) {
+                    targetHoodPosition = hoodInterpolation[limelight->getAngleVertical().value()].value();
+                    targetRPM = rpmInterpolation[limelight->getAngleVertical().value()].value();
+                }
 #else
                 
                 //distance = limelight->getDistance();

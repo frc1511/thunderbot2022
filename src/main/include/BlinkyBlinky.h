@@ -8,14 +8,8 @@
 #include <frc/Timer.h>
 #include <array>
 
-#define LED_NUM_UNDERGLOW_FRONT 35
-#define LED_NUM_UNDERGLOW_BACK 35
-#define LED_NUM_UNDERGLOW_LEFT 45
-#define LED_NUM_UNDERGLOW_RIGHT 45 
-
-#define LED_NUM_UNDERGLOW_TOTAL (LED_NUM_UNDERGLOW_FRONT + LED_NUM_UNDERGLOW_BACK + LED_NUM_UNDERGLOW_LEFT + LED_NUM_UNDERGLOW_RIGHT)
-
-#define LED_NUM_TOTAL (LED_NUM_UNDERGLOW_TOTAL)
+// number of leds on each side.
+#define LED_NUM_HANGER 80
 
 class BlinkyBlinky : public Mechanism {
 public:
@@ -26,18 +20,28 @@ public:
     void process() override;
     void sendFeedback() override;
 
+    enum LEDMode {
+        ALLIANCE,
+        HANGER_STATUS,
+        HOME_DEPOT,
+        CRATER_MODE,
+        DISABLED,
+    };
+
+    void setLEDMode(LEDMode mode);
+
 private:
-    frc::AddressableLED strip { PWM_BLINKY_BLINKY };
-    std::array<frc::AddressableLED::LEDData, LED_NUM_TOTAL> stripBuffer {};
-    std::array<frc::AddressableLED::LEDData, LED_NUM_TOTAL> colorRange {};
+    frc::AddressableLED strip { PWM_BLINKY_BLINKY_STRIP };
+    // frc::AddressableLED rightStrip { PWM_BLINKY_BLINKY_RIGHT };
 
-    enum LEDSection { UNDERGLOW_FRONT, UNDERGLOW_BACK, UNDERGLOW_LEFT, UNDERGLOW_RIGHT };
+    std::array<frc::AddressableLED::LEDData, LED_NUM_HANGER> stripBuffer {};
+    std::array<frc::AddressableLED::LEDData, LED_NUM_HANGER> redColorRange {};
+    std::array<frc::AddressableLED::LEDData, LED_NUM_HANGER> blueColorRange {};
 
-    void setPixel(LEDSection section, int index, frc::Color color);
-    void setSection(LEDSection section, frc::Color color);    
+    void setPixel(int index, frc::Color color);
+    void setColor(frc::Color color);
 
-    int underglowOffset = 0;
-    frc::Timer timer {};
-    // 0=red, 1=blue
-    int currentAlliance;
+    LEDMode ledMode = ALLIANCE;
+
+    unsigned long long offset = 0;
 };

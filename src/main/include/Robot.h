@@ -59,7 +59,7 @@ private:
 
 
   BlinkyBlinky blinkyBlinky {};
-  Controls controls { &drive, &gamEpiece, &hang, &limelight };
+  Controls controls { &drive, &gamEpiece, &hang, &limelight, &blinkyBlinky };
 
   Autonomous autonomous { &drive, &gamEpiece, &controls };
 
