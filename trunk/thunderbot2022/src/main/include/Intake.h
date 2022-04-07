@@ -58,11 +58,12 @@ private:
     void ballCountOuttake(bool currentSensorOneInput, bool currentSensorTwoInput);
     bool checkSensor(frc::DigitalInput* sensor);
     void configureMotors();
+    void stageOneFix(bool currentSensorHalfInput, bool currentSensorOneInput);
     enum States // States for what intake should do
     {
         STATE_INTAKE_TWO_BALL,
         STATE_INTAKE_ONE_BALL,
-        
+        STATE_INTAKE_BRING_BALL_IN,        
         STATE_OUTTAKE,
         STATE_STOP,
         STATE_MANUAL,
@@ -81,17 +82,20 @@ private:
     bool stageOneSensorPrevious; // used for ball count so you only count a ball once
     bool stageTwoSensorPrevious; // used for stage two occupied
     bool shooterSensorPrevious;  // used for ball count
+    
 
     bool stageTwoOccupied; // indicates if stage 2 has a ball in it
     bool didAutoExist; //for reset purposes
 
     bool countPending; // whether or not the timer is running
+    bool stageOneFixing; //if stage one needs to be fixed
 
     States currentState;
     IntakeDirection targetDirection;
     frc::DigitalInput stageOneFlag{DIO_STORAGE_BANNER_STAGE_ONE}; // true is present, false is not present
     frc::DigitalInput stageTwoFlag{DIO_STORAGE_BANNER_STAGE_TWO}; // true is present, false is not present
     frc::DigitalInput shooterFlag{DIO_SHOOTER_BANNER_LEFT_ROBOT}; // true is present, false is not present
+    frc::DigitalInput stageHalfFlag{DIO_STORAGE_BANNER_STAGE_HALF}; // true is present, false is not present
     //frc::Debouncer m_debouncer{25_ms, frc::Debouncer::DebounceType::kBoth}; //used to not double count a single ball
     frc::Timer ballCountFix;
 };
