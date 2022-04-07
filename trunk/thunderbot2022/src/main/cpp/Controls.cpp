@@ -60,8 +60,8 @@
 
 #define AXIS_DEADZONE .1
 
-Controls::Controls(Drive *drive, GamEpiece *gamEpiece, Hang *hang, Limelight* limelight)
-    : drive(drive), gamEpiece(gamEpiece), hang(hang), limelight(limelight) {
+Controls::Controls(Drive *drive, GamEpiece *gamEpiece, Hang *hang, Limelight* limelight, BlinkyBlinky* blinkyBlinky)
+    : drive(drive), gamEpiece(gamEpiece), hang(hang), limelight(limelight), blinkyBlinky(blinkyBlinky) {
     
 }
 
@@ -397,10 +397,6 @@ void Controls::doSwitchPanel() {
         hangManual = switchPanel.GetRawButton(3);
         hang->setIsLow(switchPanel.GetRawButton(4));
         hang->setGoingForHigh(switchPanel.GetRawButton(2)); // pressed means high bar
-        limelight->setLEDMode(Limelight::LEDMode::OFF);
-    }
-    else {
-        limelight->setLEDMode(Limelight::LEDMode::ON);
     }
     isCraterMode = switchPanel.GetRawButton(10);
     robotCentric = switchPanel.GetRawButton(5);
@@ -429,6 +425,28 @@ void Controls::doSwitchPanel() {
     else {
         gamEpiece->setShotOdometryMode(Shooter::INTERPOLATION);
     }
+
+    if (getCurrentMode() == MODE_DISABLED || hangActive) {
+        limelight->setLEDMode(Limelight::LEDMode::OFF);
+    }
+    else {
+        limelight->setLEDMode(Limelight::LEDMode::ON);
+    }
+
+
+    if (getCurrentMode() == MODE_DISABLED) {
+        blinkyBlinky->setLEDMode(BlinkyBlinky::DISABLED);
+    }
+    else if (isCraterMode) {
+        blinkyBlinky->setLEDMode(BlinkyBlinky::CRATER_MODE);
+    }
+    else if (hangActive) {
+        blinkyBlinky->setLEDMode(BlinkyBlinky::HANGER_STATUS);
+    }
+    else {
+        blinkyBlinky->setLEDMode(BlinkyBlinky::ALLIANCE);
+    }
+    
 }
 
 bool Controls::getShouldPersistConfig() {
@@ -471,6 +489,7 @@ void Controls::sendFeedback(){
     driveController.sendFeedback();
     auxController.sendFeedback();
     shotmath.Feedback();
+    blinkyBlinky->sendFeedback();
     std::string mode = "";
     switch(lastPressedMode){
         case(Shooter::TARMAC_LINE):

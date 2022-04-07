@@ -74,8 +74,8 @@ private:
 
     //servos
     frc::Servo ratchetServo{PWM_HANG_RACHET_AND_PAWL};
-    frc::Servo stringServoRight{PWM_STRING_SERVO_RIGHT};
-    frc::Servo stringServoLeft{PWM_STRING_SERVO_LEFT};
+    // frc::Servo stringServoRight{PWM_STRING_SERVO_RIGHT};
+    // frc::Servo stringServoLeft{PWM_STRING_SERVO_LEFT};
 #ifndef TEST_BOARD
     frc::DigitalInput staticSensor {DIO_HANG_REFLECTIVE_SENSOR};
 #endif

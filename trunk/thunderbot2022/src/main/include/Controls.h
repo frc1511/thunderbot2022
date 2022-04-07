@@ -6,13 +6,14 @@
 #include "GamEpiece.h"
 #include "Hang.h"
 #include "Limelight.h"
+#include "BlinkyBlinky.h"
 #include "ControllerState.h"
 #include "ShotMath.h"
 #include <frc/Joystick.h>
 
 class Controls : public Mechanism {
 public:
-    Controls(Drive* drive, GamEpiece* gamEpiece, Hang* hang, Limelight* limelight);
+    Controls(Drive* drive, GamEpiece* gamEpiece, Hang* hang, Limelight* limelight, BlinkyBlinky* blinkyBlinky);
 
     ~Controls();
 
@@ -36,6 +37,7 @@ private:
     GamEpiece* gamEpiece;
     Hang* hang;
     Limelight* limelight;
+    BlinkyBlinky* blinkyBlinky;
     ShotMath shotmath{};
     bool cameraWasToggled = false;
     bool offsetsWereConfigured = false;

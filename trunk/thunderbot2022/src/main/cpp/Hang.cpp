@@ -68,8 +68,8 @@ void Hang::doPersistentConfiguration(){
 }
 
 void Hang::resetToMode(MatchMode mode){
-    stringServoRight.Set(kServoStopped);
-    stringServoLeft.Set(kServoStopped);
+    // stringServoRight.Set(kServoStopped);
+    // stringServoLeft.Set(kServoStopped);
     ratchetServo.Set(kPawlForward);
     winchMotor->Set(0);
     teleopOrNo = false;
@@ -296,8 +296,8 @@ if(autoDone == false && manual != NOT)
     switch (targetStage){
         case PAUSE:
             ratchetServo.Set(kPawlForward);
-            //stringServoLeft.Set(kServoStopped);
-            //stringServoRight.Set(kServoStopped);
+            //// stringServoLeft.Set(kServoStopped);
+            //// stringServoRight.Set(kServoStopped);
             winchMotor->Set(0);
             break;
         case NOT_ON_BAR:
@@ -333,8 +333,8 @@ if(autoDone == false && manual != NOT)
             {
                 hangTimer.Reset();
                 hangTimer.Start();
-                //stringServoLeft.Set(kServoForward);
-                //stringServoRight.Set(kServoBackward);
+                //// stringServoLeft.Set(kServoForward);
+                //// stringServoRight.Set(kServoBackward);
                 step++;
             }
             else if (step == 1)
@@ -350,8 +350,8 @@ if(autoDone == false && manual != NOT)
             }
             else if(step == 2){
                 retract();
-                //stringServoRight.Set(kServoStopped);
-                //stringServoLeft.Set(kServoStopped);
+                //// stringServoRight.Set(kServoStopped);
+                //// stringServoLeft.Set(kServoStopped);
             }
             else if(step == 3){
                 stepDone = true;
@@ -387,8 +387,8 @@ if(autoDone == false && manual != NOT)
             {
                 hangTimer.Reset();
                 hangTimer.Start();
-                //stringServoLeft.Set(kServoForward);
-                //stringServoRight.Set(kServoBackward);
+                //// stringServoLeft.Set(kServoForward);
+                //// stringServoRight.Set(kServoBackward);
                 step++;
             }
             else if (step == 1)
@@ -408,8 +408,8 @@ if(autoDone == false && manual != NOT)
                 else{
                     retract();
                 }
-                //stringServoRight.Set(kServoStopped);
-                //stringServoLeft.Set(kServoStopped);
+                //// stringServoRight.Set(kServoStopped);
+                //// stringServoLeft.Set(kServoStopped);
             }
             else if((step == 3 && !goingForHigh) || (step == 4 && goingForHigh)){ // for normal mid it is step 3, for high bar mid it is 6
                 stepDone = true;
@@ -722,28 +722,28 @@ bool Hang::disengageBrake()
 void Hang::windUpString()
 {
     if(hangTimer.Get().value() >= kStringServoTime){
-        stringServoRight.Set(kServoStopped);
-        stringServoLeft.Set(kServoStopped);
+        // stringServoRight.Set(kServoStopped);
+        // stringServoLeft.Set(kServoStopped);
         step++;
         hangTimer.Stop();
     }
     else {
-        stringServoRight.Set(kServoBackward);
-        stringServoLeft.Set(kServoForward);
+        // stringServoRight.Set(kServoBackward);
+        // stringServoLeft.Set(kServoForward);
     }
 }
 
 void Hang::unwindString()
 {
     if(hangTimer.Get().value() >= kStringServoTime){
-            stringServoRight.Set(kServoStopped);
-            stringServoLeft.Set(kServoStopped);
+            // stringServoRight.Set(kServoStopped);
+            // stringServoLeft.Set(kServoStopped);
             step++;
             hangTimer.Stop();
         }
     else {
-        stringServoRight.Set(kServoForward);
-        stringServoLeft.Set(kServoBackward);
+        // stringServoRight.Set(kServoForward);
+        // stringServoLeft.Set(kServoBackward);
     }
 }
 

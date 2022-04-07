@@ -14,6 +14,7 @@ void Robot::RobotPeriodic() {
         controls.sendFeedback();
         feedbackTimer.Reset();
     }
+    blinkyBlinky.process();
 }
 
 void Robot::AutonomousInit() {
