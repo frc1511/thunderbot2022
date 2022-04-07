@@ -42,6 +42,9 @@ private:
     void setColor(frc::Color color);
 
     LEDMode ledMode = ALLIANCE;
+    double redVal = 0;
+    double greenVal = 0;
+    double blueVal = 0;
 
     unsigned long long offset = 0;
 };
