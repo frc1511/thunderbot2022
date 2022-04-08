@@ -72,7 +72,7 @@ public:
             V lowerVal = lowerBound->second;
 
             // Linear interpolation.
-            return (((upperVal - lowerVal) / (upperKey - lowerKey)) * (key - lowerKey)) + lowerVal;
+            return (((upperVal - lowerVal) / (upperKey - lowerKey)) * (key - lowerKey)) + lowerVal;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; // hi ishan D:D
         }
     }
 
