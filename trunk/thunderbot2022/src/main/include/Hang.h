@@ -14,6 +14,9 @@
 #include <frc/Timer.h>
 #include <frc/Servo.h>
 
+extern const double kEncoderMax;
+extern const double kEncoderMin;
+
 /*
 PART 1
     -ACTUATORS
@@ -85,7 +88,6 @@ private:
     //timer
     frc::Timer hangTimer;
     bool isDone;
-    bool stepDone;
     int hangBar = 0;
     double manualStep;
     bool test;
@@ -93,8 +95,6 @@ private:
     double currentEncoderValue;
     //pivots the extending arms forwards/backwards
     void pivot(bool armsForward);//working
-    //reads encoder
-    double readEncoder();
     //low bar extend
     void lowExtend();
     //sets encoder
@@ -213,6 +213,9 @@ private:
     void commandManual(Manual manualCommands);
     //command to set height of moving arm extension
     void commandHeight(ExtendLevel extendLevelCommand);
+
+    double readEncoder();
+    bool stepDone;
 
     bool teleopOrNo = false;
     frc::Timer currentTimer;

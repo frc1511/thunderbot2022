@@ -873,6 +873,7 @@ void Hang::commandManual(Manual manualCommands){
         hangTimer.Start();
         disengageBrakeDone = false;
         retractDone = false;
+        stepDone = false;
         disengageBrakeStart = readEncoder();
         retractCurrentIncrease = false;
         winchMotor->Set(0);

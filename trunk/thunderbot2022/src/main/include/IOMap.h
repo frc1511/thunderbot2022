@@ -67,7 +67,7 @@ extern bool isCraterMode;
     //PWM
     #define PWM_HANG_RACHET_AND_PAWL 0
     #define PWM_SHOOTER_HOOD_SERVO 1
-    #define PWM_BLINKY_BLINKY_STRIP 5
+    #define PWM_BLINKY_BLINKY_STRIP 4
 
     //DIO
     #define DIO_HANG_OPTICAL_HOME_SENSOR 0

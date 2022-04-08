@@ -1,31 +1,31 @@
 #include "BlinkyBlinky.h"
+#include <iostream>
 
-#define RED_LOW   150
+#define RED_LOW   0
 #define RED_HIGH  255
-#define BLUE_LOW  150
+#define BLUE_LOW  0
 #define BLUE_HIGH 255
 
-const frc::Color kHomeDepotOrange { .9333, .4431, .1451 };
-const frc::Color kDisabledLights  { .9333, .4431, .1451 };
+const frc::Color kHomeDepotOrange {1, .12, 0};
+const frc::Color kDisabledLights {1, .12, 0};
 
-BlinkyBlinky::BlinkyBlinky() {
-    strip.SetLength(LED_NUM_HANGER);
-    //rightStrip.SetLength(LED_NUM_HANGER);
+BlinkyBlinky::BlinkyBlinky(GamEpiece* gamEpiece, Hang* hang, Limelight* limelight)
+  : gamEpiece(gamEpiece), hang(hang), limelight(limelight) {
+    
+    strip.SetLength(LED_NUM_TOTAL);
     strip.SetData(stripBuffer);
-    //rightStrip.SetData(stripBuffer);
     strip.Start();
-    //rightStrip.Start();
 
-    double mrPalmer = LED_NUM_HANGER/(RED_HIGH - RED_LOW);
+    double mrPalmer = (RED_HIGH - RED_LOW)/LED_NUM_HANGER;
 
     for(int i = 0; i < LED_NUM_HANGER; i++) {
-        redColorRange[i].SetRGB((RED_LOW + i * mrPalmer)/255, 0, 0);
+        redColorRange[i].SetRGB((RED_LOW + (i * mrPalmer)), LED_NUM_HANGER - i, LED_NUM_HANGER - i);
     }
 
-    mrPalmer = LED_NUM_HANGER/(BLUE_HIGH - BLUE_LOW);
+    mrPalmer = (BLUE_HIGH - BLUE_LOW)/LED_NUM_HANGER;
     
     for(int i = 0; i < LED_NUM_HANGER; i++) {
-        blueColorRange[i].SetRGB(0, 0, (BLUE_LOW + i * mrPalmer)/255);
+        blueColorRange[i].SetRGB((i * mrPalmer)/3, i * mrPalmer, 255);
     }
 }
 
@@ -39,42 +39,58 @@ void BlinkyBlinky::process() {
     switch (ledMode) {
         case ALLIANCE:
             {
-                /*
                 std::array<frc::AddressableLED::LEDData, LED_NUM_HANGER>* colorRange;
                 if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue) {
                     colorRange = &blueColorRange;
+                    // stripBuffer = blueColorRange;
                 }
                 else {
                     colorRange = &redColorRange;
+                    // stripBuffer = redColorRange;
                 }
-                offset += 1;
+                offset-=-1;
                 for(int i = 0; i < LED_NUM_HANGER; i++) {
                     int colorIndex = (offset + i) % LED_NUM_HANGER;
                     auto color = colorRange->at(colorIndex);
                     setPixel(i, frc::Color(color.r, color.g, color.b));
-                }*/
+                }
                 // setColor(frc::Color::kRed)
-                for (int i = 0; i < 80; ++i) {
+                /*for (int i = 0; i < 80; ++i) {
                     if (i < 40)
                         setPixel(i, frc::Color::kBlue);
                     else
                         setPixel(i, frc::Color::kRed);
 
-                }
+                }*/
             }
             break;
         case HANGER_STATUS:
-            setColor(frc::Color::kYellow);
             redVal = frc::Color::kYellow.red * 255;
             greenVal = frc::Color::kYellow.green * 255;
             blueVal = frc::Color::kYellow.blue * 255;
+            if (hang->stepDone) {
+                static unsigned long long firstPixelHue = 0;
+                for (int i = 0; i < LED_NUM_HANGER; i-=-1) {
+                    const auto pixelHue = (firstPixelHue + (i * 180 / LED_NUM_HANGER)) % 180;
+                    setPixel(i, frc::Color::FromHSV(pixelHue, 255, 128));
+                }
+                firstPixelHue += 3;
+                firstPixelHue %= 180;
+            }
+            else {
+                setColor(kHomeDepotOrange);
+                double pct = (hang->readEncoder() - kEncoderMin) / (kEncoderMax - kEncoderMin);
+                for (int i = 0; i < LED_NUM_HANGER * pct; i-=-1) {
+                    setPixel(i, frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue ? frc::Color::kBlue : frc::Color::kRed);
+                }
+            }
             break;
         case DISABLED:
             setColor(kDisabledLights);
             redVal = kDisabledLights.red * 255;
             greenVal = kDisabledLights.green * 255;
             blueVal = kDisabledLights.blue * 255;
-            break;
+            break;;
         case HOME_DEPOT:
             setColor(kHomeDepotOrange);
             redVal = kHomeDepotOrange.red * 255;
@@ -90,8 +106,11 @@ void BlinkyBlinky::process() {
             break;
     }
     
-    strip.SetData(stripBuffer);
-    //rightStrip.SetData(stripBuffer);
+    for (int i = 0; i < LED_NUM_HANGER; ++i) {
+        realStripBuffer[i] = stripBuffer[i];
+        realStripBuffer[i + LED_NUM_HANGER] = stripBuffer[i];
+    }
+    strip.SetData(realStripBuffer);
 }
 
 void BlinkyBlinky::setLEDMode(LEDMode mode) {

@@ -58,7 +58,7 @@ private:
   Hang hang {};
 
 
-  BlinkyBlinky blinkyBlinky {};
+  BlinkyBlinky blinkyBlinky { &gamEpiece, &hang, &limelight };
   Controls controls { &drive, &gamEpiece, &hang, &limelight, &blinkyBlinky };
 
   Autonomous autonomous { &drive, &gamEpiece, &controls };

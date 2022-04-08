@@ -1,6 +1,9 @@
 #pragma once
 
 #include "IOMap.h"
+#include "GamEpiece.h"
+#include "Hang.h"
+#include "Limelight.h"
 #include "Mechanism.h"
 #include "Feedback.h"
 #include <frc/AddressableLED.h>
@@ -8,12 +11,15 @@
 #include <frc/Timer.h>
 #include <array>
 
-// number of leds on each side.
-#define LED_NUM_HANGER 80
+// Number of leds on each side.
+#define LED_NUM_HANGER 40
+
+// Total number of leds.
+#define LED_NUM_TOTAL (LED_NUM_HANGER * 2)
 
 class BlinkyBlinky : public Mechanism {
 public:
-    BlinkyBlinky();
+    BlinkyBlinky(GamEpiece* gamEpiece, Hang* hang, Limelight* limelight);
     ~BlinkyBlinky();
 
     void resetToMode(MatchMode mode);
@@ -31,12 +37,17 @@ public:
     void setLEDMode(LEDMode mode);
 
 private:
+    GamEpiece* gamEpiece;
+    Hang* hang;
+    Limelight* limelight;
+
     frc::AddressableLED strip { PWM_BLINKY_BLINKY_STRIP };
-    // frc::AddressableLED rightStrip { PWM_BLINKY_BLINKY_RIGHT };
 
     std::array<frc::AddressableLED::LEDData, LED_NUM_HANGER> stripBuffer {};
     std::array<frc::AddressableLED::LEDData, LED_NUM_HANGER> redColorRange {};
     std::array<frc::AddressableLED::LEDData, LED_NUM_HANGER> blueColorRange {};
+
+    std::array<frc::AddressableLED::LEDData, LED_NUM_TOTAL> realStripBuffer {};
 
     void setPixel(int index, frc::Color color);
     void setColor(frc::Color color);
