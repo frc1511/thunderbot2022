@@ -31,18 +31,18 @@ public:
      * Returns an linearly interpolated value in relation to the closest defined
      * points.
      */
-    std::optional<V> getInterpolated(K key) {
+    std::optional<V> getInterpolated(K key) const {
         try {
             // Check if the key matches a defined point.
             return map.at(key);
         }
         catch (std::out_of_range&) {
-            using iterator = typename std::map<K, V>::iterator;
+            using iterator = typename std::map<K, V>::const_iterator;
             
             // Iterator to the point directly above.
-            iterator upperBound = map.upper_bound(key);
+            const iterator upperBound = map.upper_bound(key);
             // Iterator to the point directly below.
-            iterator lowerBound = --map.lower_bound(key);
+            const iterator lowerBound = --map.lower_bound(key);
             
             // Whether there is no defined point above.
             bool noUpper = (upperBound == map.end());
@@ -80,7 +80,7 @@ public:
      * Returns an linearly interpolated value in relation to the closest defined
      * points.
      */
-    std::optional<V> operator[](K key) {
+    std::optional<V> operator[](K key) const {
         return getInterpolated(key);
     }
     
