@@ -87,7 +87,7 @@ void Intake::resetToMode(MatchMode mode)
         stageOneSensorPrevious = checkSensor(&stageOneFlag);
         stageTwoSensorPrevious = checkSensor(&stageTwoFlag);
         shooterSensorPrevious = checkSensor(&shooterFlag);
-        bool currentSensorHalfInput = checkSensor(&stageHalfFlag);
+        // bool currentSensorHalfInput = checkSensor(&stageHalfFlag);
 
         // m_debouncer.Calculate(stageOneSensorPrevious);
     }
@@ -429,6 +429,9 @@ void Intake::sendFeedback()
         break;
     case (STATE_SHOOT):
         currentstate = "Shooting";
+        break;
+    case STATE_INTAKE_BRING_BALL_IN:
+        currentstate = "Bring ball in";
         break;
     }
     std::string intakePositionString = "";
