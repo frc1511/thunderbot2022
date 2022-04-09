@@ -6,6 +6,7 @@
 #include "Limelight.h"
 #include "Mechanism.h"
 #include "Feedback.h"
+#include "Interpolation.h"
 #include <frc/AddressableLED.h>
 #include <frc/DriverStation.h>
 #include <frc/Timer.h>
@@ -44,9 +45,6 @@ private:
     frc::AddressableLED strip { PWM_BLINKY_BLINKY_STRIP };
 
     std::array<frc::AddressableLED::LEDData, LED_NUM_HANGER> stripBuffer {};
-    std::array<frc::AddressableLED::LEDData, LED_NUM_HANGER> redColorRange {};
-    std::array<frc::AddressableLED::LEDData, LED_NUM_HANGER> blueColorRange {};
-
     std::array<frc::AddressableLED::LEDData, LED_NUM_TOTAL> realStripBuffer {};
 
     void setPixel(int index, frc::Color color);
@@ -57,5 +55,6 @@ private:
     double greenVal = 0;
     double blueVal = 0;
 
-    unsigned long long offset = 0;
+    int allianceOffset = 0;
+    int hangerOffset = 0;
 };
