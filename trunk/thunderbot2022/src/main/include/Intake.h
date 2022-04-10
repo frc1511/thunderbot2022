@@ -50,6 +50,10 @@ public:
 
     bool ballAtStageTwo();
 
+    void setBallCount(int theCount);
+    
+    void ballWasShot();
+
 private:
     // ball count!!!!
 

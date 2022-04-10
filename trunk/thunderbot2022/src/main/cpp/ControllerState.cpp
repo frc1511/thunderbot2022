@@ -26,6 +26,7 @@ ControllerState::ControllerState(int controllerID) : myController(controllerID)
 
 ControllerState::~ControllerState()
 {
+    
 }
 void ControllerState::reset()
 {

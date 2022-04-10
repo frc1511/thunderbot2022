@@ -264,9 +264,6 @@ void Controls::doAux() {
     else {
         
         // Manual and Normal Aux Controls
-        if(auxController.getRawButtonPressed(TOUCHPAD_BUTTON)) {
-            gamEpiece->recordShooterValues();
-        }
         if (auxController.getRawButton(SQUARE_BUTTON)) {
             lastPressedMode = Shooter::TARMAC;
             /*
@@ -319,8 +316,17 @@ void Controls::doAux() {
             gamEpiece->setShooterWarmUpEnabled(lastPressedMode, false);
             shoot = false;
         }
-        if(auxController.getRawButton(PLAYSTATION_BUTTON)){
+        if(auxController.getRawButtonPressed(TOUCHPAD_BUTTON)){
             gamEpiece->cancelShot();
+        }
+        if(auxController.getRawButtonPressed(LEFT_STICK_PRESS)){
+            gamEpiece->setBallCount(0);
+        }
+        if(auxController.getRawButtonPressed(PLAYSTATION_BUTTON)){
+            gamEpiece->setBallCount(1);
+        }
+        if(auxController.getRawButtonPressed(RIGHT_STICK_PRESS)){
+            gamEpiece->setBallCount(2);
         }
         if (dPadValue == 90) {
             gamEpiece->setManualHoodSpeed(1);
@@ -428,8 +434,10 @@ void Controls::doSwitchPanel() {
         limelight->setLEDMode(Limelight::LEDMode::ON);
     }
 
-
-    if (getCurrentMode() == MODE_DISABLED) {
+    if (!drive->getIMUCalibrated()) {
+        blinkyBlinky->setLEDMode(BlinkyBlinky::CALIBRATING);
+    }
+    else if (getCurrentMode() == MODE_DISABLED) {
         blinkyBlinky->setLEDMode(BlinkyBlinky::DISABLED);
     }
     else if (isCraterMode) {

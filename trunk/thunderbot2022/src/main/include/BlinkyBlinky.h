@@ -28,15 +28,19 @@ public:
     void sendFeedback() override;
 
     enum LEDMode {
+        BALL,
         ALLIANCE,
         GAMePIECE,
         HANGER_STATUS,
         HOME_DEPOT,
         CRATER_MODE,
+        CALIBRATING,
         DISABLED,
     };
 
     void setLEDMode(LEDMode mode);
+
+    void ball();
 
 private:
     GamEpiece* gamEpiece;
@@ -60,4 +64,7 @@ private:
 
     int rgbOffset = 0;
     int hslOffset = 0;
+
+    frc::Timer ballTimer;
+    bool balll = false;
 };

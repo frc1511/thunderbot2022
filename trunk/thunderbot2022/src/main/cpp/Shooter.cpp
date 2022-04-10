@@ -217,6 +217,9 @@ void Shooter::process() {
     if (!wantToShoot) {
         targetRPM = 0;
     }
+    else if (!targetRPM) {
+        targetRPM = TARMAC_LINE_SHOOTER_RPM;
+    }
     
     if(reverse){
         shooterLeftMotor->Set(-.2);
@@ -295,6 +298,16 @@ bool Shooter::isShooterReady() {
            (targetRPM != 0); // if hood is in the right place
     }
 }
+
+bool Shooter::isShooterKindOfReady() {
+    return (shooterLeftMotor->GetVelocity() > targetRPM - 75) && // if left is speedy enough :D
+        (shooterRightMotor->GetVelocity() > targetRPM - 75) && // if right is speedy enough :D
+        (shooterLeftMotor->GetVelocity() < targetRPM +  75) && // if left is speedy enough :D
+        (shooterRightMotor->GetVelocity() < targetRPM + 75) && // if right is speedy enough :D
+        ((fabs(readPotentiometer() - targetHoodPosition) < .02) || shooterMode == MANUAL) &&
+        (targetRPM != 0); // if hood is in the right place
+}
+
 // allows manual control of the hood speed
 void Shooter::setHoodManual(double speed) {
     hoodSpeedManual = speed;

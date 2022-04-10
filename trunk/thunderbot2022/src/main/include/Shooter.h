@@ -41,6 +41,7 @@ public:
      */
     bool isShooterReady();
 
+    bool isShooterKindOfReady();
     /**
      * Sets the speed of the hood manually (from controls).
      */
