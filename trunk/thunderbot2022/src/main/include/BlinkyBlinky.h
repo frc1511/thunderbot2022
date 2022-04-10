@@ -28,6 +28,7 @@ public:
     void sendFeedback() override;
 
     enum LEDMode {
+        RAINBOW,
         BALL,
         ALLIANCE,
         GAMePIECE,
@@ -54,6 +55,8 @@ private:
 
     void setPixel(int index, frc::Color color);
     void setColor(frc::Color color);
+
+    void rainbow();
 
     frc::Color interpolateColor(frc::Color low, frc::Color high, int index, int offset);
 

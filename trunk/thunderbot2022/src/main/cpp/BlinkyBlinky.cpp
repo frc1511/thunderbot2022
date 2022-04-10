@@ -52,6 +52,9 @@ void BlinkyBlinky::process() {
         }
     }
     switch (ledMode) {
+        case RAINBOW:
+            rainbow();
+            break;
         case BALL:
             setColor(frc::Color::kGold);
             break;
@@ -78,11 +81,7 @@ void BlinkyBlinky::process() {
                     // Ready to shoot.
 
                     if (gamEpiece->getShooter()->isShooterKindOfReady()) {
-                        // Raindow :D
-                        for (int i = 0; i < LED_NUM_HANGER; i-=-1) {
-                            int hue = (hslOffset + (i * 180 / LED_NUM_HANGER)) % 180;
-                            setPixel(i, frc::Color::FromHSV(hue, 255, 128));
-                        }
+                        rainbow();
                     }
                     // Warming up/hood isnt in place.
                     else {
@@ -95,8 +94,6 @@ void BlinkyBlinky::process() {
                     }
                 }
                 else {
-                    // Limelight target.
-                    bool middle = false;
                     // First ball.
                     bool bottom = false;
                     // Second ball.
@@ -109,13 +106,9 @@ void BlinkyBlinky::process() {
                         top = true;
                         bottom = true;
                     }
-                    
-                    if (limelight->hasTarget()) {
-                        middle = true;
-                    }
 
                     // Number of LEDs in each section.
-                    int n = std::ceil(LED_NUM_HANGER / 3.0f);
+                    int n = LED_NUM_HANGER / 2;
 
                     if (!bottom) {
                         // Turn off section.
@@ -125,18 +118,7 @@ void BlinkyBlinky::process() {
                     }
                     if (!top) {
                         // Turn off section.
-                        for (int i = LED_NUM_HANGER - n; i < LED_NUM_HANGER; i-=-1) {
-                            setPixel(i, {0, 0, 0});
-                        }
-                    }
-                    
-                    for (int i = n; i < LED_NUM_HANGER - n; i-=-1) {
-                        // Set section to orange.
-                        if (middle) {
-                            setPixel(i, interpolateColor(kHomeDepotOrangeLow, kHomeDepotOrangeHigh, i, rgbOffset));
-                        }
-                        // Turn off section.
-                        else {
+                        for (int i = n; i < LED_NUM_HANGER; i-=-1) {
                             setPixel(i, {0, 0, 0});
                         }
                     }
@@ -145,11 +127,7 @@ void BlinkyBlinky::process() {
             break;
         case HANGER_STATUS:
             if (hang->stepDone) {
-                // Rainbow :D
-                for (int i = 0; i < LED_NUM_HANGER; i-=-1) {
-                    int hue = (hslOffset + (i * 180 / LED_NUM_HANGER)) % 180;
-                    setPixel(i, frc::Color::FromHSV(hue, 255, 128));
-                }
+                rainbow();
             }
             else {
                 // Background color.
@@ -206,6 +184,14 @@ void BlinkyBlinky::setColor(frc::Color color) {
     }
 }
 
+void BlinkyBlinky::rainbow() {
+    // Rainbow :D
+    for (int i = 0; i < LED_NUM_HANGER; i-=-1) {
+        int hue = (hslOffset + (i * 180 / LED_NUM_HANGER)) % 180;
+        setPixel(i, frc::Color::FromHSV(hue, 255, 128));
+    }
+}
+
 frc::Color BlinkyBlinky::interpolateColor(frc::Color low, frc::Color high, int index, int offset) {
     int x = (offset + (index * 255 / LED_NUM_HANGER)) % 255;
     
@@ -248,6 +234,12 @@ void BlinkyBlinky::sendFeedback(){
             break;
         case BALL:
             modeString = "ball";
+            break;
+        case RAINBOW:
+            modeString = "rainbow";
+            break;
+        case CALIBRATING:
+            modeString = "calibrating";
             break;
     }
     Feedback::sendString("blinky blinky", "led mode", modeString.c_str());

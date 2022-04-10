@@ -113,6 +113,7 @@ public:
     void sendFeedback() override;
     void process() override;
 
+    bool isAutoDone() { return autoDone; }
 
 private:
     Drive* drive;
