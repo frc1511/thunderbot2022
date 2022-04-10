@@ -419,12 +419,7 @@ void Controls::doSwitchPanel() {
         auxController.record();
     }
     peterCentric = switchPanel.GetRawButton(9);
-    if (false) {
-        gamEpiece->setShotOdometryMode(Shooter::CRAZY_MATH);
-    }
-    else {
-        gamEpiece->setShotOdometryMode(Shooter::INTERPOLATION);
-    }
+    gamEpiece->setShotOdometryMode(Shooter::INTERPOLATION);
 
     if (getCurrentMode() == MODE_DISABLED || hangActive) {
         limelight->setLEDMode(Limelight::LEDMode::OFF);
@@ -442,6 +437,9 @@ void Controls::doSwitchPanel() {
     }
     else if (hangActive) {
         blinkyBlinky->setLEDMode(BlinkyBlinky::HANGER_STATUS);
+    }
+    else if (peterCentric) {
+        blinkyBlinky->setLEDMode(BlinkyBlinky::GAMePIECE);
     }
     else {
         blinkyBlinky->setLEDMode(BlinkyBlinky::ALLIANCE);

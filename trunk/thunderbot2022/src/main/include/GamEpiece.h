@@ -108,6 +108,17 @@ public:
     // true is increase, false is decrease
     void shooterPIDChange(bool goUp);
 
+    Shooter* getShooter() { return &shooter; };
+    
+    enum ShooterState{
+        NOT_SHOOTING, //default state; flywheels off, transition wheel off
+        WARMUP_SHOOTER, // warmup shooter flywheels but wont shoot the balls
+        WANT_TO_SHOOT, //warmup shooter flywheels, and will start to shoot when ready
+        SHOOTING // when ball at top of storage, reengage stage two, wait for ball to be shot (shooterBeam triggered)
+    };
+    
+    ShooterState getShooterState() { return shooterState; }
+
 private:
     Limelight* limelight;
 
@@ -129,12 +140,6 @@ private:
     
     
 
-    enum ShooterState{
-        NOT_SHOOTING, //default state; flywheels off, transition wheel off
-        WARMUP_SHOOTER, // warmup shooter flywheels but wont shoot the balls
-        WANT_TO_SHOOT, //warmup shooter flywheels, and will start to shoot when ready
-        SHOOTING // when ball at top of storage, reengage stage two, wait for ball to be shot (shooterBeam triggered)
-    };
     // object for ShooterState setting
     ShooterState shooterState;
     ShooterState desiredShooterState;
