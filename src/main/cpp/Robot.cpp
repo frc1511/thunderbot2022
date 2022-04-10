@@ -28,6 +28,9 @@ void Robot::AutonomousPeriodic() {
     for (int i = 0; i < nMechanisms; ++i)
         allMechanisms[i]->process();
     
+    if (autonomous.isAutoDone()) {
+        blinkyBlinky.setLEDMode(BlinkyBlinky::RAINBOW);
+    }
 }
 
 void Robot::TeleopInit() {

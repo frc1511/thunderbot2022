@@ -629,6 +629,7 @@ void Autonomous::rightFiveBall() {
 void Autonomous::rightSixBall() {
     if (step == 0) {
         drive->cmdDriveTranslate(0_m, 0_m, 90_deg);
+        autoDone = true;
         step++;
     }
 }
