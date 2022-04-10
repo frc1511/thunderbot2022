@@ -27,7 +27,7 @@ const double kEncoder70percentMid = kEncoderMidHeight*.7;
 //max height
 const double kEncoderMax = 14.65; // max is really 13.64;
 const double kEncoder70percentMax = kEncoderMax * .7;
-const double kEncoderHalfRetracted = 8.94;
+const double kEncoderHalfRetracted =  6.25;//8.94;
 //height corresponding to kHangWinchSlowSpeed
 const double kEncoderSlowHeight = kEncoderMax*.4;
 //height corresponding to kHangWinchSlowerSpeed
@@ -51,9 +51,9 @@ const double kPawlForward = .8;
 const double kPawlReverse = .57;
 
 const double kStringServoTime = 3;
-const double kShiftToStaticArmTime = 3;
-const int kDisengageBrakeTime = 1;
-const double kSwingToStaticArmsTime = 3;
+const double kShiftToStaticArmTime = 1.5;
+const int kDisengageBrakeTime = .5;
+const double kSwingToStaticArmsTime = 2.5;
 
 Hang::Hang() : winchMotor(ThunderSparkMax::create(ThunderSparkMax::MotorID::Hang)) {
     configureMotor();
@@ -108,6 +108,7 @@ void Hang::resetToMode(MatchMode mode){
         std::ofstream HangCurrentLogs("/home/lvuser/hangCurrentLogs.txt");
         HangCurrentLogs << "";
         HangCurrentLogs.close();
+        haveWeTraversed = false;
     }
 }
 
@@ -134,8 +135,11 @@ void Hang::sendFeedback(){
             {
                 targetString = "going to/on high bar";
             }
-            else if(highOrTraversal >= 2){
+            else if(haveWeTraversed){
                 targetString = "going to/on traversal bar";
+            }
+            else{
+                targetString = "we are past traversal THIS IS BAD";
             }
             break;
         case HIGH_TRAVERSAL_2:
@@ -238,6 +242,8 @@ void Hang::sendFeedback(){
     Feedback::sendDouble("Hang", "winch motor temp", winchMotor->GetMotorTemperatureFarenheit());
     Feedback::sendBoolean("Hang", "is high done", highDone);
     Feedback::sendString("Hang", "ideal arm height", targetHeight.c_str());
+    Feedback::sendBoolean("Hang", "if we have traversed", haveWeTraversed);
+    Feedback::sendDouble("Hang", "highOrTraversal variable", highOrTraversal);
 }
 
 void Hang::process(){
@@ -433,7 +439,7 @@ if(autoDone == false && manual != NOT)
             {
                 if(highOrTraversal == 1){
                     highOrTraversal++;
-                    //haveWeTraversed = true;
+                    haveWeTraversed = true;
                 }
                 stepDone = false;
                 autoDone = false;
@@ -533,7 +539,7 @@ if(autoDone == false && manual != NOT)
                     //std::cout << "going to static arms" << '\n';
                 }
                 else{
-                    step++;
+                    retractHalfToFull();
                 }
                 ////std::cout <<"retracting half to full" << "\n";
             }
@@ -542,6 +548,7 @@ if(autoDone == false && manual != NOT)
                 stepDone = true;
                 highDone = true;
                 highOrTraversal++;
+                step++;
                 extendStep = 0;
             }
             else
@@ -799,7 +806,7 @@ void Hang::commandAuto()
             }
             stepDone = false;
             break;
-        case LOW:
+        case LOW: // going to pull up onto low bar
             if(stepDone == true)
             {
                 targetStage = LOW_2;
@@ -808,10 +815,10 @@ void Hang::commandAuto()
             }
             break;
         case LOW_2:
-            hangBar++;
+            // do nothing
             stepDone = true;
             break;
-        case MID:
+        case MID: // going to pull up onto mid bar
             if(stepDone == true)
             {
                 targetStage = MID_2;
@@ -819,7 +826,7 @@ void Hang::commandAuto()
                 stepDone = false;
             }
             break;
-        case MID_2:
+        case MID_2: // going to start high bar
             if(stepDone == true && goingForHigh == true)
             {   
                 hangBar++;
@@ -828,25 +835,24 @@ void Hang::commandAuto()
                 stepDone = false;
             }
             break;
-        case HIGH_TRAVERSAL:
+        case HIGH_TRAVERSAL: // going to pull up onto high bar
             if(stepDone == true)
             {
-                hangBar++;
                 targetStage = HIGH_TRAVERSAL_2;
                 step = 0;
                 stepDone = false;
             }
             break;
-        case HIGH_TRAVERSAL_2:
+        case HIGH_TRAVERSAL_2: // going to start trevorversial
             if(stepDone == true)
             {   
                 hangBar++;
-                /*if(haveWeTraversed == true){
+                if(haveWeTraversed == true){
                     targetStage = NOT_ON_BAR;
                 }
                 else{
                     targetStage = HIGH_TRAVERSAL;
-                }*/
+                }
                 targetStage = HIGH_TRAVERSAL;
                 step = 0;
                 stepDone = false;

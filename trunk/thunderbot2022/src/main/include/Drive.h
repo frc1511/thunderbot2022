@@ -37,7 +37,7 @@
 #define DRIVE_MANUAL_MAX_ANGULAR_VELOCITY 3.14_rad_per_s * 2 * .75
 
 // The maximum speed of the chassis during a drive command.
-#define DRIVE_CMD_MAX_VELOCITY 4_mps
+#define DRIVE_CMD_MAX_VELOCITY 6_mps
 // The maximum acceleration of the chassis during a drive command.
 #define DRIVE_CMD_MAX_ACCELERATION 2_mps_sq
 // The maximum angular velocity of the chassis during a drive command.
@@ -47,7 +47,7 @@
 // The factor to multiply the angle by to accelerate and decelerate.
 #define DRIVE_CMD_ANGULAR_VELOCITY_FACTOR 5
 
-#define DRIVE_VISION_MAX_ANGULAR_VELOCITY 200_deg_per_s
+#define DRIVE_VISION_MAX_ANGULAR_VELOCITY 300_deg_per_s
 #define DRIVE_VISION_MIN_ANGULAR_VELOCITY 20_deg_per_s
 #define DRIVE_VISION_ANGULAR_VELOCITY_FACTOR 5
 

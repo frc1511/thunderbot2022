@@ -61,5 +61,8 @@ Limelight::CameraMode Limelight::getCameraMode() {
 }
 
 units::meter_t Limelight::getDistance(){
+    if (!hasTarget()) {
+        return -1_m;
+    }
     return units::meter_t(units::meter_t(HUB_HEIGHT - LIMELIGHT_HEIGHT).value() / units::math::tan(LIMELIGHT_ANGLE + getAngleVertical()).value());
 }
