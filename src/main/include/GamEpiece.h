@@ -119,6 +119,12 @@ public:
     
     ShooterState getShooterState() { return shooterState; }
 
+    void setBallCount(int ballCount);
+    
+    ShooterState shooterState;
+    
+    bool ballJustShot = false;;
+
 private:
     Limelight* limelight;
 
@@ -130,7 +136,6 @@ private:
 
     bool ballCounterBroken; // used for if the sensor that counts the balls entering or leaving doesnt work
 
-    bool ballJustShot;
     bool waitingForTimer = false;
     frc::Timer shotTimer; //used for timing the shot between balls if our ball counter is broken
 
@@ -141,7 +146,6 @@ private:
     
 
     // object for ShooterState setting
-    ShooterState shooterState;
     ShooterState desiredShooterState;
 
     

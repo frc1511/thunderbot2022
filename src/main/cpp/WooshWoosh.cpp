@@ -16,10 +16,12 @@ double WooshWoosh::getWoosh(WooshDirection direction){
 }
 
 units::radian_t WooshWoosh::getWooshAngle(WooshDirection direction){
+    
     return units::radian_t(7);
 }
 
 units::radians_per_second_t WooshWoosh::getWooshRate(WooshDirection direction){
+    
     return units::radians_per_second_t(123);
 }
 

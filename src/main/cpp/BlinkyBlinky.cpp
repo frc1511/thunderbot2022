@@ -2,7 +2,7 @@
 #include <iostream>
 
 const frc::Color kHomeDepotOrangeHigh {1, 0.12156862745098, 0}; // 255, 31, 0
-const frc::Color kHomeDepotOrangeLow {1, 0.301960784313725, 0}; // 255, 77, 0
+const frc::Color kHomeDepotOrangeLow {1, 0.0501960784313725, 0}; // 255, 77, 0
 
 const frc::Color kDisabledHigh {1, 0.12156862745098, 0}; // 255, 31, 0
 const frc::Color kDisabledLow {1, 0.301960784313725, 0}; // 255, 77, 0
@@ -28,7 +28,33 @@ void BlinkyBlinky::resetToMode(MatchMode mode) {
 }
 
 void BlinkyBlinky::process() {
+    /*if(homerMode){
+        if(homerTimer.Get().value() <= 1){
+            ledMode = HOME_DEPOT;
+        }
+        else{
+            homerTimer.Stop();
+            homerTimer.Reset();
+            homerMode = false;
+        }
+    }*/
+    if(gamEpiece->ballJustShot){
+        ball();
+    }
+    if(balll){
+        if(ballTimer.Get().value() <= .5){
+            ledMode = BALL;
+        }
+        else{
+            ballTimer.Stop();
+            ballTimer.Reset();
+            balll = false;
+        }
+    }
     switch (ledMode) {
+        case BALL:
+            setColor(frc::Color::kGold);
+            break;
         case GAMePIECE:
         case ALLIANCE:
             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue) {
@@ -50,14 +76,15 @@ void BlinkyBlinky::process() {
 
                 if ((shooterState == GamEpiece::WARMUP_SHOOTER || shooterState == GamEpiece::WANT_TO_SHOOT || shooterState == GamEpiece::SHOOTING) && targetRPM) {
                     // Ready to shoot.
-                    if (gamEpiece->getShooter()->isShooterReady()) {
+
+                    if (gamEpiece->getShooter()->isShooterKindOfReady()) {
                         // Raindow :D
                         for (int i = 0; i < LED_NUM_HANGER; i-=-1) {
                             int hue = (hslOffset + (i * 180 / LED_NUM_HANGER)) % 180;
                             setPixel(i, frc::Color::FromHSV(hue, 255, 128));
                         }
                     }
-                    // Warming up.
+                    // Warming up/hood isnt in place.
                     else {
                         // Slider for RPM.
                         double pct = std::clamp(currentRPM / targetRPM, 0.0, 1.0);
@@ -136,20 +163,20 @@ void BlinkyBlinky::process() {
             }
             break;
         case HOME_DEPOT:
-            for (int i = 0; i < LED_NUM_HANGER; i-=-1) {
-                setPixel(i, interpolateColor(kHomeDepotOrangeLow, kHomeDepotOrangeHigh, i, rgbOffset));
-            }
             break;
         case CRATER_MODE:
-            // setColor(frc::Color::kWhite);
             for (int i = 0; i < LED_NUM_HANGER; i-=-1) {
                 setPixel(i, interpolateColor(frc::Color::kDarkGreen, frc::Color::kGreen, i, rgbOffset));
             }
+            break;
+        case CALIBRATING:
+            setColor(frc::Color::kChocolate);
             break;
         case DISABLED:
             for (int i = 0; i < LED_NUM_HANGER; i-=-1) {
                 setPixel(i, interpolateColor(kDisabledLow, kDisabledHigh, i, rgbOffset));
             }
+            //setColor({0, 0, 0});
             break;
     }
     
@@ -189,6 +216,12 @@ frc::Color BlinkyBlinky::interpolateColor(frc::Color low, frc::Color high, int i
     return { redInterp[x].value(), greenInterp[x].value(), blueInterp[x].value() };
 }
 
+void BlinkyBlinky::ball(){
+    ballTimer.Reset();
+    ballTimer.Start();
+    balll = true;
+}
+
 void BlinkyBlinky::sendFeedback(){
     // 1 = blue, 0 = red
     Feedback::sendDouble("thunderdashboard", "alliance", frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue);
@@ -212,6 +245,9 @@ void BlinkyBlinky::sendFeedback(){
             break;
         case DISABLED:
             modeString = "disabled";
+            break;
+        case BALL:
+            modeString = "ball";
             break;
     }
     Feedback::sendString("blinky blinky", "led mode", modeString.c_str());

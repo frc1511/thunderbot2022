@@ -35,6 +35,7 @@ void GamEpiece::resetToMode(MatchMode mode) {
 
 
 void GamEpiece::process() {
+    ballJustShot = false;
     currentBallCount = intake.returnBallCount();
     switch(desiredShooterState){
         case(NOT_SHOOTING): //Dont take it out of the process of shooting, so only takes it out if it is in warmup
@@ -95,6 +96,8 @@ void GamEpiece::process() {
                 shooterState = SHOOTING;
                 intake.setIntakeDirection(Intake::SHOOTING);
                 desiredShooterState = WARMUP_SHOOTER;
+                shotTimer.Reset();
+                shotTimer.Start();
             }
             break;
 
@@ -114,10 +117,12 @@ void GamEpiece::process() {
             }
             break;*/
         case(SHOOTING):
-            if(intake.finishedShooting()){ // intake shot a ball so it is done 
+            if(shotTimer.Get().value() >= .5/*intake.finishedShooting()*/){ // intake shot a ball so it is done 
+                intake.ballWasShot();
                 intake.setIntakeDirection(Intake::NOTTAKE);
                 shooterState = WARMUP_SHOOTER;
                 desiredShooterState = WARMUP_SHOOTER;
+                ballJustShot = true;
             }
             break;
     }
@@ -191,6 +196,10 @@ void GamEpiece::setShotOdometryMode(Shooter::OdometryMode mode) {
 
 void GamEpiece::shooterPIDChange(bool goUp){
     shooter.changeShooterPid(goUp);
+}
+
+void GamEpiece::setBallCount(int ballCount){
+    intake.setBallCount(ballCount);
 }
 
 void GamEpiece::sendFeedback() {

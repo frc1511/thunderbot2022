@@ -149,7 +149,7 @@ void Intake::stageOneFix(bool currentSensorHalfInput, bool currentSensorOneInput
     {
         stageOneFixing = true;
     }
-    else 
+    else
     {
         stageOneFixing = false;
     }
@@ -301,19 +301,6 @@ void Intake::process()
                 intakeMotorStageTwo->Set(kSpeedStageTwo); // stage 2 go
                 intakeMotorStageOne->Set(0);              // stage 1 stops
             }
-            else
-            {
-                intakeMotorStageTwo->Set(0); // stage 2 stops
-                intakeMotorStageOne->Set(0); // stage 1 stops
-                currentState = STATE_STOP;   // go back to stop, which gets any other possible balls in position
-            }
-
-            if (currentShooterSensorInput == false && shooterSensorPrevious == true)
-            {
-                ballCount = ballCount - 1;
-                stageTwoOccupied = false;
-            }
-
             break;
         case STATE_MANUAL:
             if (intakePosition == true)
@@ -383,6 +370,25 @@ bool Intake::ballAtStageOne()
 bool Intake::ballAtStageTwo()
 {
     return stageTwoOccupied;
+}
+
+void Intake::setBallCount(int theCount)
+{   
+    if(ballCount == 2 && theCount != 2){
+        stageTwoOccupied = false;
+    }
+    if(theCount == 2){
+        stageTwoOccupied = true;
+    }
+    ballCount = theCount;
+}
+
+void Intake::ballWasShot(){
+    stageTwoOccupied = false;
+    ballCount += -1;
+    intakeMotorStageOne->Set(0);
+    intakeMotorStageTwo->Set(0);
+    currentState = STATE_STOP;
 }
 
 void Intake::sendFeedback()
