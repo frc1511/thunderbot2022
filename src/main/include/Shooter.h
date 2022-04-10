@@ -101,7 +101,7 @@ private:
     // The target position of the hood.
     double targetHoodPosition = 0;
 
-    double shooterP = .0015;
+    double shooterP = .002;
 
     OdometryMode odometryMode = INTERPOLATION;
     
@@ -146,8 +146,8 @@ private:
 #ifdef PETERS_INTERPOLATION
 
 
-    Interpolation<double, double> hoodInterpolation;
-    Interpolation<double, double> rpmInterpolation;
+    Interpolation<units::meter_t, double> hoodInterpolation;
+    Interpolation<units::meter_t, double> rpmInterpolation;
 
 #endif
 

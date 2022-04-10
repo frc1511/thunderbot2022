@@ -419,7 +419,7 @@ void Controls::doSwitchPanel() {
         auxController.record();
     }
     peterCentric = switchPanel.GetRawButton(9);
-    if (peterCentric) {
+    if (false) {
         gamEpiece->setShotOdometryMode(Shooter::CRAZY_MATH);
     }
     else {

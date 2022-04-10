@@ -5,7 +5,7 @@
 #define SHOOTER_MAX_AMPS 40
 
 // PID values of the shooter wheels.
-#define SHOOTER_P_VALUE .0015
+#define SHOOTER_P_VALUE .002
 #define SHOOTER_I_VALUE 0
 #define SHOOTER_D_VALUE 0
 #define SHOOTER_I_ZONE_VALUE 0
@@ -26,35 +26,43 @@
 // The hood position and shooter RPM when the robot is at the far wall.
 #define WALL_HOOD_POS (HOOD_MIN_POS + .1531)
 #define WALL_SHOOTER_RPM 2600
-#define WALL_LIMELIGHT_ANGLE -13.0377
+#define WALL_DISTANCE (4.02_m + 3_in)
 
 // The hood position and shooter RPM when the robot is at the launch pad.
 #define FAR_LAUNCH_PAD_HOOD_POS (HOOD_MIN_POS + .1311)
 #define FAR_LAUNCH_PAD_SHOOTER_RPM 2200
 // make button :D
 // The hood position and shooter RPM when the robot is at the tarmac line.
-#define NEAR_LAUNCH_PAD_HOOD_POS (HOOD_MIN_POS + .1038) // .591
-#define NEAR_LAUNCH_PAD_SHOOTER_RPM 2300
-#define NEAR_LAUNCH_PAD_LIMELIGHT_ANGLE -4.3018
+#define NEAR_LAUNCH_PAD_HOOD_POS (HOOD_MIN_POS + .1253) // .680
+#define NEAR_LAUNCH_PAD_SHOOTER_RPM 2000
+#define NEAR_LAUNCH_PAD_DISTANCE 2.7117_m
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
 #define TARMAC_LINE_HOOD_POS (HOOD_MIN_POS + .0703) // .625
 #define TARMAC_LINE_SHOOTER_RPM 1800
-#define TARMAC_LINE_LIMELIGHT_ANGLE 4.23 // 4.025
+#define TARMAC_LINE_DISTANCE 1.93_m
 
 #define TARMAC_HOOD_POS (HOOD_MIN_POS + .0573) // 0.612   0.598   0.586
 #define TARMAC_SHOOTER_RPM 1600
-#define TARMAC_LIMELIGHT_ANGLE 4.0
+#define TARMAC_DISTANCE 1.242_m
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
-#define HIGH_HUB_SHOT_HOOD_POS (HOOD_MIN_POS + .012) //.564
+#define HIGH_HUB_SHOT_HOOD_POS (HOOD_MIN_POS + .012)
 #define HIGH_HUB_SHOT_SHOOTER_RPM 1600
 
 // The hood position and shooter RPM when the robot is at the tarmac line.
 #define LOW_HUB_SHOT_HOOD_POS (HOOD_MIN_POS + .111) // .641
 #define LOW_HUB_SHOT_SHOOTER_RPM 1100
+
+#define INTERPOLATION_1_HOOD_POS (HOOD_MIN_POS + .1093) // .664
+#define INTERPOLATION_1_SHOOTER_RPM 1900
+#define INTERPOLATION_1_DISTANCE 2.51_m
+
+#define INTERPOLATION_2_HOOD_POS (HOOD_MIN_POS + .1453) // .700
+#define INTERPOLATION_2_SHOOTER_RPM 2400
+#define INTERPOLATION_2_DISTANCE 3.72_m
   
-#define HUB_LIMELIGHT_ANGLE 17.0777
+// #define HUB_LIMELIGHT_ANGLE 17.0777
 
 Shooter::Shooter(Limelight* limelight)
   : limelight(limelight),
@@ -64,16 +72,20 @@ Shooter::Shooter(Limelight* limelight)
     shooterRightPID(shooterRightMotor->GetPIDController())
 #ifdef PETERS_INTERPOLATION
     ,hoodInterpolation({
-        { HUB_LIMELIGHT_ANGLE,              HIGH_HUB_SHOT_HOOD_POS   },
-        { TARMAC_LINE_LIMELIGHT_ANGLE,      TARMAC_LINE_HOOD_POS     },
-        { NEAR_LAUNCH_PAD_LIMELIGHT_ANGLE,  NEAR_LAUNCH_PAD_HOOD_POS },
-        { WALL_LIMELIGHT_ANGLE,             WALL_HOOD_POS            },
+        { TARMAC_DISTANCE,           TARMAC_HOOD_POS          },
+        { TARMAC_LINE_DISTANCE,      TARMAC_LINE_HOOD_POS     },
+        { INTERPOLATION_1_DISTANCE,  INTERPOLATION_1_HOOD_POS },
+        { NEAR_LAUNCH_PAD_DISTANCE,  NEAR_LAUNCH_PAD_HOOD_POS },
+        { INTERPOLATION_2_DISTANCE,  INTERPOLATION_2_HOOD_POS },
+        { WALL_DISTANCE,             WALL_HOOD_POS            },
     }),
     rpmInterpolation({
-        { HUB_LIMELIGHT_ANGLE,              HIGH_HUB_SHOT_SHOOTER_RPM   },
-        { TARMAC_LINE_LIMELIGHT_ANGLE,      TARMAC_LINE_SHOOTER_RPM     },
-        { NEAR_LAUNCH_PAD_LIMELIGHT_ANGLE,  NEAR_LAUNCH_PAD_SHOOTER_RPM },
-        { WALL_LIMELIGHT_ANGLE,             WALL_SHOOTER_RPM            },
+        { TARMAC_DISTANCE,           TARMAC_SHOOTER_RPM          },
+        { TARMAC_LINE_DISTANCE,      TARMAC_LINE_SHOOTER_RPM     },
+        { INTERPOLATION_1_DISTANCE,  INTERPOLATION_1_SHOOTER_RPM },
+        { NEAR_LAUNCH_PAD_DISTANCE,  NEAR_LAUNCH_PAD_SHOOTER_RPM },
+        { INTERPOLATION_2_DISTANCE,  INTERPOLATION_2_SHOOTER_RPM },
+        { WALL_DISTANCE,             WALL_SHOOTER_RPM            },
     })
 #endif
 {
@@ -138,13 +150,14 @@ void Shooter::resetToMode(MatchMode mode) {
 }
 
 void Shooter::process() {
+    units::meter_t limeDist = limelight->getDistance();
     switch (shooterMode) {
         case ODOMETRY:
             if (odometryMode == INTERPOLATION) {
 #ifdef PETERS_INTERPOLATION
-                if (limelight->hasTarget()) {
-                    targetHoodPosition = hoodInterpolation[limelight->getAngleVertical().value()].value();
-                    targetRPM = rpmInterpolation[limelight->getAngleVertical().value()].value();
+                if (limelight->hasTarget() && limeDist >= TARMAC_DISTANCE) {
+                    targetHoodPosition = hoodInterpolation[limeDist].value();
+                    targetRPM = rpmInterpolation[limeDist].value();
                 }
 #else
                 
@@ -265,10 +278,22 @@ void Shooter::setShooterSpinup(bool shouldShoot) {
 }
 // sees if the shooter is ready
 bool Shooter::isShooterReady() {
+    if(targetRPM <= 2400){
     return (shooterLeftMotor->GetVelocity() > targetRPM - SHOOTER_TOLERANCE) && // if left is speedy enough :D
            (shooterRightMotor->GetVelocity() > targetRPM - SHOOTER_TOLERANCE) && // if right is speedy enough :D
+           (shooterLeftMotor->GetVelocity() < targetRPM +  SHOOTER_TOLERANCE) && // if left is speedy enough :D
+           (shooterRightMotor->GetVelocity() < targetRPM + SHOOTER_TOLERANCE) && // if right is speedy enough :D
            ((fabs(readPotentiometer() - targetHoodPosition) < HOOD_TOLERANCE) || shooterMode == MANUAL) &&
            (targetRPM != 0); // if hood is in the right place
+    }
+    else{
+        return (shooterLeftMotor->GetVelocity() > targetRPM - 25) && // if left is speedy enough :D
+           (shooterRightMotor->GetVelocity() > targetRPM - 25) && // if right is speedy enough :D
+           (shooterLeftMotor->GetVelocity() < targetRPM +  25) && // if left is speedy enough :D
+           (shooterRightMotor->GetVelocity() < targetRPM + 25) && // if right is speedy enough :D
+           ((fabs(readPotentiometer() - targetHoodPosition) < HOOD_TOLERANCE) || shooterMode == MANUAL) &&
+           (targetRPM != 0); // if hood is in the right place
+    }
 }
 // allows manual control of the hood speed
 void Shooter::setHoodManual(double speed) {

@@ -4,6 +4,8 @@
 #define CENTER_START_POSITION (frc::Pose2d(5.136_m, 5.959_m, 313.468_deg - 90_deg))
 #define RIGHT_START_POSITION  (frc::Pose2d(6.015_m, 8.124_m, 1.498_deg - 90_deg))
 
+#define WAIT_FOR_BALL_TIME 1.5_s
+
 Autonomous::Autonomous(Drive* drive, GamEpiece* gamEpiece, Controls* controls)
   : drive(drive), gamEpiece(gamEpiece), controls(controls) {
     
@@ -27,13 +29,13 @@ void Autonomous::resetToMode(MatchMode mode) {
                 startPosition = LEFT;
                 break;
             case CENTER_TWO_BALL:
-            case CENTER_THREE_BALL:
                 startPosition = CENTER;
                 break;
             case RIGHT_TWO_BALL:
-            case RIGHT_SHORT_THREE_BALL:
-            case RIGHT_FAR_THREE_BALL:
+            case RIGHT_THREE_BALL:
             case RIGHT_FOUR_BALL:
+            case RIGHT_FIVE_BALL:
+            case RIGHT_SIX_BALL:
                 startPosition = RIGHT;
                 break;
             case AUTO_FOR_TREVOR_ZERO:
@@ -95,11 +97,14 @@ void Autonomous::resetToMode(MatchMode mode) {
                 break;
         }
 
-        timer.Reset();
-        timer.Start();
+        delayTimer.Reset();
+        delayTimer.Start();
+        autoTimer.Reset();
+        autoTimer.Stop();
         step = 0;
         shootStep = 0;
         shootingIsDone = false;
+        autoDone = false;
     }
     if(mode == MODE_TELEOP){
         switch (currentMode) {
@@ -108,11 +113,11 @@ void Autonomous::resetToMode(MatchMode mode) {
             case ONE_BALL:
             case LEFT_TWO_BALL:
             case CENTER_TWO_BALL:
-            case CENTER_THREE_BALL:
             case RIGHT_TWO_BALL:
-            case RIGHT_SHORT_THREE_BALL:
-            case RIGHT_FAR_THREE_BALL:
+            case RIGHT_THREE_BALL:
             case RIGHT_FOUR_BALL:
+            case RIGHT_FIVE_BALL:
+            case RIGHT_SIX_BALL:
                 break;
             case AUTO_FOR_TREVOR_ZERO:
                 controls->chooseAutoMode(0);
@@ -165,6 +170,7 @@ void Autonomous::sendFeedback() {
     Feedback::sendDouble("autonomous", "current step", step);
     Feedback::sendDouble("autonomous", "shooter step", shootStep);
     Feedback::sendBoolean("autonomous", "align and shoot complete", shootingIsDone);
+    Feedback::sendBoolean("autonomous", "drive finished", drive->cmdIsFinished());
     char buffer[256] = "";
 
     handleDashboardString(DO_NOTHING, "Do nothing: Doing nothing or something; we don't know", buffer);
@@ -177,10 +183,10 @@ void Autonomous::sendFeedback() {
     handleDashboardString(CENTER_TWO_BALL, "Center Two Ball: (Positioned center)", buffer);
     handleDashboardString(RIGHT_TWO_BALL, "Rw 3221      ight Two Ball: (Positioned right)", buffer);
     //hi ishan
-    handleDashboardString(CENTER_THREE_BALL, "Center three ball: (Positioned center)", buffer);
-    handleDashboardString(RIGHT_SHORT_THREE_BALL, "Right short three ball: (Positioned right)", buffer);
-    handleDashboardString(RIGHT_FAR_THREE_BALL, "Right far three ball: (Positioned right)", buffer);
+    handleDashboardString(RIGHT_THREE_BALL, "Right three ball: (Positioned right)", buffer);
     handleDashboardString(RIGHT_FOUR_BALL, "Right four ball: (Positioned right)", buffer);
+    handleDashboardString(RIGHT_FIVE_BALL, "Right five ball: (Positioned right)", buffer);
+    handleDashboardString(RIGHT_SIX_BALL, "Right six ball: (Positioned right)", buffer);
 
     handleDashboardString(AUTO_FOR_TREVOR_ZERO, "First Auto For Trevor", buffer);
     handleDashboardString(AUTO_FOR_TREVOR_ONE, "Second Auto For Trevor", buffer);
@@ -203,7 +209,15 @@ void Autonomous::process() {
         return;
     #endif
 
-    if (timer.Get().value() <= Feedback::getDouble("thunderdashboard", "auto_start_delay", 0)) {
+    if (autoDone) {
+#ifndef HOMER
+        gamEpiece->setIntakeDirection(GamEpiece::NOTTAKE);
+        gamEpiece->setShooterWarmUpEnabled(Shooter::ODOMETRY, false);
+#endif
+        return;
+    }
+
+    if (delayTimer.Get().value() <= Feedback::getDouble("thunderdashboard", "auto_start_delay", 0)) {
         return;
     }
 
@@ -226,17 +240,17 @@ void Autonomous::process() {
         case RIGHT_TWO_BALL:
             rightTwoBall();
             break;
-        case CENTER_THREE_BALL:
-            centerThreeBall();
-            break;
-        case RIGHT_SHORT_THREE_BALL:
-            rightShortThreeBall();
-            break;
-        case RIGHT_FAR_THREE_BALL:
-            rightFarThreeBall();
+        case RIGHT_THREE_BALL:
+            rightThreeBall();
             break;
         case RIGHT_FOUR_BALL:
-            rightFourBall();
+            rightFiveBall();
+            break;
+        case RIGHT_FIVE_BALL:
+            rightFiveBall();
+            break;
+        case RIGHT_SIX_BALL:
+            rightSixBall();
             break;
         case AUTO_FOR_TREVOR_ZERO:
         case AUTO_FOR_TREVOR_ONE:
@@ -269,7 +283,7 @@ void Autonomous::uber() {
         step++;
     }
     else if (step == 1 && drive->cmdIsFinished()) {
-        step++;
+        autoDone = true;
     }
 }
 
@@ -291,10 +305,11 @@ void Autonomous::oneBall() {
         drive->cmdDriveTranslate(0_ft, -70_in, 0_deg, {});
         step++;
     }
-    else if (step == 5) {
+    else if (step == 6) {
 #ifndef HOMER
-        gamEpiece->setShooterWarmUpEnabled(Shooter::TARMAC_LINE, false);
+        gamEpiece->setShooterWarmUpEnabled(Shooter::ODOMETRY, false);
 #endif
+        autoDone = true;
     }
 }
 
@@ -310,9 +325,14 @@ void Autonomous::leftTwoBall() {
         step++;
     }
     else if (step == 2 && drive->cmdIsFinished()) {
+        autoTimer.Reset();
+        autoTimer.Start();
+        step++;
+    }
+    else if (step == 3) {
 #ifndef HOMER
-        if (gamEpiece->getCurrentBallCount() == 2) {
-            gamEpiece->setShooterWarmUpEnabled(Shooter::TARMAC_LINE, true);
+        if (gamEpiece->getCurrentBallCount() == 2 || autoTimer.HasElapsed(WAIT_FOR_BALL_TIME)) {
+            gamEpiece->setShooterWarmUpEnabled(Shooter::ODOMETRY, true);
             gamEpiece->setIntakeDirection(GamEpiece::NOTTAKE);
 #endif
             step++;
@@ -320,23 +340,24 @@ void Autonomous::leftTwoBall() {
         }
 #endif
     }
-    else if (step == 3) {
-        drive->cmdDriveTranslate(0.1_in - 2_in, 0.1_in, -55_deg);
+    else if (step == 4) {
+        drive->cmdDriveTranslate(0.1_in - 2_in, 0.1_in, -55_deg + 10_deg);
         step++;
     }
-    else if (step == 4 && drive->cmdIsFinished()) {
+    else if (step == 5 && drive->cmdIsFinished()) {
         step++;
     }
-    else if (step == 5 || step == 6) {
-        alignAndShoot(Shooter::TARMAC_LINE);
+    else if (step == 6 || step == 7) {
+        alignAndShoot(Shooter::ODOMETRY);
         if(shootingIsDone){
             step++;
         }
     }
-    else if (step == 7) {
+    else if (step == 8) {
 #ifndef HOMER
-        gamEpiece->setShooterWarmUpEnabled(Shooter::TARMAC_LINE, false);
+        gamEpiece->setShooterWarmUpEnabled(Shooter::ODOMETRY, false);
 #endif
+        autoDone = true;
     }
 }
 
@@ -346,7 +367,7 @@ void Autonomous::centerTwoBall() {
         // Drop the intake.
         gamEpiece->setIntakeDirection(GamEpiece::INTAKE);
         // Start warming up the shooter.
-        gamEpiece->setShooterWarmUpEnabled(Shooter::TARMAC_LINE, true);
+        gamEpiece->setShooterWarmUpEnabled(Shooter::ODOMETRY, true);
 #endif
         step++;
     }
@@ -374,7 +395,7 @@ void Autonomous::centerTwoBall() {
     }
     else if(step == 4 || step == 5) {
         // Align and shoot two balls
-        alignAndShoot(Shooter::TARMAC_LINE);
+        alignAndShoot(Shooter::ODOMETRY);
         if(shootingIsDone){
             step++;
         }
@@ -382,9 +403,9 @@ void Autonomous::centerTwoBall() {
     else if (step == 6) {
 #ifndef HOMER
         // Stop the shooter warmup.
-        gamEpiece->setShooterWarmUpEnabled(Shooter::TARMAC_LINE, false);
+        gamEpiece->setShooterWarmUpEnabled(Shooter::ODOMETRY, false);
 #endif
-        step++;
+        autoDone = true;
     }
 }
 
@@ -409,9 +430,14 @@ void Autonomous::rightTwoBall() {
         step++;
     }
     else if (step == 3 && drive->cmdIsFinished()) {
+        autoTimer.Reset();
+        autoTimer.Start();
+        step++;
+    }
+    else if (step == 4) {
 #ifndef HOMER
         // Check if we have intaked a ball.
-        if (gamEpiece->getCurrentBallCount() == 2) {
+        if (gamEpiece->getCurrentBallCount() == 2 || autoTimer.HasElapsed(WAIT_FOR_BALL_TIME)) {
             // Raise the intake.
             gamEpiece->setIntakeDirection(GamEpiece::NOTTAKE);
 #endif
@@ -420,131 +446,68 @@ void Autonomous::rightTwoBall() {
         }
 #endif
     }
-    else if (step == 4) {
+    else if (step == 5) {
         // Drive to the left on the field to the tarmac line.
         drive->cmdDriveTranslate(6_in, 0_in, 75_deg);
         step++;
     }
-    else if (step == 5 && drive->cmdIsFinished()) {
+    else if (step == 6 && drive->cmdIsFinished()) {
         step++;
     }
-    else if (step == 6 || step == 7) {
+    else if (step == 7 || step == 8) {
         // Align and shoot the 2 balls in the robot.
         alignAndShoot(Shooter::TARMAC_LINE);
         if(shootingIsDone){
             step++;
         }
     }
-    else if (step == 8) {
+    else if (step == 9) {
 #ifndef HOMER
-        // Stop the shooter warmup.
-        gamEpiece->setShooterWarmUpEnabled(Shooter::TARMAC_LINE, false);
+        // Stop the warming up the shooter.
+        gamEpiece->setShooterWarmUpEnabled(Shooter::ODOMETRY, false);
 #endif
-        step++;
+        if (currentMode == AutoMode::RIGHT_TWO_BALL) {
+            autoDone = true;
+        }
+        else {
+            step++;
+        }
     }
 }
 
-void Autonomous::centerThreeBall() {
-    // Not implemented.
-}
-
-void Autonomous::rightShortThreeBall() {
+void Autonomous::rightThreeBall() {
     //hi peter p. lilley iii
-    if(step < 9) {
+    if(step < 10) {
         // Run right two ball.
         rightTwoBall();
     }
-    else if (step == 9) {
+    else if (step == 10) {
 #ifndef HOMER
         // Drop the intake.
         gamEpiece->setIntakeDirection(GamEpiece::INTAKE);
         // Start warming up the shooter.
-        gamEpiece->setShooterWarmUpEnabled(Shooter::TARMAC_LINE, true);
+        if (currentMode != RIGHT_FOUR_BALL) {
+            gamEpiece->setShooterWarmUpEnabled(Shooter::TARMAC, true);
+        }
 #endif
         step++;
     }
-    else if(step == 10) {
+    else if(step == 11) {
         // Drive to ball 2.
-        drive->cmdDriveTranslate(-28_in - 3_in - 8_in, -31_in - 27_in - 3_in - 8_in, 158_deg - 15_deg - 10_deg + 7_deg);
+        drive->cmdDriveTranslate(-28_in - 3_in - 8_in-3_in, -31_in - 27_in - 3_in - 8_in-3_in, 158_deg - 15_deg - 10_deg + 7_deg + 5_deg + 5_deg - 5_deg);
         step++;
     }
-    else if (step == 11) {
+    else if (step == 12 && drive->cmdIsFinished()) {
+        autoTimer.Reset();
+        autoTimer.Start();
+        step++;
+    }
+    else if (step == 13) {
 #ifndef HOMER
         // Check if we intaked a ball.
-        if (gamEpiece->getCurrentBallCount() == 1) {
+        if (gamEpiece->getCurrentBallCount() == 1 || autoTimer.HasElapsed(WAIT_FOR_BALL_TIME)) {
             // Raise the intake.
             gamEpiece->setIntakeDirection(GamEpiece::NOTTAKE);
-#endif
-            step++;
-#ifndef HOMER
-        }
-#endif
-    }
-    else if(step == 12 && drive->cmdIsFinished()) {
-        // Drive to the tarmac line.
-        drive->cmdDriveTranslate(-2_ft + 20_in, 2_ft - 20_in - 3_in, 68_deg - 15_deg - 10_deg);
-        step++;
-    }
-    else if(step == 13) {
-        // Align and shoot the ball.
-        alignAndShoot(Shooter::TARMAC_LINE);
-        if(shootingIsDone){
-            step++;
-        }
-    }
-    else if (step == 14) {
-#ifndef HOMER
-        // Stop warming up the shooter.
-        gamEpiece->setShooterWarmUpEnabled(Shooter::TARMAC_LINE, false);
-#endif
-    }
-}
-
-void Autonomous::rightFarThreeBall() {
-    // Not implemented.
-}
-
-void Autonomous::rightFourBall() {
-#if 0
-    if(step < 9) {
-        // Run right two ball.
-        rightTwoBall();
-    }
-    else if (step == 9) {
-#ifndef HOMER
-        // Drop the intake.
-        gamEpiece->setIntakeDirection(GamEpiece::INTAKE);
-#endif
-        step++;
-    }
-    else if(step == 10) {
-        // Drive to ball 2.
-        drive->cmdDriveTranslate(-28_in - 3_in - 8_in, -31_in - 27_in - 3_in, 158_deg);
-        step++;
-    }
-    else if (step == 11) {
-#ifndef HOMER
-        // Check if we intaked a ball.
-        if (gamEpiece->getCurrentBallCount() == 1) {
-#endif
-            step++;
-#ifndef HOMER
-        }
-#endif
-    }
-    else if(step == 12 && drive->cmdIsFinished()) {
-        // Drive to ball 4.
-        drive->cmdDriveTranslate(32_in, -150_in, -160_deg);
-        step++;
-    }
-    else if (step == 13 && drive->cmdIsFinished()) {
-#ifndef HOMER
-        // Check if we intaked a ball.
-        if (gamEpiece->getCurrentBallCount() == 2) {
-            // Raise the intake.
-            gamEpiece->setIntakeDirection(GamEpiece::NOTTAKE);
-            // Start warming up the shooter.
-            gamEpiece->setShooterWarmUpEnabled(Shooter::TARMAC_LINE, true);
 #endif
             step++;
 #ifndef HOMER
@@ -553,23 +516,121 @@ void Autonomous::rightFourBall() {
     }
     else if(step == 14) {
         // Drive to the tarmac line.
-        drive->cmdDriveTranslate(-32_in, 150_in, 68_deg);
+        if(currentMode != RIGHT_FOUR_BALL) {
+            drive->cmdDriveTranslate(-2_ft + 20_in, 2_ft - 20_in - 3_in, 68_deg - 15_deg - 10_deg);
+        }
         step++;
     }
-    else if(step == 15 || step == 16) {
-        // Align and shoot both balls.
-        alignAndShoot(Shooter::TARMAC_LINE);
-        if(shootingIsDone){
+    else if(step == 15 && drive->cmdIsFinished()) {
+        // Align and shoot the ball.
+        if (currentMode == RIGHT_FOUR_BALL) {
+            step++;
+        }
+        else {
+            alignAndShoot(Shooter::TARMAC_LINE);
+            if(shootingIsDone){
+                step++;
+            }
+        }
+    }
+    else if (step == 16) {
+#ifndef HOMER
+        // Stop warming up the shooter.
+        gamEpiece->setShooterWarmUpEnabled(Shooter::ODOMETRY, false);
+#endif
+        if (currentMode == AutoMode::RIGHT_THREE_BALL) {
+            autoDone = true;
+        }
+        else {
             step++;
         }
     }
+}
+
+void Autonomous::rightFiveBall() {
+    if (step < 17) {
+        rightThreeBall();
+    }
     else if (step == 17) {
 #ifndef HOMER
-        // Stop warming up the shooter.
-        gamEpiece->setShooterWarmUpEnabled(Shooter::TARMAC_LINE, false);
+        // Drop the intake.
+        gamEpiece->setIntakeDirection(GamEpiece::INTAKE);
+#endif
+        step++;
+    }
+    else if(step == 18) {
+        // Drive to ball 4.
+        if (currentMode == RIGHT_FIVE_BALL) {
+            drive->cmdDriveTranslate(32_in - 10_in - 5_in - 1.1_ft - .5_ft + .25_ft + 3_in - 1.5_in - 1.5_in + 1_in, -157_in + 20_in + 5_in - 1.5_ft, -160_deg);
+        }
+        else {
+            drive->cmdDriveTranslate(30_in - 10_in - 5_in - 1.1_ft - .5_ft + .25_ft + 3_in -1.5_in - 1.5_in + 1_in, -170_in + 20_in + 5_in, -160_deg);
+        }
+        step++;
+    }
+    else if (step == 19 && drive->cmdIsFinished()) {
+        autoTimer.Reset();
+        autoTimer.Start();
+        step++;
+    }
+    else if (step == 20) {
+#ifndef HOMER
+        // Check if we intaked two balls or we timed out.
+        if (gamEpiece->getCurrentBallCount() == 2 ||
+            ((currentMode == RIGHT_FIVE_BALL && autoTimer.HasElapsed(1_s)) ||
+             (currentMode == RIGHT_FOUR_BALL && autoTimer.HasElapsed(WAIT_FOR_BALL_TIME)))) {
+            // Raise the intake.
+            gamEpiece->setIntakeDirection(GamEpiece::NOTTAKE);
+            if (currentMode == RIGHT_FIVE_BALL) {
+                if (gamEpiece->getCurrentBallCount() == 0) {
+                    autoDone = true;
+                    return;
+                }
+            }
+            // Start warming up the shooter.
+            gamEpiece->setShooterWarmUpEnabled(Shooter::TARMAC_LINE, true);
+#endif
+            step++;
+#ifndef HOMER
+        }
 #endif
     }
+    else if (step == 21) {
+        // Drive to the tarmac line.        
+        if (currentMode == RIGHT_FIVE_BALL) {
+            drive->cmdDriveTranslate(0_in, 157_in - 20_in - 4_ft + 1.5_ft, 68_deg - 25_deg - 25_deg - 2_deg);
+        }
+        else {
+            drive->cmdDriveTranslate(0_in, 170_in - 20_in - 4_ft, 68_deg - 25_deg - 25_deg - 2_deg);
+        }
+        step++;
+    }
+    else if (step == 22 && drive->cmdIsFinished()) {
+        step++;
+        shootingIsDone = false;
+    }
+    else if(step == 23 || step == 24) {
+        // Align and shoot both balls.
+        alignAndShoot(Shooter::ODOMETRY);
+        if(shootingIsDone){
+            step++;
+            // autoDone = true;
+        }
+    }
+    else if (step == 25) {
+#ifndef HOMER
+        // Stop warming up the shooter.
+        gamEpiece->setShooterWarmUpEnabled(Shooter::ODOMETRY, false);
 #endif
+        autoDone = true;
+    }
+}
+
+void Autonomous::rightSixBall() {
+    if (step == 0) {
+        drive->cmdDriveTranslate(0_m, 0_m, 90_deg);
+        step++;
+    }
 }
 
 void Autonomous::autoForTrevor(){
@@ -584,10 +645,10 @@ void Autonomous::alignAndShoot(Shooter::ShooterMode shooterMode) {
     if (shootStep == 0) {
         // Start a command to align with high hub, and check if found by limelight.
         shootingIsDone = false;
-        drive->cmdAlignToHighHub();
+        // drive->cmdAlignToHighHub();
         shootStep++;
     }
-    else if (shootStep == 1 && drive->cmdIsFinished()) {
+    else if (shootStep == 1 /*&& drive->cmdIsFinished()*/) {
         shootStep++;
 #ifdef HOMER
         shootStep = 0;
