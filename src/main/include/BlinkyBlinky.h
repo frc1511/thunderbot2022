@@ -29,6 +29,7 @@ public:
 
     enum LEDMode {
         ALLIANCE,
+        GAMePIECE,
         HANGER_STATUS,
         HOME_DEPOT,
         CRATER_MODE,
@@ -50,11 +51,13 @@ private:
     void setPixel(int index, frc::Color color);
     void setColor(frc::Color color);
 
+    frc::Color interpolateColor(frc::Color low, frc::Color high, int index, int offset);
+
     LEDMode ledMode = ALLIANCE;
     double redVal = 0;
     double greenVal = 0;
     double blueVal = 0;
 
-    int allianceOffset = 0;
-    int hangerOffset = 0;
+    int rgbOffset = 0;
+    int hslOffset = 0;
 };

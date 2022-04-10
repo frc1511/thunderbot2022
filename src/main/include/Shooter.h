@@ -84,6 +84,9 @@ public:
     // true increases, false decreases
     void changeShooterPid(bool goUp); 
 
+    double getTargetRPM() { return targetRPM; }
+    double getCurrentRPM() { return shooterLeftMotor->GetVelocity(); }
+
 private:
     Limelight* limelight;
 
