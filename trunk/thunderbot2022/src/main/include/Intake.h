@@ -73,6 +73,7 @@ private:
         STATE_MANUAL,
         STATE_SHOOT,
         STATE_PRE_COUNT,
+        STATE_WAIT_AFTER_SHOT,
     };
     // Something here...
     // retract piston is intake enabled now, needs to be changed in code                intake forward           intake in robot
@@ -94,6 +95,8 @@ private:
     bool countPending; // whether or not the timer is running
     bool stageOneFixing; //if stage one needs to be fixed
 
+    frc::Timer shotWaitTimer;
+    
     States currentState;
     IntakeDirection targetDirection;
     frc::DigitalInput stageOneFlag{DIO_STORAGE_BANNER_STAGE_ONE}; // true is present, false is not present
