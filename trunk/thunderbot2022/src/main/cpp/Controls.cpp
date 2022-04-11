@@ -402,8 +402,9 @@ void Controls::doSwitchPanel() {
     if (hangActive) {
         hangManual = switchPanel.GetRawButton(3);
         hang->setIsLow(switchPanel.GetRawButton(4));
-        hang->setGoingForHigh(switchPanel.GetRawButton(2)); // pressed means high bar
+        //hang->setGoingForHigh(switchPanel.GetRawButton(2)); // pressed means high bar
     }
+
     isCraterMode = switchPanel.GetRawButton(10);
     robotCentric = switchPanel.GetRawButton(5);
     if (robotCentric) {
@@ -424,7 +425,7 @@ void Controls::doSwitchPanel() {
         driveController.record();
         auxController.record();
     }
-    peterCentric = switchPanel.GetRawButton(9);
+    peterCentric = switchPanel.GetRawButton(2); // 9
     gamEpiece->setShotOdometryMode(Shooter::INTERPOLATION);
 
     if (getCurrentMode() == MODE_DISABLED || hangActive) {
