@@ -9,7 +9,7 @@ const double kSpeedStageTwo = .9;         // used for shooting
 const double kSpeedStageTwoSlow = .14;    // used for intaking into stage two
 const double kReverseSpeedStageOne = -.4; // used for outtaking
 const double kReverseSpeedStageTwo = -.3; // used for outtaking
-const double kSpeedStageOneFix = .3;      // used for slowing cargo 2 after it passes first beam brake
+const double kSpeedStageOneFix = .2;      // used for slowing cargo 2 after it passes first beam brake
 
 const units::second_t kDebouncerTime = 50_ms; // used for making the ball count work
 
@@ -306,6 +306,12 @@ void Intake::process()
                 intakeMotorStageOne->Set(0);              // stage 1 stops
             }
             break;
+        case STATE_WAIT_AFTER_SHOT:
+            if(shotWaitTimer.HasElapsed(1_s)){
+                currentState = STATE_STOP;
+                shotWaitTimer.Stop();
+            }
+            break;
         case STATE_MANUAL:
             if (intakePosition == true)
             { // intake goes down
@@ -392,7 +398,10 @@ void Intake::ballWasShot(){
     ballCount += -1;
     intakeMotorStageOne->Set(0);
     intakeMotorStageTwo->Set(0);
-    currentState = STATE_STOP;
+    // currentState = STATE_STOP;
+    currentState = STATE_WAIT_AFTER_SHOT;
+    shotWaitTimer.Reset();
+    shotWaitTimer.Start();
     if(!checkSensor(&stageOneFlag) && ballCount == 1){
         ballCount = 0;
     }
@@ -446,6 +455,9 @@ void Intake::sendFeedback()
     case STATE_INTAKE_BRING_BALL_IN:
         currentstate = "Bring ball in";
         break;
+    case STATE_WAIT_AFTER_SHOT:
+        currentstate = "After shot";
+        break;
     }
     std::string intakePositionString = "";
     if (intakePosition)
@@ -475,4 +487,5 @@ void Intake::sendFeedback()
 
     Feedback::sendDouble("thunderdashboard", "stage1", stageOneSensor);
     Feedback::sendDouble("thunderdashboard", "stage2", stageTwoOccupied);
+    Feedback::sendDouble("Intake", "shot wait timer", shotWaitTimer.Get().value());
 }

@@ -1,7 +1,7 @@
 #include "GamEpiece.h"
 #include <iostream>
 
-#define SHOT_TIMER_TIME .5 //seconds
+#define SHOT_TIMER_TIME .3 //seconds
 
 GamEpiece::GamEpiece(Limelight* limelight)
   : limelight(limelight) {
@@ -117,7 +117,7 @@ void GamEpiece::process() {
             }
             break;*/
         case(SHOOTING):
-            if(shotTimer.Get().value() >= .5/*intake.finishedShooting()*/){ // intake shot a ball so it is done 
+            if(shotTimer.Get().value() >= .3/*intake.finishedShooting()*/){ // intake shot a ball so it is done 
                 intake.ballWasShot();
                 intake.setIntakeDirection(Intake::NOTTAKE);
                 shooterState = WARMUP_SHOOTER;

@@ -148,7 +148,7 @@ void BlinkyBlinky::process() {
             }
             break;
         case CALIBRATING:
-            setColor(frc::Color::kSalmon);
+            setColor(frc::Color::kPurple);
             break;
         case DISABLED:
             for (int i = 0; i < LED_NUM_HANGER; i-=-1) {
