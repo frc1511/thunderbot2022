@@ -123,7 +123,7 @@ public:
     
     ShooterState shooterState;
     
-    bool ballJustShot = false;;
+    bool ballJustShot = false;
 
 private:
     Limelight* limelight;

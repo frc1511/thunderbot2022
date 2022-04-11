@@ -9,7 +9,7 @@ const double kSpeedStageTwo = .9;         // used for shooting
 const double kSpeedStageTwoSlow = .14;    // used for intaking into stage two
 const double kReverseSpeedStageOne = -.4; // used for outtaking
 const double kReverseSpeedStageTwo = -.3; // used for outtaking
-const double kSpeedStageOneFix = .4;      // used to stabalize 2nd cargo
+const double kSpeedStageOneFix = .3;      // used for slowing cargo 2 after it passes first beam brake
 
 const units::second_t kDebouncerTime = 50_ms; // used for making the ball count work
 
@@ -205,6 +205,7 @@ void Intake::switchStates() // command switches
     {
         currentState = STATE_INTAKE_BRING_BALL_IN;
     }
+
     /*if (targetDirection != INTAKE)
     {
         ballCountFix.Stop();
@@ -217,7 +218,10 @@ void Intake::process()
     States startState = currentState;
     // bool currentSensorOneInput = m_debouncer.Calculate(checkSensor(&stageOneFlag));
     do
-    {
+    {   
+        if(ballCount > 2){
+            ballCount = 2;
+        }
         startState = currentState;
         bool currentSensorOneInput = checkSensor(&stageOneFlag);
         bool currentSensorTwoInput = checkSensor(&stageTwoFlag);
@@ -389,6 +393,9 @@ void Intake::ballWasShot(){
     intakeMotorStageOne->Set(0);
     intakeMotorStageTwo->Set(0);
     currentState = STATE_STOP;
+    if(!checkSensor(&stageOneFlag) && ballCount == 1){
+        ballCount = 0;
+    }
 }
 
 void Intake::sendFeedback()
