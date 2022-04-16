@@ -1,23 +1,58 @@
 #include "BlinkyBlinky.h"
 #include <iostream>
 
-const frc::Color kHomeDepotOrangeHigh {1, 0.12156862745098, 0}; // 255, 31, 0
-const frc::Color kHomeDepotOrangeLow {1, 0.0501960784313725, 0}; // 255, 77, 0
+#ifndef OLD_COLOR_INTERPOLATION
 
-const frc::Color kDisabledHigh {1, 0.12156862745098, 0}; // 255, 31, 0
-const frc::Color kDisabledLow {1, 0.301960784313725, 0}; // 255, 77, 0
+class ColorInterpolation {
+public:
+    ColorInterpolation(frc::Color low, frc::Color high) :
+        r({ { 0, low.red   }, { 254, high.red   } }),
+        g({ { 0, low.green }, { 254, high.green } }),
+        b({ { 0, low.blue  }, { 254, high.blue  } }) { }
 
-const frc::Color kRedHigh {frc::Color::kRed}; //{1, 0, 0}; // 255, 0, 0
-const frc::Color kRedLow {frc::Color::kDarkRed}; //{0.549019607843137, 0.058823529411765, 0.058823529411765}; // 140, 15, 15
+    frc::Color getInterpolated(int index, int offset) const {
+        int x = (offset + (index * 255 / LED_NUM_HANGER)) % 255;
+        return { r[x].value(), g[x].value(), b[x].value() };
+    }
 
-const frc::Color kBlueHigh {frc::Color::kBlue}; //{0, 0.117647058823529, 1}; // 0, 30, 255
-const frc::Color kBlueLow {frc::Color::kNavy}; //{0.1764705882, 0.627450980392157, 0.823529411764706}; // 45, 160, 210
+private:
+    Interpolation<double, double> r;
+    Interpolation<double, double> g;
+    Interpolation<double, double> b;
+};
+
+const ColorInterpolation kHomeDepotInterp {
+    {1, 0.0501960784313725, 0}, // Low: 255, 13, 0
+    {1, 0.12156862745098, 0},   // High: 255, 77, 0
+};
+
+const ColorInterpolation kDisabledInterp {
+    {1, 0.0501960784313725, 0}, // Low: 255, 13, 0
+    {1, 0.12156862745098, 0},   // High: 255, 77, 0
+};
+
+const ColorInterpolation kRedInterp {
+    frc::Color::kDarkRed,
+    frc::Color::kRed,
+};
+
+const ColorInterpolation kGreenInterp {
+    frc::Color::kDarkGreen,
+    frc::Color::kGreen,
+};
+
+const ColorInterpolation kBlueInterp {
+    frc::Color::kNavy,
+    frc::Color::kBlue,
+};
+
+#endif
 
 BlinkyBlinky::BlinkyBlinky(GamEpiece* gamEpiece, Hang* hang, Limelight* limelight)
   : gamEpiece(gamEpiece), hang(hang), limelight(limelight) {
     
     strip.SetLength(LED_NUM_TOTAL);
-    strip.SetData(realStripBuffer);
+    strip.SetData(stripBuffer);
     strip.Start();
 }
 
@@ -52,74 +87,88 @@ void BlinkyBlinky::process() {
         }
     }
     switch (ledMode) {
+        case OFF:
+            setColor({0, 0, 0});
+            break;
         case RAINBOW:
             rainbow();
             break;
         case BALL:
             setColor(frc::Color::kGold);
             break;
+        case BALL_COUNT:
         case GAMePIECE:
         case ALLIANCE:
             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue) {
                 for (int i = 0; i < LED_NUM_HANGER; i-=-1) {
-                    setPixel(i, interpolateColor(kBlueLow, kBlueHigh, i, rgbOffset));
+#ifdef OLD_COLOR_INTERPOLATION
+                    setPixel(i, interpolateColor(frc::Color::kBlue, frc::Color::kNavy, i, rgbOffset));
+#else
+                    setPixel(i, kBlueInterp.getInterpolated(i, rgbOffset));
+#endif
                 }
             }
             else {
                 for (int i = 0; i < LED_NUM_HANGER; i-=-1) {
-                    setPixel(i, interpolateColor(kRedLow, kRedHigh, i, rgbOffset));
+#ifdef OLD_COLOR_INTERPOLATION
+                    setPixel(i, interpolateColor(frc::Color::kRed, frc::Color::kDarkRed, i, rgbOffset));
+#else
+                    setPixel(i, kRedInterp.getInterpolated(i, rgbOffset));
+#endif
                 }
             }
             
-            if (ledMode == GAMePIECE) {
-                GamEpiece::ShooterState shooterState = gamEpiece->getShooterState();
+            if (ledMode == GAMePIECE || ledMode == BALL_COUNT) {
+                // First ball.
+                bool bottom = false;
+                // Second ball.
+                bool top = false;
                 
-                double currentRPM = gamEpiece->getShooter()->getCurrentRPM();
-                double targetRPM = gamEpiece->getShooter()->getTargetRPM();
+                if (gamEpiece->getCurrentBallCount() == 1) {
+                    bottom = true;
+                }
+                else if (gamEpiece->getCurrentBallCount() == 2) {
+                    top = true;
+                    bottom = true;
+                }
 
-                if ((shooterState == GamEpiece::WARMUP_SHOOTER || shooterState == GamEpiece::WANT_TO_SHOOT || shooterState == GamEpiece::SHOOTING) && targetRPM) {
-                    // Ready to shoot.
+                // Number of LEDs in each section.
+                int n = LED_NUM_HANGER / 2;
 
-                    if (gamEpiece->getShooter()->isShooterKindOfReady()) {
-                        rainbow();
-                    }
-                    // Warming up/hood isnt in place.
-                    else {
-                        // Slider for RPM.
-                        double pct = std::clamp(currentRPM / targetRPM, 0.0, 1.0);
-                        
-                        for (int i = 0; i < LED_NUM_HANGER * pct; i-=-1) {
-                            setPixel(i, frc::Color::kDarkGreen);
-                        }
+                if (!bottom) {
+                    // Turn off section.
+                    for (int i = 0; i < n; i-=-1) {
+                        setPixel(i, {0, 0, 0});
                     }
                 }
-                else {
-                    // First ball.
-                    bool bottom = false;
-                    // Second ball.
-                    bool top = false;
+                if (!top) {
+                    // Turn off section.
+                    for (int i = n; i < LED_NUM_HANGER; i-=-1) {
+                        setPixel(i, {0, 0, 0});
+                    }
+                }
+                
+                // Shooting animation.
+                if (ledMode == GAMePIECE) {
+                    GamEpiece::ShooterState shooterState = gamEpiece->getShooterState();
                     
-                    if (gamEpiece->getCurrentBallCount() == 1) {
-                        bottom = true;
-                    }
-                    else if (gamEpiece->getCurrentBallCount() == 2) {
-                        top = true;
-                        bottom = true;
-                    }
+                    double currentRPM = gamEpiece->getShooter()->getCurrentRPM();
+                    double targetRPM = gamEpiece->getShooter()->getTargetRPM();
 
-                    // Number of LEDs in each section.
-                    int n = LED_NUM_HANGER / 2;
+                    if ((shooterState == GamEpiece::WARMUP_SHOOTER || shooterState == GamEpiece::WANT_TO_SHOOT || shooterState == GamEpiece::SHOOTING) && targetRPM) {
+                        // Ready to shoot.
 
-                    if (!bottom) {
-                        // Turn off section.
-                        for (int i = 0; i < n; i-=-1) {
-                            setPixel(i, {0, 0, 0});
+                        if (gamEpiece->getShooter()->isShooterKindOfReady()) {
+                            rainbow();
                         }
-                    }
-                    if (!top) {
-                        // Turn off section.
-                        for (int i = n; i < LED_NUM_HANGER; i-=-1) {
-                            setPixel(i, {0, 0, 0});
+                        // Warming up/hood isnt in place.
+                        else {
+                            // Slider for RPM.
+                            double pct = std::clamp(currentRPM / targetRPM, 0.0, 1.0);
+                            
+                            for (int i = 0; i < LED_NUM_HANGER * pct; i-=-1) {
+                                setPixel(i, frc::Color::kDarkGreen);
+                            }
                         }
                     }
                 }
@@ -141,10 +190,21 @@ void BlinkyBlinky::process() {
             }
             break;
         case HOME_DEPOT:
+            for (int i = 0; i < LED_NUM_HANGER; i-=-1) {
+#ifdef OLD_COLOR_INTERPOLATION
+                setPixel(i, interpolateColor({1, 0.0501960784313725, 0}, {1, 0.12156862745098, 0}, i, rgbOffset));
+#else
+                setPixel(i, kHomeDepotInterp.getInterpolated(i, rgbOffset));
+#endif
+            }
             break;
         case CRATER_MODE:
             for (int i = 0; i < LED_NUM_HANGER; i-=-1) {
+#ifdef OLD_COLOR_INTERPOLATION
                 setPixel(i, interpolateColor(frc::Color::kDarkGreen, frc::Color::kGreen, i, rgbOffset));
+#else
+                setPixel(i, kGreenInterp.getInterpolated(i, rgbOffset));
+#endif
             }
             break;
         case CALIBRATING:
@@ -152,17 +212,17 @@ void BlinkyBlinky::process() {
             break;
         case DISABLED:
             for (int i = 0; i < LED_NUM_HANGER; i-=-1) {
-                setPixel(i, interpolateColor(kDisabledLow, kDisabledHigh, i, rgbOffset));
+#ifdef OLD_COLOR_INTERPOLATION
+                setPixel(i, interpolateColor({1, 0.0501960784313725, 0}, {1, 0.12156862745098, 0}, i, rgbOffset));
+#else
+                setPixel(i, kDisabledInterp.getInterpolated(i, rgbOffset));
+#endif
             }
             //setColor({0, 0, 0});
             break;
     }
     
-    for (int i = 0; i < LED_NUM_HANGER; ++i) {
-        realStripBuffer[i] = stripBuffer[i];
-        realStripBuffer[i + LED_NUM_HANGER] = stripBuffer[i];
-    }
-    strip.SetData(realStripBuffer);
+    strip.SetData(stripBuffer);
 
     rgbOffset -=- 3;
     rgbOffset %= 255;
@@ -175,7 +235,10 @@ void BlinkyBlinky::setLEDMode(LEDMode mode) {
 }
 
 void BlinkyBlinky::setPixel(int index, frc::Color color) {
-    stripBuffer[index].SetRGB(color.red * 255, color.green * 255, color.blue * 255);
+    // stripBuffer[index].SetRGB(color.red * 255, color.green * 255, color.blue * 255);
+    // stripBuffer[index + LED_NUM_HANGER].SetRGB(color.red * 255, color.green * 255, color.blue * 255);
+    stripBuffer[index].SetLED(color);
+    stripBuffer[index + LED_NUM_HANGER].SetLED(color);
 }
 
 void BlinkyBlinky::setColor(frc::Color color) {
@@ -192,6 +255,8 @@ void BlinkyBlinky::rainbow() {
     }
 }
 
+#ifdef OLD_COLOR_INTERPOLATION
+
 frc::Color BlinkyBlinky::interpolateColor(frc::Color low, frc::Color high, int index, int offset) {
     int x = (offset + (index * 255 / LED_NUM_HANGER)) % 255;
     
@@ -201,6 +266,8 @@ frc::Color BlinkyBlinky::interpolateColor(frc::Color low, frc::Color high, int i
 
     return { redInterp[x].value(), greenInterp[x].value(), blueInterp[x].value() };
 }
+
+#endif
 
 void BlinkyBlinky::ball(){
     ballTimer.Reset();
@@ -214,8 +281,14 @@ void BlinkyBlinky::sendFeedback(){
     
     std::string modeString = "";
     switch (ledMode) {
+        case OFF:
+            modeString = "off";
+            break;
         case GAMePIECE:
             modeString = "gamEpiece";
+            break;
+        case BALL_COUNT:
+            modeString = "ball count";
             break;
         case ALLIANCE:
             modeString = "alliance";
