@@ -413,7 +413,7 @@ void Controls::doSwitchPanel() {
     else {
         drive->setControlMode(Drive::FIELD_CENTRIC);
     }
-    highOrLow = switchPanel.GetRawButton(7);
+    highOrLow = false; // switchPanel.GetRawButton(7);
     nearOrFar = switchPanel.GetRawButton(6);
     recordController = switchPanel.GetRawButtonPressed(12) /*|| switchPanel.GetRawButtonReleased(12)*/;
     clearController = switchPanel.GetRawButtonPressed(11) /*|| switchPanel.GetRawButtonReleased(11)*/;
@@ -435,7 +435,12 @@ void Controls::doSwitchPanel() {
         limelight->setLEDMode(Limelight::LEDMode::ON);
     }
 
-    if (!drive->getIMUCalibrated()) {
+    bool noBlinkyBlinky = switchPanel.GetRawButton(7);
+
+    if (noBlinkyBlinky) {
+        blinkyBlinky->setLEDMode(BlinkyBlinky::OFF);
+    }
+    else if (!drive->getIMUCalibrated()) {
         blinkyBlinky->setLEDMode(BlinkyBlinky::CALIBRATING);
     }
     else if (getCurrentMode() == MODE_DISABLED) {
@@ -451,7 +456,7 @@ void Controls::doSwitchPanel() {
         blinkyBlinky->setLEDMode(BlinkyBlinky::GAMePIECE);
     }
     else {
-        blinkyBlinky->setLEDMode(BlinkyBlinky::ALLIANCE);
+        blinkyBlinky->setLEDMode(BlinkyBlinky::BALL_COUNT);
     }
     
 }
