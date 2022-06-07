@@ -6,7 +6,7 @@
 #include <fstream>
 #include <frc/Timer.h>
 
-//#define XBOX_CONTROLLER
+#define XBOX_CONTROLLER
 
 class ControllerState{
     public:

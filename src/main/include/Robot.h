@@ -46,7 +46,7 @@ private:
   Drive drive { &camera, &limelight };
 
 #ifdef HOMER
-  Controls controls { &drive, nullptr, nullptr, &limelight };
+  Controls controls { &drive, nullptr, nullptr, &limelight, nullptr };
   Autonomous autonomous { &drive, nullptr, &controls };
 
   static const int nMechanisms = 2;
