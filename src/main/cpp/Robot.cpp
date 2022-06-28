@@ -7,13 +7,13 @@ void Robot::RobotInit() {
     feedbackTimer.Start();
 }
 void Robot::RobotPeriodic() {
-    if(feedbackTimer.Get().value() >= .01){
+    // if(feedbackTimer.Get().value() >= .01){
         for (int i = 0; i < nMechanisms; ++i)
             allMechanisms[i]->sendFeedback();
         autonomous.sendFeedback();
         controls.sendFeedback();
         feedbackTimer.Reset();
-    }
+    // }
 #ifndef HOMER
     blinkyBlinky.process();
 #endif
@@ -46,6 +46,9 @@ void Robot::TeleopPeriodic() {
     controls.process();
     for (int i = 0; i < nMechanisms; ++i)
         allMechanisms[i]->process();
+#ifndef HOMER
+    blinkyBlinky.process();
+#endif
 }
 
 void Robot::DisabledInit() {
@@ -54,6 +57,9 @@ void Robot::DisabledInit() {
 
 void Robot::DisabledPeriodic() {
     controls.controllerInDisable();
+#ifndef HOMER
+    blinkyBlinky.process();
+#endif
 }
 
 void Robot::TestInit() {

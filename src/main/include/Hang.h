@@ -159,7 +159,8 @@ private:
     bool haveWeTraversed;
 
     public:
-   
+    
+    void hangBrokeDontMovePistonsBad();
     bool getIsLow();
     void setGoingForHigh(bool highOrNot);
     void setPause(bool paused, bool unpaused);

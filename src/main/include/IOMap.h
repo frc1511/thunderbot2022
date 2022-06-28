@@ -13,7 +13,7 @@
 
 extern bool isCraterMode;
 
-// #define HOMER // Comment out if not homer
+//#define HOMER // Comment out if not homer
  // #define TEST_BOARD // Enable for testing on test board
 
 //CAN

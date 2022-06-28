@@ -399,11 +399,13 @@ void Controls::doAux() {
 void Controls::doSwitchPanel() {
     hangActive = switchPanel.GetRawButton(8); 
     gamePieceManual = switchPanel.GetRawButton(1);
+#ifndef HOMER
     if (hangActive) {
         hangManual = switchPanel.GetRawButton(3);
         hang->setIsLow(switchPanel.GetRawButton(4));
         hang->setGoingForHigh(switchPanel.GetRawButton(2)); // pressed means high bar
     }
+#endif
 
     isCraterMode = switchPanel.GetRawButton(10);
     robotCentric = switchPanel.GetRawButton(5);
@@ -426,7 +428,9 @@ void Controls::doSwitchPanel() {
         auxController.record();
     }
     peterCentric = switchPanel.GetRawButton(9); // 9
+#ifndef HOMER
     gamEpiece->setShotOdometryMode(Shooter::INTERPOLATION);
+#endif
 
     if (getCurrentMode() == MODE_DISABLED || hangActive) {
         limelight->setLEDMode(Limelight::LEDMode::OFF);
@@ -435,7 +439,14 @@ void Controls::doSwitchPanel() {
         limelight->setLEDMode(Limelight::LEDMode::ON);
     }
 
-    bool noBlinkyBlinky = switchPanel.GetRawButton(7);
+#ifndef HOMER
+    static bool noBlinkyBlinky = false;
+    if (switchPanel.GetRawButtonPressed(7) ||  switchPanel.GetRawButton(7)) {
+        noBlinkyBlinky = true;
+    }
+    else if (switchPanel.GetRawButtonReleased(7)) {
+        noBlinkyBlinky = false;
+    }
 
     if (noBlinkyBlinky) {
         blinkyBlinky->setLEDMode(BlinkyBlinky::OFF);
@@ -458,7 +469,7 @@ void Controls::doSwitchPanel() {
     else {
         blinkyBlinky->setLEDMode(BlinkyBlinky::BALL_COUNT);
     }
-    
+#endif
 }
 
 bool Controls::getShouldPersistConfig() {
@@ -501,7 +512,9 @@ void Controls::sendFeedback(){
     driveController.sendFeedback();
     auxController.sendFeedback();
     shotmath.Feedback();
+#ifndef HOMER
     blinkyBlinky->sendFeedback();
+#endif
     std::string mode = "";
     switch(lastPressedMode){
         case(Shooter::TARMAC_LINE):

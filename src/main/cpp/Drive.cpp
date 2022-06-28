@@ -232,6 +232,10 @@ void SwerveModule::setTurningMotor(units::radian_t angle) {
     turningPID->SetReference(output, rev::CANSparkMax::ControlType::kPosition);
 }
 
+double SwerveModule::getRawTurningEncoder() {
+    return turningMotor->GetEncoder();
+}
+
 frc::SwerveModuleState SwerveModule::getState() {
     // The velocity and rotation of the swerve module.
     return { getDriveVelocity(), getAbsoluteRotation() };
@@ -631,6 +635,10 @@ void Drive::sendFeedback() {
     Feedback::sendDouble("drive", "robot x position (meters)", pose.X().value());
     Feedback::sendDouble("drive", "robot y position (meters)", pose.Y().value());
     Feedback::sendDouble("drive", "robot rotation (degrees)", getRotation().Degrees().value());
+    Feedback::sendDouble("drive", "module 0 relative rotation", swerveModules.at(0)->getRawTurningEncoder());
+    Feedback::sendDouble("drive", "module 1 relative rotation", swerveModules.at(1)->getRawTurningEncoder());
+    Feedback::sendDouble("drive", "module 2 relative rotation", swerveModules.at(2)->getRawTurningEncoder());
+    Feedback::sendDouble("drive", "module 3 relative rotation", swerveModules.at(3)->getRawTurningEncoder());
 
     Feedback::sendDouble("drive", "module 0 rotation (degrees)", swerveModules.at(0)->getState().angle.Degrees().value());
     Feedback::sendDouble("drive", "module 1 rotation (degrees)", swerveModules.at(1)->getState().angle.Degrees().value());

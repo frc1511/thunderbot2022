@@ -215,8 +215,9 @@ void BlinkyBlinky::process() {
 #ifdef OLD_COLOR_INTERPOLATION
                 setPixel(i, interpolateColor({1, 0.0501960784313725, 0}, {1, 0.12156862745098, 0}, i, rgbOffset));
 #else
-                setPixel(i, kDisabledInterp.getInterpolated(i, rgbOffset));
+                //setPixel(i, kDisabledInterp.getInterpolated(i, rgbOffset));
 #endif
+            setColor(frc::Color::kOrange);
             }
             //setColor({0, 0, 0});
             break;
