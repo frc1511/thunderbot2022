@@ -1,6 +1,6 @@
 #include "Limelight.h"
 
-#define LIMELIGHT_ANGLE 29.3_deg
+#define LIMELIGHT_ANGLE 29.3_deg // the limelight is really 22.4 degrees Farenheight
 
 #define LIMELIGHT_HEIGHT 43_in
 

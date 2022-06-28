@@ -289,23 +289,20 @@ void Autonomous::uber() {
 
 void Autonomous::oneBall() {
     if(step == 0){
-        drive->cmdDriveTranslate(0_ft, -8_in, 0_deg);
+        drive->cmdDriveTranslate(0_ft, -78_in, 0_deg);
+        gamEpiece->setShooterWarmUpEnabled(Shooter::TARMAC_LINE, true);
+        step++;
+    }
+    else if(step == 1 && drive->cmdIsFinished()){
         step++;
     }
     else if (step == 2) {
-        alignAndShoot(Shooter::HIGH_HUB_SHOT);
+        alignAndShoot(Shooter::ODOMETRY);
         if(shootingIsDone){
             step++;
         }
     }
-    else if ((step == 1 || step == 3 || step == 5) && drive->cmdIsFinished()) {
-        step++;
-    }
-    else if (step == 4) {
-        drive->cmdDriveTranslate(0_ft, -70_in, 0_deg, {});
-        step++;
-    }
-    else if (step == 6) {
+    else if(step == 3){
 #ifndef HOMER
         gamEpiece->setShooterWarmUpEnabled(Shooter::ODOMETRY, false);
 #endif

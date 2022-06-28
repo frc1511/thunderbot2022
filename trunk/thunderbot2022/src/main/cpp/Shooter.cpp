@@ -218,7 +218,7 @@ void Shooter::process() {
         targetRPM = 0;
     }
     else if (!targetRPM) {
-        targetRPM = TARMAC_LINE_SHOOTER_RPM;
+        targetRPM = NEAR_LAUNCH_PAD_SHOOTER_RPM;
     }
     
     if(reverse){

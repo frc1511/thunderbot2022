@@ -14,7 +14,7 @@ const double kHangWinchSlowerSpeed = .75;//.75;
 const double kRachetAndPawlBackdriveSpeed = .3;
 const double kDriveDownSpeed = .1;
 const double kRetractLimitedSpeed = .2;
-const double kExtendBackdrive = .8;
+const double kExtendBackdrive = .6;
 const double kExtendSlowerBackdrive = .2;
 const double kExtendLowSpeed = .2;
 
@@ -27,7 +27,7 @@ const double kEncoder70percentMid = kEncoderMidHeight*.7;
 //max height
 const double kEncoderMax = 14.65; // max is really 13.64;
 const double kEncoder70percentMax = kEncoderMax * .7;
-const double kEncoderHalfRetracted =  6.25;//8.94;
+const double kEncoderHalfRetracted =  5.5;//6.25;//8.94;
 //height corresponding to kHangWinchSlowSpeed
 const double kEncoderSlowHeight = kEncoderMax*.4;
 //height corresponding to kHangWinchSlowerSpeed
@@ -1074,4 +1074,9 @@ void Hang::currentLog(){
     HangCurrentLogs.open("/home/lvuser/hangCurrentLogs.txt", std::fstream::app);
     HangCurrentLogs << "time: " << std::to_string(currentTimer.Get().value()) << ", current: " << std::to_string(winchMotor->GetOutputCurrent()) << "\n";
     HangCurrentLogs.close();
+}
+
+void hangBrokeDontMovePistonsBad(){
+    //hangPivot1.Set();
+    //hangPivot2.Set();
 }

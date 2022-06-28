@@ -99,6 +99,8 @@ public:
      */
     frc::SwerveModuleState getState();
 
+    double getRawTurningEncoder();
+
     /**
      * Applies an offset to the CANCoder.
      */

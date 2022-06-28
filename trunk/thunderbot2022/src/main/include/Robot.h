@@ -41,13 +41,12 @@ public:
   
 private:
   RobotChess robotChess {};
-  Camera camera {};
   Limelight limelight {};
-  Drive drive { &camera, &limelight };
 
 #ifdef HOMER
   Controls controls { &drive, nullptr, nullptr, &limelight, nullptr };
   Autonomous autonomous { &drive, nullptr, &controls };
+  Drive drive { nullptr, &limelight };
 
   static const int nMechanisms = 2;
   Mechanism *allMechanisms[nMechanisms] {
@@ -56,6 +55,8 @@ private:
 #else
   GamEpiece gamEpiece { &limelight };
   Hang hang {};
+  Camera camera {};
+  Drive drive { &camera, &limelight };
 
 
   BlinkyBlinky blinkyBlinky { &gamEpiece, &hang, &limelight };
