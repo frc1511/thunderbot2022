@@ -5,7 +5,7 @@
 #define SHOOTER_MAX_AMPS 40
 
 // PID values of the shooter wheels.
-#define SHOOTER_P_VALUE .002
+#define SHOOTER_P_VALUE .0015
 #define SHOOTER_I_VALUE 0
 #define SHOOTER_D_VALUE 0
 #define SHOOTER_I_ZONE_VALUE 0

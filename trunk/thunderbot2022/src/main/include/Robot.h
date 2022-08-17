@@ -59,8 +59,8 @@ private:
   Drive drive { &camera, &limelight };
 
 
-  BlinkyBlinky blinkyBlinky { &gamEpiece, &hang, &limelight };
-  Controls controls { &drive, &gamEpiece, &hang, &limelight, &blinkyBlinky };
+  // BlinkyBlinky blinkyBlinky { &gamEpiece, &hang, &limelight };
+  Controls controls { &drive, &gamEpiece, &hang, &limelight, nullptr };
 
   Autonomous autonomous { &drive, &gamEpiece, &controls };
 

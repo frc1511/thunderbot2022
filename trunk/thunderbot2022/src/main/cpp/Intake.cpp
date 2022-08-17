@@ -99,6 +99,10 @@ void Intake::resetToMode(MatchMode mode)
 
 void Intake::ballCountIntake(bool currentSensorOneInput, bool currentSensorTwoInput)
 {
+     if (stageTwoSensorPrevious == true && currentSensorTwoInput == false)
+    {
+        stageTwoOccupied = true;
+    }
 
     if (stageOneSensorPrevious == false && currentSensorOneInput == true)
     {
@@ -107,7 +111,7 @@ void Intake::ballCountIntake(bool currentSensorOneInput, bool currentSensorTwoIn
         ballCountFix.Reset();
         ballCountFix.Start();
     }
-
+    
     if (countPending)
     {
         if (currentSensorOneInput == false)
@@ -123,7 +127,7 @@ void Intake::ballCountIntake(bool currentSensorOneInput, bool currentSensorTwoIn
         }
     }
 
-    if (stageTwoSensorPrevious == true && currentSensorTwoInput == false)
+     if (stageTwoSensorPrevious == true && currentSensorTwoInput == false)
     {
         stageTwoOccupied = true;
     }
@@ -307,7 +311,7 @@ void Intake::process()
             }
             break;
         case STATE_WAIT_AFTER_SHOT:
-            if(shotWaitTimer.HasElapsed(1_s)){
+            if(shotWaitTimer.HasElapsed(.5_s)){
                 currentState = STATE_STOP;
                 shotWaitTimer.Stop();
             }
