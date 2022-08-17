@@ -102,18 +102,21 @@ void Controls::doDrive() {
 
     double xDriveVelocity = driveController.getRawAxis(LEFT_X_AXIS);
     double yDriveVelocity = driveController.getRawAxis(LEFT_Y_AXIS);
+    
+    double rotVelocity = driveController.getRawAxis(RIGHT_X_AXIS);
+
 #ifdef XBOX_CONTROLLER
     double leftRotateVelocity = driveController.getRawAxis(LEFT_TRIGGER);
     double rightRotateVelocity = driveController.getRawAxis(RIGHT_TRIGGER);
 #else
-    double leftRotateVelocity = (driveController.getRawAxis(LEFT_TRIGGER) + 1) / 2;
-    double rightRotateVelocity = (driveController.getRawAxis(RIGHT_TRIGGER) + 1) / 2;
+    // double leftRotateVelocity = (driveController.getRawAxis(LEFT_TRIGGER) + 1) / 2;
+    // double rightRotateVelocity = (driveController.getRawAxis(RIGHT_TRIGGER) + 1) / 2;
 #endif
 
-    double xSlowDriveVelocity = driveController.getRawAxis(RIGHT_X_AXIS);
-    double ySlowDriveVelocity = driveController.getRawAxis(RIGHT_Y_AXIS);
-    double leftSlowRotateVelocity = driveController.getRawButton(LEFT_BUMPER);
-    double rightSlowRotateVelocity = driveController.getRawButton(RIGHT_BUMPER);
+    // double xSlowDriveVelocity = driveController.getRawAxis(RIGHT_X_AXIS);
+    // double ySlowDriveVelocity = driveController.getRawAxis(RIGHT_Y_AXIS);
+    // double leftSlowRotateVelocity = driveController.getRawButton(LEFT_BUMPER);
+    // double rightSlowRotateVelocity = driveController.getRawButton(RIGHT_BUMPER);
 
     bool zeroRotation = driveController.getRawButton(OPTIONS_BUTTON);
     bool calibrateGyro = driveController.getRawButton(SHARE_BUTTON);
@@ -153,7 +156,7 @@ void Controls::doDrive() {
     double finalXVelocity = 0.0;
     double finalYVelocity = 0.0;
     double finalRotateVelocity = 0.0;
-
+/*
     // If rotate left.
     if (leftRotateVelocity != 0) {
         finalRotateVelocity -= leftRotateVelocity;
@@ -170,8 +173,23 @@ void Controls::doDrive() {
     // If rotate right slow.
     else if (rightSlowRotateVelocity != 0) {
         finalRotateVelocity += rightSlowRotateVelocity * SLOW_ROTATE_FACTOR;
+    }*/
+
+    auto improveAxis = [](double axis) -> double {
+        return std::sin(axis * (wpi::numbers::pi / 2.0));
+    };
+
+    if (std::fabs(xDriveVelocity) > AXIS_DEADZONE) {
+        finalXVelocity = improveAxis(xDriveVelocity);
+    }
+    if (std::fabs(yDriveVelocity) > AXIS_DEADZONE) {
+        finalYVelocity = improveAxis(yDriveVelocity);
+    }
+    if (std::fabs(rotVelocity) > AXIS_DEADZONE) {
+        finalRotateVelocity = improveAxis(rotVelocity);
     }
 
+/*
     // If driving regular.
     if (fabs(xDriveVelocity) > AXIS_DEADZONE || fabs(yDriveVelocity) > AXIS_DEADZONE) {
         if (fabs(xDriveVelocity) > AXIS_DEADZONE) {
@@ -192,7 +210,7 @@ void Controls::doDrive() {
     }
 
     std::pow(finalXVelocity, 3);
-    std::pow(finalYVelocity, 3);
+    std::pow(finalYVelocity, 3);*/
 
     if (!driveDisabled) {
         drive->manualDrive(finalXVelocity, -finalYVelocity, -finalRotateVelocity);
