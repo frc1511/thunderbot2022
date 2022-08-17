@@ -105,7 +105,7 @@ private:
     // The target position of the hood.
     double targetHoodPosition = 0;
 
-    double shooterP = .002;
+    double shooterP = .000001;
 
     OdometryMode odometryMode = INTERPOLATION;
     

@@ -105,9 +105,9 @@ void Hang::resetToMode(MatchMode mode){
         teleopOrNo = true;
         currentTimer.Reset();
         currentTimer.Start();
-        std::ofstream HangCurrentLogs("/home/lvuser/hangCurrentLogs.txt");
-        HangCurrentLogs << "";
-        HangCurrentLogs.close();
+        // std::ofstream HangCurrentLogs("/home/lvuser/hangCurrentLogs.txt");
+        // HangCurrentLogs << "";
+        // HangCurrentLogs.close();
         haveWeTraversed = false;
     }
 }
@@ -247,6 +247,7 @@ void Hang::sendFeedback(){
 }
 
 void Hang::process(){
+    #if 0
 ////std::cout << targetStage << "," << manual << '\n';
 if(autoDone == false && manual != NOT)
     {
@@ -558,6 +559,9 @@ if(autoDone == false && manual != NOT)
             break;
         }
     }
+    #endif
+
+    // Hi calla!!
 }
 
 void Hang::configureMotor(){
@@ -1070,10 +1074,10 @@ void Hang::retractHalfToStaticArms(){
 }
 
 void Hang::currentLog(){
-    std::ofstream HangCurrentLogs;
-    HangCurrentLogs.open("/home/lvuser/hangCurrentLogs.txt", std::fstream::app);
-    HangCurrentLogs << "time: " << std::to_string(currentTimer.Get().value()) << ", current: " << std::to_string(winchMotor->GetOutputCurrent()) << "\n";
-    HangCurrentLogs.close();
+    // std::ofstream HangCurrentLogs;
+    // HangCurrentLogs.open("/home/lvuser/hangCurrentLogs.txt", std::fstream::app);
+    // HangCurrentLogs << "time: " << std::to_string(currentTimer.Get().value()) << ", current: " << std::to_string(winchMotor->GetOutputCurrent()) << "\n";
+    // HangCurrentLogs.close();
 }
 
 void hangBrokeDontMovePistonsBad(){
