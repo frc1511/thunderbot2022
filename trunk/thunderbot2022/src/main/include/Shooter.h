@@ -13,7 +13,7 @@
 #include <fstream>
 
 // Minimum / maximum hood servo positions.
-#define HOOD_MIN_POS 0.5547 //0.433
+#define HOOD_MIN_POS 0.0548 //0.5547 //0.433
 #define HOOD_MAX_POS (HOOD_MIN_POS + .19) //0.7
 
 // The maximum RPM of the shooter wheels.
