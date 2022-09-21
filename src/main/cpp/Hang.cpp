@@ -247,7 +247,6 @@ void Hang::sendFeedback(){
 }
 
 void Hang::process(){
-    #if 0
 ////std::cout << targetStage << "," << manual << '\n';
 if(autoDone == false && manual != NOT)
     {
@@ -559,7 +558,6 @@ if(autoDone == false && manual != NOT)
             break;
         }
     }
-    #endif
 
     // Hi calla!!
 }
