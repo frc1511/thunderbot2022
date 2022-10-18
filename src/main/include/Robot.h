@@ -59,14 +59,14 @@ private:
   Drive drive { &camera, &limelight };
 
 
-  // BlinkyBlinky blinkyBlinky { &gamEpiece, &hang, &limelight };
-  Controls controls { &drive, &gamEpiece, &hang, &limelight, nullptr };
+  BlinkyBlinky blinkyBlinky { &gamEpiece, &hang, &limelight };
+  Controls controls { &drive, &gamEpiece, &hang, &limelight, &blinkyBlinky };
 
   Autonomous autonomous { &drive, &gamEpiece, &controls };
 
   static const int nMechanisms = 4;
   Mechanism *allMechanisms[nMechanisms] = {
-    /*&camera,*/ &limelight, &hang, &gamEpiece, &drive
+    /*&camera,*/ &limelight, &hang, &gamEpiece, &drive,
   };
 
   

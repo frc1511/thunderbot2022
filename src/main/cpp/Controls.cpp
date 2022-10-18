@@ -458,9 +458,8 @@ void Controls::doSwitchPanel() {
     }
 
 #ifndef HOMER
-#if 0
     static bool noBlinkyBlinky = false;
-    if (switchPanel.GetRawButtonPressed(7) ||  switchPanel.GetRawButton(7)) {
+    if (switchPanel.GetRawButtonPressed(7) || switchPanel.GetRawButton(7)) {
         noBlinkyBlinky = true;
     }
     else if (switchPanel.GetRawButtonReleased(7)) {
@@ -488,7 +487,6 @@ void Controls::doSwitchPanel() {
     else {
         blinkyBlinky->setLEDMode(BlinkyBlinky::BALL_COUNT);
     }
-#endif
 #endif
 }
 

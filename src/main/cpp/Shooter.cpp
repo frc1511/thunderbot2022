@@ -21,6 +21,38 @@
 
 #define SHOOTER_TOLERANCE 10
 
+// 1600 rpm 0.138 pot 1.53 m
+// 1500 rpm 0.100 pot 0.70 m
+// 1750 rpm 0.158 pot 2.265 m
+// 1900 rpm 0.165 pot 2.83 m
+// 2200 rpm 0.229 pot 3.877 m
+
+#define NEW_INTERP_2_RPM 1500
+#define NEW_INTERP_2_HOOD 0.0452 + HOOD_MIN_POS
+#define NEW_INTERP_2_DIST 0.7_m
+
+#define NEW_INTERP_1_RPM 1600
+#define NEW_INTERP_1_HOOD 0.0832 + HOOD_MIN_POS
+#define NEW_INTERP_1_DIST 1.53_m
+
+
+//1.50 0.136
+
+// #define NEW_INTERP_3_RPM 1600
+// #define NEW_INTERP_3_
+
+#define NEW_INTERP_3_RPM 1750
+#define NEW_INTERP_3_HOOD 0.1032 + HOOD_MIN_POS
+#define NEW_INTERP_3_DIST 2.265_m
+
+#define NEW_INTERP_4_RPM 1900
+#define NEW_INTERP_4_HOOD 0.1102 + HOOD_MIN_POS
+#define NEW_INTERP_4_DIST 2.83_m
+
+#define NEW_INTERP_5_RPM 2200
+#define NEW_INTERP_5_HOOD 0.1742 + HOOD_MIN_POS
+#define NEW_INTERP_5_DIST 3.877_m
+
 // --- Preset values ---
 
 // The hood position and shooter RPM when the robot is at the far wall.
@@ -72,20 +104,30 @@ Shooter::Shooter(Limelight* limelight)
     shooterRightPID(shooterRightMotor->GetPIDController())
 #ifdef PETERS_INTERPOLATION
     ,hoodInterpolation({
-        { TARMAC_DISTANCE,           TARMAC_HOOD_POS          },
-        { TARMAC_LINE_DISTANCE,      TARMAC_LINE_HOOD_POS     },
-        { INTERPOLATION_1_DISTANCE,  INTERPOLATION_1_HOOD_POS },
-        { NEAR_LAUNCH_PAD_DISTANCE,  NEAR_LAUNCH_PAD_HOOD_POS },
-        { INTERPOLATION_2_DISTANCE,  INTERPOLATION_2_HOOD_POS },
-        { WALL_DISTANCE,             WALL_HOOD_POS            },
+        { NEW_INTERP_2_DIST, NEW_INTERP_2_HOOD },
+        { NEW_INTERP_1_DIST, NEW_INTERP_1_HOOD },
+        { NEW_INTERP_3_DIST, NEW_INTERP_3_HOOD },
+        { NEW_INTERP_4_DIST, NEW_INTERP_4_HOOD },
+        { NEW_INTERP_5_DIST, NEW_INTERP_5_HOOD },
+        // { TARMAC_DISTANCE,           TARMAC_HOOD_POS          },
+        // { TARMAC_LINE_DISTANCE,      TARMAC_LINE_HOOD_POS     },
+        // { INTERPOLATION_1_DISTANCE,  INTERPOLATION_1_HOOD_POS },
+        // { NEAR_LAUNCH_PAD_DISTANCE,  NEAR_LAUNCH_PAD_HOOD_POS },
+        // { INTERPOLATION_2_DISTANCE,  INTERPOLATION_2_HOOD_POS },
+        // { WALL_DISTANCE,             WALL_HOOD_POS            },
     }),
     rpmInterpolation({
-        { TARMAC_DISTANCE,           TARMAC_SHOOTER_RPM          },
-        { TARMAC_LINE_DISTANCE,      TARMAC_LINE_SHOOTER_RPM     },
-        { INTERPOLATION_1_DISTANCE,  INTERPOLATION_1_SHOOTER_RPM },
-        { NEAR_LAUNCH_PAD_DISTANCE,  NEAR_LAUNCH_PAD_SHOOTER_RPM },
-        { INTERPOLATION_2_DISTANCE,  INTERPOLATION_2_SHOOTER_RPM },
-        { WALL_DISTANCE,             WALL_SHOOTER_RPM            },
+        { NEW_INTERP_2_DIST, NEW_INTERP_2_RPM },
+        { NEW_INTERP_1_DIST, NEW_INTERP_1_RPM },
+        { NEW_INTERP_3_DIST, NEW_INTERP_3_RPM },
+        { NEW_INTERP_4_DIST, NEW_INTERP_4_RPM },
+        { NEW_INTERP_5_DIST, NEW_INTERP_5_RPM },
+        // { TARMAC_DISTANCE,           TARMAC_SHOOTER_RPM          },
+        // { TARMAC_LINE_DISTANCE,      TARMAC_LINE_SHOOTER_RPM     },
+        // { INTERPOLATION_1_DISTANCE,  INTERPOLATION_1_SHOOTER_RPM },
+        // { NEAR_LAUNCH_PAD_DISTANCE,  NEAR_LAUNCH_PAD_SHOOTER_RPM },
+        // { INTERPOLATION_2_DISTANCE,  INTERPOLATION_2_SHOOTER_RPM },
+        // { WALL_DISTANCE,             WALL_SHOOTER_RPM            },
     })
 #endif
 {
@@ -153,9 +195,9 @@ void Shooter::process() {
     units::meter_t limeDist = limelight->getDistance();
     switch (shooterMode) {
         case ODOMETRY:
-            if (odometryMode == INTERPOLATION) {
+            // if (odometryMode == INTERPOLATION) {
 #ifdef PETERS_INTERPOLATION
-                if (limelight->hasTarget() && limeDist >= TARMAC_DISTANCE) {
+                if (limelight->hasTarget() && limeDist >= NEW_INTERP_2_DIST) {
                     targetHoodPosition = hoodInterpolation[limeDist].value();
                     targetRPM = rpmInterpolation[limeDist].value();
                 }
@@ -173,14 +215,14 @@ void Shooter::process() {
                 targetHoodPosition = interpolation(varsDistance[goodNumber], varsHood[goodNumber], varsDistance[goodNumber+1], varsHood[goodNumber+1], distance);
                 targetRPM = interpolation(varsDistance[goodNumber], varsSpeed[goodNumber], varsDistance[goodNumber+1], varsSpeed[goodNumber+1], distance);
 #endif
-            }
-            else if (odometryMode == CRAZY_MATH) {
-                if (limelight->hasTarget()) {
-                    ShotMath::Shot shot = shotMath.calculateShot(limelight->getDistance(), 0_mps, 0_deg);
-                    targetHoodPosition = shot.hoodPos;
-                    targetRPM = shot.shooterRPM;
-                }
-            }
+            // }
+            // else if (odometryMode == CRAZY_MATH) {
+                // if (limelight->hasTarget()) {
+                    // ShotMath::Shot shot = shotMath.calculateShot(limelight->getDistance(), 0_mps, 0_deg);
+                    // targetHoodPosition = shot.hoodPos;
+                    // targetRPM = shot.shooterRPM;
+                // }
+            // }
             break;
         case FAR_LAUNCH_PAD:
             targetHoodPosition = FAR_LAUNCH_PAD_HOOD_POS;
