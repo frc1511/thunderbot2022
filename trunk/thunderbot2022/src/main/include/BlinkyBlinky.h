@@ -16,7 +16,7 @@
 // #define OLD_COLOR_INTERPOLATION
 
 // Number of leds on each side.
-#define LED_NUM_HANGER 40
+#define LED_NUM_HANGER 39
 
 // Total number of leds.
 #define LED_NUM_TOTAL (LED_NUM_HANGER * 2)

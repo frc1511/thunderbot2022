@@ -676,6 +676,22 @@ void Drive::sendFeedback() {
     Feedback::sendDouble("drive", "manual Y pct", manualData.yPct);
     Feedback::sendDouble("drive", "manual angular pct", manualData.rotPct);
     Feedback::sendBoolean("drive", "vice grip", manualData.viceGrip);
+
+    // Drive feedback.
+    Feedback::sendDouble("drive", "x position (m)", pose.X().value());
+    Feedback::sendDouble("drive", "y position (m)", pose.Y().value());
+    Feedback::sendDouble("drive", "rotation (deg)", getRotation().Degrees().value());
+
+    Feedback::sendDouble("drive", "manual x%", manualData.xPct);
+    Feedback::sendDouble("drive", "manual y%", manualData.yPct);
+    Feedback::sendDouble("drive", "manual angular%", manualData.rotPct);
+
+    Feedback::sendBoolean("drive", "vice grip", manualData.viceGrip);
+
+    // Feedback for the motion profile.
+    Feedback::sendDouble("thunderdashboard_drive", "x_pos", pose.X().value());
+    Feedback::sendDouble("thunderdashboard_drive", "y_pos", pose.Y().value());
+    Feedback::sendDouble("thunderdashboard_drive", "ang", pose.Rotation().Radians().value());
 }
 
 void Drive::process() {

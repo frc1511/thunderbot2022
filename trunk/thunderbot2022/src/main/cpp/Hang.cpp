@@ -907,7 +907,7 @@ void Hang::resetEncoder(){
         winchEncoder.Reset();
     #else
     //something
-    winchMotor->SetAlternateEncoder(0);
+    winchMotor->SetAlternateEncoder(kEncoderMin);
     #endif
 }
 

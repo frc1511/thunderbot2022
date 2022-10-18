@@ -15,7 +15,7 @@ void Robot::RobotPeriodic() {
         feedbackTimer.Reset();
     // }
 #ifndef HOMER
-    // blinkyBlinky.process();
+    //blinkyBlinky.process();
 #endif
 }
 
@@ -32,7 +32,7 @@ void Robot::AutonomousPeriodic() {
     
 #ifndef HOMER
     if (autonomous.isAutoDone()) {
-        // blinkyBlinky.setLEDMode(BlinkyBlinky::RAINBOW);
+        blinkyBlinky.setLEDMode(BlinkyBlinky::RAINBOW);
     }
 #endif
 }
@@ -47,7 +47,7 @@ void Robot::TeleopPeriodic() {
     for (int i = 0; i < nMechanisms; ++i)
         allMechanisms[i]->process();
 #ifndef HOMER
-    // blinkyBlinky.process();
+    //blinkyBlinky.process();
 #endif
 }
 
@@ -58,7 +58,7 @@ void Robot::DisabledInit() {
 void Robot::DisabledPeriodic() {
     controls.controllerInDisable();
 #ifndef HOMER
-    // blinkyBlinky.process();
+    //blinkyBlinky.process();
 #endif
 }
 
