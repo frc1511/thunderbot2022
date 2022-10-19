@@ -15,7 +15,7 @@ void Robot::RobotPeriodic() {
         feedbackTimer.Reset();
     // }
 #ifndef HOMER
-    //blinkyBlinky.process();
+    blinkyBlinky.process();
 #endif
 }
 

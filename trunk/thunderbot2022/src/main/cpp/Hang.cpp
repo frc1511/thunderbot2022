@@ -20,7 +20,7 @@ const double kExtendLowSpeed = .2;
 
 //encoder constants
 //minimum the encoder will go
-const double kEncoderMin = -3.23;//-2.99121;
+const double kEncoderMin = -3.23;//2.0;//-0.9143;// -1.919;// -2.165;//-3.23;//-2.99121;
 //near max
 const double kEncoderMidHeight = 11.497; // max is really 13.1;
 const double kEncoder70percentMid = kEncoderMidHeight*.7;
@@ -907,7 +907,7 @@ void Hang::resetEncoder(){
         winchEncoder.Reset();
     #else
     //something
-    winchMotor->SetAlternateEncoder(kEncoderMin);
+    winchMotor->SetAlternateEncoder(0.0);//kEncoderMin);
     #endif
 }
 

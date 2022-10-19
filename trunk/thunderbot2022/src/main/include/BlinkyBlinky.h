@@ -16,7 +16,7 @@
 // #define OLD_COLOR_INTERPOLATION
 
 // Number of leds on each side.
-#define LED_NUM_HANGER 39
+#define LED_NUM_HANGER 38
 
 // Total number of leds.
 #define LED_NUM_TOTAL (LED_NUM_HANGER * 2)
@@ -73,6 +73,8 @@ private:
 
     int rgbOffset = 0;
     int hslOffset = 0;
+
+    bool updatePlease = true;
 
     frc::Timer ballTimer;
     bool balll = false;

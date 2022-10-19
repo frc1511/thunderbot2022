@@ -22,13 +22,13 @@ private:
 };
 
 const ColorInterpolation kHomeDepotInterp {
-    {1, 0.0501960784313725, 0}, // Low: 255, 13, 0
-    {1, 0.12156862745098, 0},   // High: 255, 77, 0
+    frc::Color::kRed,//{1, 0.0501960784313725, 0}, // Low: 255, 13, 0
+    frc::Color::kDarkOrange,//{1, 0.12156862745098, 0},   // High: 255, 77, 0
 };
 
 const ColorInterpolation kDisabledInterp {
-    {1, 0.0501960784313725, 0}, // Low: 255, 13, 0
-    {1, 0.12156862745098, 0},   // High: 255, 77, 0
+    frc::Color::kRed,//{1, 0.0501960784313725, 0}, // Low: 255, 13, 0
+    frc::Color::kDarkOrange,//{1, 0.12156862745098, 0},   // High: 255, 77, 0
 };
 
 const ColorInterpolation kRedInterp {
@@ -79,6 +79,7 @@ void BlinkyBlinky::process() {
     if(balll){
         if(ballTimer.Get().value() <= .5){
             ledMode = BALL;
+            updatePlease = true;
         }
         else{
             ballTimer.Stop();
@@ -100,25 +101,34 @@ void BlinkyBlinky::process() {
         case GAMePIECE:
         case ALLIANCE:
             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue) {
-                for (int i = 0; i < LED_NUM_HANGER; i-=-1) {
-#ifdef OLD_COLOR_INTERPOLATION
-                    setPixel(i, interpolateColor(frc::Color::kBlue, frc::Color::kNavy, i, rgbOffset));
-#else
-                    setPixel(i, kBlueInterp.getInterpolated(i, rgbOffset));
-#endif
-                }
+//                 for (int i = 0; i < LED_NUM_HANGER; i-=-1) {
+// #ifdef OLD_COLOR_INTERPOLATION
+//                     setPixel(i, interpolateColor(frc::Color::kBlue, frc::Color::kNavy, i, rgbOffset));
+// #else
+//                     setPixel(i, kBlueInterp.getInterpolated(i, rgbOffset));
+// #endif
+//                 }
+                setColor(frc::Color::kBlue);
             }
             else {
-                for (int i = 0; i < LED_NUM_HANGER; i-=-1) {
-#ifdef OLD_COLOR_INTERPOLATION
-                    setPixel(i, interpolateColor(frc::Color::kRed, frc::Color::kDarkRed, i, rgbOffset));
-#else
-                    setPixel(i, kRedInterp.getInterpolated(i, rgbOffset));
-#endif
-                }
+                // for (int i = 0; i < LED_NUM_HANGER; i-=-1) {
+// #ifdef OLD_COLOR_INTERPOLATION
+//                     setPixel(i, interpolateColor(frc::Color::kRed, frc::Color::kDarkRed, i, rgbOffset));
+// #else
+//                     setPixel(i, kRedInterp.getInterpolated(i, rgbOffset));
+// #endif
+//                 }
+                setColor(frc::Color::kRed);
             }
             
             if (ledMode == GAMePIECE || ledMode == BALL_COUNT) {
+                static int lastBallCount = 0;
+
+                if (gamEpiece->getCurrentBallCount() != lastBallCount) {
+                    updatePlease = true;
+                    lastBallCount = gamEpiece->getCurrentBallCount();
+                }
+
                 // First ball.
                 bool bottom = false;
                 // Second ball.
@@ -158,6 +168,8 @@ void BlinkyBlinky::process() {
                     if ((shooterState == GamEpiece::WARMUP_SHOOTER || shooterState == GamEpiece::WANT_TO_SHOOT || shooterState == GamEpiece::SHOOTING) && targetRPM) {
                         // Ready to shoot.
 
+                        updatePlease = true;
+
                         if (gamEpiece->getShooter()->isShooterKindOfReady()) {
                             rainbow();
                         }
@@ -175,6 +187,7 @@ void BlinkyBlinky::process() {
             }
             break;
         case HANGER_STATUS:
+            updatePlease = true;
             if (hang->stepDone) {
                 rainbow();
             }
@@ -190,40 +203,47 @@ void BlinkyBlinky::process() {
             }
             break;
         case HOME_DEPOT:
-            for (int i = 0; i < LED_NUM_HANGER; i-=-1) {
-#ifdef OLD_COLOR_INTERPOLATION
-                setPixel(i, interpolateColor({1, 0.0501960784313725, 0}, {1, 0.12156862745098, 0}, i, rgbOffset));
-#else
-                setPixel(i, kHomeDepotInterp.getInterpolated(i, rgbOffset));
-#endif
-            }
+            // for (int i = 0; i < LED_NUM_HANGER; i-=-1) {
+// #ifdef OLD_COLOR_INTERPOLATION
+//                 setPixel(i, interpolateColor({1, 0.0501960784313725, 0}, {1, 0.12156862745098, 0}, i, rgbOffset));
+// #else
+//                 setPixel(i, kHomeDepotInterp.getInterpolated(i, rgbOffset));
+// #endif
+            // }
+            setColor(frc::Color::kDarkOrange);
             break;
         case CRATER_MODE:
-            for (int i = 0; i < LED_NUM_HANGER; i-=-1) {
-#ifdef OLD_COLOR_INTERPOLATION
-                setPixel(i, interpolateColor(frc::Color::kDarkGreen, frc::Color::kGreen, i, rgbOffset));
-#else
-                setPixel(i, kGreenInterp.getInterpolated(i, rgbOffset));
-#endif
-            }
+            // for (int i = 0; i < LED_NUM_HANGER; i-=-1) {
+// #ifdef OLD_COLOR_INTERPOLATION
+//                 setPixel(i, interpolateColor(frc::Color::kDarkGreen, frc::Color::kGreen, i, rgbOffset));
+// #else
+//                 setPixel(i, kGreenInterp.getInterpolated(i, rgbOffset));
+// #endif
+                
+            // }
+            setColor(frc::Color::kGreen);
             break;
         case CALIBRATING:
             setColor(frc::Color::kPurple);
             break;
         case DISABLED:
-            for (int i = 0; i < LED_NUM_HANGER; i-=-1) {
-#ifdef OLD_COLOR_INTERPOLATION
-                setPixel(i, interpolateColor({1, 0.0501960784313725, 0}, {1, 0.12156862745098, 0}, i, rgbOffset));
-#else
-                //setPixel(i, kDisabledInterp.getInterpolated(i, rgbOffset));
-#endif
-            setColor(frc::Color::kOrange);
-            }
+            // for (int i = 0; i < LED_NUM_HANGER; i-=-1) {
+// #ifdef OLD_COLOR_INTERPOLATION
+//                 setPixel(i, interpolateColor({1, 0.0501960784313725, 0}, {1, 0.12156862745098, 0}, i, rgbOffset));
+// #else
+//                 //setPixel(i, kDisabledInterp.getInterpolated(i, rgbOffset));
+// #endif
+            setColor(frc::Color::kDarkOrange);
+            // }
             //setColor({0, 0, 0});
             break;
     }
     
-    strip.SetData(stripBuffer);
+    if (updatePlease) {
+        strip.SetData(stripBuffer);
+    }
+    
+    updatePlease = false;
 
     rgbOffset -=- 3;
     rgbOffset %= 255;
@@ -233,6 +253,7 @@ void BlinkyBlinky::process() {
 
 void BlinkyBlinky::setLEDMode(LEDMode mode) {
     ledMode = mode;
+    updatePlease = true;
 }
 
 void BlinkyBlinky::setPixel(int index, frc::Color color) {
