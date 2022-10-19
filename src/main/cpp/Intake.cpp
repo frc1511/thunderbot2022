@@ -6,7 +6,7 @@
 const double kSpeedStageOne = .7;         // used for intaking
 const double kSpeedStageOneLimbo = .2;    // used for when waiting at stage one when intaking (.2) maybe turn it up to get the ball in further
 const double kSpeedStageTwo = .9;         // used for shooting
-const double kSpeedStageTwoSlow = .14;    // used for intaking into stage two
+const double kSpeedStageTwoSlow = .1;    // used for intaking into stage two
 const double kReverseSpeedStageOne = -.4; // used for outtaking
 const double kReverseSpeedStageTwo = -.3; // used for outtaking
 const double kSpeedStageOneFix = .2;      // used for slowing cargo 2 after it passes first beam brake
