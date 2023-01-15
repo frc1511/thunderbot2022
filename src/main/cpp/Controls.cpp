@@ -99,6 +99,8 @@ void Controls::doDrive() {
     bool viceGrip = driveController.getRawButton(CIRCLE_BUTTON);
     bool toggleCamera = driveController.getRawButtonPressed(SQUARE_BUTTON);
     bool alignWithHighHub = driveController.getRawButton(TRIANGLE_BUTTON);
+    bool xySlowMode = driveController.getRawButton(LEFT_TRIGGER_BUTTON);
+    bool angSlowMode = driveController.getRawButton(RIGHT_TRIGGER_BUTTON);
 
     double xDriveVelocity = driveController.getRawAxis(LEFT_X_AXIS);
     double yDriveVelocity = driveController.getRawAxis(LEFT_Y_AXIS);
@@ -152,10 +154,11 @@ void Controls::doDrive() {
         drive->calibrateIMU();
         drive->zeroRotation();
     }
-
+    
     double finalXVelocity = 0.0;
     double finalYVelocity = 0.0;
     double finalRotateVelocity = 0.0;
+    
 /*
     // If rotate left.
     if (leftRotateVelocity != 0) {
@@ -211,7 +214,13 @@ void Controls::doDrive() {
 
     std::pow(finalXVelocity, 3);
     std::pow(finalYVelocity, 3);*/
-
+    if (xySlowMode){
+        finalXVelocity *= .5;
+        finalYVelocity *= .5;
+    }
+    if(angSlowMode){
+        finalRotateVelocity *= .5;
+    }
     if (!driveDisabled) {
         drive->manualDrive(finalXVelocity, -finalYVelocity, -finalRotateVelocity);
     }
