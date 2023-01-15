@@ -99,8 +99,8 @@ void Controls::doDrive() {
     bool viceGrip = driveController.getRawButton(CIRCLE_BUTTON);
     bool toggleCamera = driveController.getRawButtonPressed(SQUARE_BUTTON);
     bool alignWithHighHub = driveController.getRawButton(TRIANGLE_BUTTON);
-    bool xySlowMode = driveController.getRawButton(LEFT_TRIGGER_BUTTON);
-    bool angSlowMode = driveController.getRawButton(RIGHT_TRIGGER_BUTTON);
+    bool xySlowMode = driveController.getRawButton(LEFT_BUMPER);
+    bool angSlowMode = driveController.getRawButton(RIGHT_BUMPER);
 
     double xDriveVelocity = driveController.getRawAxis(LEFT_X_AXIS);
     double yDriveVelocity = driveController.getRawAxis(LEFT_Y_AXIS);
