@@ -1,5 +1,5 @@
 #pragma once
-#include <rev/CANSparkMax.h>
+#include <Rev/CANSparkMax.h>
 #include <ctre/Phoenix.h>
 
 class ThunderSparkMaxImpl;

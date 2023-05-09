@@ -24,7 +24,7 @@
 #include <frc/Filesystem.h>
 #include <frc/Timer.h>
 #include <wpi/array.h>
-#include <wpi/numbers>
+#include <numbers>
 #include <wpi/fs.h>
 #include <string>
 #include <vector>
@@ -32,7 +32,7 @@
 #include <iostream>
 
 // The maximum speed of the chassis during manual drive.
-#define DRIVE_MANUAL_MAX_VELOCITY 3_mps
+#define DRIVE_MANUAL_MAX_VELOCITY 5_mps
 // The maximum angular speed of the chassis during manual drive.
 #define DRIVE_MANUAL_MAX_ANGULAR_VELOCITY (6.28_rad_per_s * 0.75)
 
@@ -99,6 +99,11 @@ public:
      */
     frc::SwerveModuleState getState();
 
+    /**
+     * Returns the current position of the swerve module (Position and angle).
+     */
+    frc::SwerveModulePosition getPosition();
+
     double getRawTurningEncoder();
 
     /**
@@ -141,6 +146,11 @@ private:
      * Returns the current velocity of the drive motor (meters per second).
      */
     units::meters_per_second_t getDriveVelocity();
+
+    /**
+     * Returns the current position of the drive motor (meters).
+     */
+    units::meter_t getDrivePosition();
 
     /**
      * Returns the relative rotation of the module (Rotations of the NEO 550).
@@ -408,6 +418,7 @@ private:
      */
     void setModuleStates(frc::ChassisSpeeds chassisSpeeds);
 
+    wpi::array<frc::SwerveModulePosition, 4> getModulePositions();
     /**
      * Updates the position and rotation on the field.
      */
@@ -480,10 +491,10 @@ private:
 
     // The swerve modules on the robot.
     wpi::array<SwerveModule*, 4> swerveModules {
-      new SwerveModule(ThunderSparkMax::MotorID::DriveFrontLeft, ThunderSparkMax::MotorID::DrivePivotFrontLeft, CAN_SWERVE_FL_ROT_CAN_CODER, false),
+      new SwerveModule(ThunderSparkMax::MotorID::DriveFrontLeft, ThunderSparkMax::MotorID::DrivePivotFrontLeft, CAN_SWERVE_FL_ROT_CAN_CODER, true),
       new SwerveModule(ThunderSparkMax::MotorID::DriveRearLeft, ThunderSparkMax::MotorID::DrivePivotRearLeft, CAN_SWERVE_BL_ROT_CAN_CODER, false),
-      new SwerveModule(ThunderSparkMax::MotorID::DriveRearRight, ThunderSparkMax::MotorID::DrivePivotRearRight, CAN_SWERVE_BR_ROT_CAN_CODER, true),
-      new SwerveModule(ThunderSparkMax::MotorID::DriveFrontRight, ThunderSparkMax::MotorID::DrivePivotFrontRight, CAN_SWERVE_FR_ROT_CAN_CODER, false),
+      new SwerveModule(ThunderSparkMax::MotorID::DriveRearRight, ThunderSparkMax::MotorID::DrivePivotRearRight, CAN_SWERVE_BR_ROT_CAN_CODER, false),
+      new SwerveModule(ThunderSparkMax::MotorID::DriveFrontRight, ThunderSparkMax::MotorID::DrivePivotFrontRight, CAN_SWERVE_FR_ROT_CAN_CODER, true),
     };
 
     // The magnetic encoder offsets of the swerve modules.
@@ -499,7 +510,7 @@ private:
      * The class that will handle tracking the position of the robot on the
      * field during the match.
      */
-    frc::SwerveDriveOdometry<4> odometry { kinematics, getRotation() };
+    frc::SwerveDriveOdometry<4> odometry { kinematics, getRotation(), getModulePositions() };
 
     /**
      * Our super accurate IMU (3d gyro and accelerometer) in the SPI port on the

@@ -1,34 +1,9 @@
 #include "Controls.h"
 #include <iostream>
 
-#define CONTROLLER_TYPE PS5 // PS4, or XBOX
-
 // define moved to controllerstate
-#if CONTROLLER_TYPE == PS5
-#define CROSS_BUTTON 2         // GetRawButton() give bool
-#define CIRCLE_BUTTON 3        // GetRawButton() give bool
-#define SQUARE_BUTTON 1        // GetRawButton() give bool
-#define TRIANGLE_BUTTON 4      // GetRawButton() give bool
-#define LEFT_BUMPER 5          // GetRawButton() give bool
-#define RIGHT_BUMPER 6         // GetRawButton() give bool
-#define LEFT_FRONT_BUTTON 9         // GetRawButton() give bool
-#define RIGHT_FRONT_BUTTON 10      // GetRawButton() give bool
-#define LEFT_TRIGGER 3        // GetRawAxis() give double
-#define RIGHT_TRIGGER 4      // GetRawAxis() give double
-#define LEFT_TRIGGER_BUTTON 7  // GetRawButton() give bool
-#define RIGHT_TRIGGER_BUTTON 8 // GetRawButton() give bool
-#define LEFT_STICK_PRESS 11    // GetRawButton() give bool
-#define RIGHT_STICK_PRESS 12   // GetRawButton() give bool
-#define PLAYSTATION_BUTTON 13  // GetRawButton() give bool
-#define TOUCHPAD_BUTTON 14     // GetRawButton() give bool
 
-#define LEFT_X_AXIS 0  // GetRawAxis() give double
-#define LEFT_Y_AXIS 1  // GetRawAxis() give double
-#define RIGHT_X_AXIS 2 // GetRawAxis() give double
-#define RIGHT_Y_AXIS 5 // GetRawAxis() give double
-#define DPAD 0         // GetPOV() give int
-
-#elif CONTROLLER_TYPE == XBOX
+#ifdef XBOX_CONTROLLER
 
 #define CROSS_BUTTON 1         // GetRawButton() give bool
 #define CIRCLE_BUTTON 2        // GetRawButton() give bool
@@ -36,8 +11,8 @@
 #define TRIANGLE_BUTTON 4      // GetRawButton() give bool
 #define LEFT_BUMPER 5          // GetRawButton() give bool
 #define RIGHT_BUMPER 6         // GetRawButton() give bool
-#define LEFT_FRONT_BUTTON 7         // GetRawButton() give bool
-#define RIGHT_FRONT_BUTTON 8       // GetRawButton() give bool
+#define SHARE_BUTTON 7         // GetRawButton() give bool
+#define OPTIONS_BUTTON 8       // GetRawButton() give bool
 #define LEFT_TRIGGER 2         // GetRawAxis() give double
 #define RIGHT_TRIGGER 3        // GetRawAxis() give double
 #define LEFT_TRIGGER_BUTTON 6  // GetRawButton() give bool
@@ -53,7 +28,7 @@
 #define RIGHT_Y_AXIS 5 // GetRawAxis() give double
 #define DPAD 0         // GetPOV() give int
 
-#elif CONTROLLER_TYPE == PS4
+#else
 
 #define CROSS_BUTTON 2         // GetRawButton() give bool
 #define CIRCLE_BUTTON 3        // GetRawButton() give bool
@@ -61,8 +36,8 @@
 #define TRIANGLE_BUTTON 4      // GetRawButton() give bool
 #define LEFT_BUMPER 5          // GetRawButton() give bool
 #define RIGHT_BUMPER 6         // GetRawButton() give bool
-#define LEFT_FRONT_BUTTON 9         // GetRawButton() give bool
-#define RIGHT_FRONT_BUTTON 10      // GetRawButton() give bool
+#define SHARE_BUTTON 9         // GetRawButton() give bool
+#define OPTIONS_BUTTON 10      // GetRawButton() give bool
 #define LEFT_TRIGGER 3         // GetRawAxis() give double
 #define RIGHT_TRIGGER 4        // GetRawAxis() give double
 #define LEFT_TRIGGER_BUTTON 7  // GetRawButton() give bool
@@ -77,10 +52,6 @@
 #define RIGHT_X_AXIS 2 // GetRawAxis() give double
 #define RIGHT_Y_AXIS 5 // GetRawAxis() give double
 #define DPAD 0         // GetPOV() give int
-
-#else
-
-#error "Invalid controller!!! D:"
 
 #endif
 
@@ -128,8 +99,6 @@ void Controls::doDrive() {
     bool viceGrip = driveController.getRawButton(CIRCLE_BUTTON);
     bool toggleCamera = driveController.getRawButtonPressed(SQUARE_BUTTON);
     bool alignWithHighHub = driveController.getRawButton(TRIANGLE_BUTTON);
-    bool xySlowMode = driveController.getRawButton(LEFT_BUMPER);
-    bool angSlowMode = driveController.getRawButton(RIGHT_BUMPER);
 
     double xDriveVelocity = driveController.getRawAxis(LEFT_X_AXIS);
     double yDriveVelocity = driveController.getRawAxis(LEFT_Y_AXIS);
@@ -149,8 +118,8 @@ void Controls::doDrive() {
     // double leftSlowRotateVelocity = driveController.getRawButton(LEFT_BUMPER);
     // double rightSlowRotateVelocity = driveController.getRawButton(RIGHT_BUMPER);
 
-    bool zeroRotation = driveController.getRawButton(RIGHT_FRONT_BUTTON);
-    bool calibrateGyro = driveController.getRawButton(LEFT_FRONT_BUTTON);
+    bool zeroRotation = driveController.getRawButton(OPTIONS_BUTTON);
+    bool calibrateGyro = driveController.getRawButton(SHARE_BUTTON);
 
     bool driveDisabled = false;
 
@@ -183,11 +152,10 @@ void Controls::doDrive() {
         drive->calibrateIMU();
         drive->zeroRotation();
     }
-    
+
     double finalXVelocity = 0.0;
     double finalYVelocity = 0.0;
     double finalRotateVelocity = 0.0;
-    
 /*
     // If rotate left.
     if (leftRotateVelocity != 0) {
@@ -208,7 +176,7 @@ void Controls::doDrive() {
     }*/
 
     auto improveAxis = [](double axis) -> double {
-        return std::sin(axis * (wpi::numbers::pi / 2.0));
+        return std::sin(axis * (std::numbers::pi / 2.0));
     };
 
     if (std::fabs(xDriveVelocity) > AXIS_DEADZONE) {
@@ -243,13 +211,7 @@ void Controls::doDrive() {
 
     std::pow(finalXVelocity, 3);
     std::pow(finalYVelocity, 3);*/
-    if (xySlowMode){
-        finalXVelocity *= .6;
-        finalYVelocity *= .6;
-    }
-    if(angSlowMode){
-        finalRotateVelocity *= .6;
-    }
+
     if (!driveDisabled) {
         drive->manualDrive(finalXVelocity, -finalYVelocity, -finalRotateVelocity);
     }
@@ -306,13 +268,13 @@ void Controls::doAux() {
             else if (lastDPadValue == -1 && dPadValue == 270) {
                 hang->commandManual(Hang::UNWIND_STRING);
             }
-            else if(auxController.getRawButton(LEFT_FRONT_BUTTON)){
+            else if(auxController.getRawButton(SHARE_BUTTON)){
                 hang->commandManual(Hang::REVERSE_PIVOT);
             }
-            else if(auxController.getRawButton(RIGHT_FRONT_BUTTON)){
+            else if(auxController.getRawButton(OPTIONS_BUTTON)){
                 hang->commandManual(Hang::DRIVE_DOWN);
             }
-            else if(auxController.getRawButtonReleased(RIGHT_FRONT_BUTTON)){
+            else if(auxController.getRawButtonReleased(OPTIONS_BUTTON)){
                 hang->commandManual(Hang::NOT);
             }
         }
@@ -396,20 +358,20 @@ void Controls::doAux() {
             gamEpiece->setManualHoodSpeed(0);
         }
         if(!isCraterMode){
-            if(auxController.getRawButtonPressed(LEFT_FRONT_BUTTON)){
+            if(auxController.getRawButtonPressed(SHARE_BUTTON)){
                 gamEpiece->changeShooterSpeed(false);
                 lastPressedMode = Shooter::MANUAL;
             }
-            if(auxController.getRawButtonPressed(RIGHT_FRONT_BUTTON)){
+            if(auxController.getRawButtonPressed(OPTIONS_BUTTON)){
                 gamEpiece->changeShooterSpeed(true);
                 lastPressedMode = Shooter::MANUAL;
             }
         }
         else{
-            if(auxController.getRawButtonPressed(LEFT_FRONT_BUTTON)){
+            if(auxController.getRawButtonPressed(SHARE_BUTTON)){
                 gamEpiece->shooterPIDChange(false);
             }
-            if(auxController.getRawButtonPressed(RIGHT_FRONT_BUTTON)){
+            if(auxController.getRawButtonPressed(OPTIONS_BUTTON)){
                 gamEpiece->shooterPIDChange(true);
             }
         }
@@ -541,7 +503,7 @@ void Controls::controllerInDisable(){
 #ifndef HOMER
     auxController.process();
 #endif
-    if(driveController.getRawButton(LEFT_FRONT_BUTTON)){
+    if(driveController.getRawButton(SHARE_BUTTON)){
         drive->calibrateIMU();
         drive->zeroRotation();
         drive->resetOdometry();

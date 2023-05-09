@@ -215,9 +215,9 @@ void SwerveModule::setTurningMotor(units::radian_t angle) {
     
     // Fix the discontinuity problem by converting a -2π to 2π value into -π to π value.
     // If the value is above π rad or below -π rad...
-    if(units::math::abs(rotation).value() > wpi::numbers::pi) {
+    if(units::math::abs(rotation).value() > std::numbers::pi) {
         // Subtract 2π rad, or add 2π rad depending on the sign.
-        rotation = units::radian_t(rotation.value() - (2 * wpi::numbers::pi) * (std::signbit(rotation.value()) ? -1 : 1));
+        rotation = units::radian_t(rotation.value() - (2 * std::numbers::pi) * (std::signbit(rotation.value()) ? -1 : 1));
     }
 
     targetRotation = rotation + getAbsoluteRotation().Degrees();
@@ -239,6 +239,11 @@ double SwerveModule::getRawTurningEncoder() {
 frc::SwerveModuleState SwerveModule::getState() {
     // The velocity and rotation of the swerve module.
     return { getDriveVelocity(), getAbsoluteRotation() };
+}
+
+frc::SwerveModulePosition SwerveModule::getPosition() {
+    // The position and rotation of the swerve module.
+    return { getDrivePosition(), getAbsoluteRotation() };
 }
 
 void SwerveModule::setOffset(units::radian_t offset) {
@@ -267,6 +272,13 @@ units::meters_per_second_t SwerveModule::getDriveVelocity() {
     double mps =  (driveMotor->GetVelocity() / 60) * DRIVE_ENCODER_TO_METER_FACTOR;
     
     return units::meters_per_second_t(mps);
+}
+
+units::meter_t SwerveModule::getDrivePosition() {
+    // Convert the rotations to meters.
+    double m = driveMotor->GetEncoder() * DRIVE_ENCODER_TO_METER_FACTOR;
+
+    return units::meter_t(m);
 }
 
 double SwerveModule::getRelativeRotation() {
@@ -755,9 +767,10 @@ bool Drive::getIMUCalibrated() {
 }
 
 void Drive::configMagneticEncoders() {
-    if (!isCraterMode) {
-        return;
-    }
+    // if (!isCraterMode) {
+    //     return;
+    // }
+    std::cout << "offsets: -========= \n";
 
     // Apply the current rotation of the swerve modules to the offsets.
     for (unsigned i = 0; i < swerveModules.size(); i++) {
@@ -765,6 +778,8 @@ void Drive::configMagneticEncoders() {
 
         // Add the angle of the module to the offset that is already applied.
         offsets.at(i) = angle;
+
+        std::cout << offsets.at(i).value() << '\n'; 
     }
     
     // Write the new offsets to the offsets file.
@@ -824,7 +839,7 @@ frc::TrajectoryConfig Drive::getTrajectoryConfig() {
     trajectoryConfig.AddConstraint(frc::SwerveDriveKinematicsConstraint<4>(kinematics, DRIVE_CMD_MAX_VELOCITY));
 
     // Stupid class does not like copy constructors for some reason.
-    return std::move(trajectoryConfig);
+    return trajectoryConfig;
 }
 
 bool Drive::cmdAlignToCargo() {
@@ -921,18 +936,19 @@ void Drive::setModuleStates(frc::ChassisSpeeds chassisSpeeds) {
     }
 }
 
+wpi::array<frc::SwerveModulePosition, 4> Drive::getModulePositions() {
+    return { swerveModules.at(0)->getPosition(), swerveModules.at(1)->getPosition(),
+             swerveModules.at(2)->getPosition(), swerveModules.at(3)->getPosition() };
+}
+
 void Drive::updateOdometry() {
     // Update the position and rotation on the field.
-    odometry.Update(getRotation(),
-        swerveModules.at(0)->getState(),
-        swerveModules.at(1)->getState(),
-        swerveModules.at(2)->getState(),
-        swerveModules.at(3)->getState());
+    odometry.Update(getRotation(), getModulePositions());
 }
 
 void Drive::resetOdometry(frc::Pose2d pose) {
     // Reset the position on the field.
-    odometry.ResetPosition(pose, getRotation());
+    odometry.ResetPosition(getRotation(), getModulePositions(), pose);
 }
 
 void Drive::resetIMU() {
