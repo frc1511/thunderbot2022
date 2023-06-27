@@ -188,7 +188,7 @@ void Shooter::resetToMode(MatchMode mode) {
     hoodServo.Set(.5);
     hoodSpeedManual = 0;
     wantToShoot = false;
-    shooterMode = TARMAC_LINE;
+    shooterMode = LOW_HUB_SHOT;
 }
 
 void Shooter::process() {

@@ -13,7 +13,8 @@
 #include <fstream>
 
 // Minimum / maximum hood servo positions.
-#define HOOD_MIN_POS 0.0548 //0.5547 //0.433
+
+#define HOOD_MIN_POS .171
 #define HOOD_MAX_POS (HOOD_MIN_POS + .19) //0.7
 
 // The maximum RPM of the shooter wheels.
@@ -127,7 +128,7 @@ private:
     // true will reverse, false will not
     bool reverse = false;
 
-    ShooterMode shooterMode = TARMAC_LINE;
+    ShooterMode shooterMode = LOW_HUB_SHOT;
 
     // right and left shooter motors
     ThunderSparkMax *shooterLeftMotor;

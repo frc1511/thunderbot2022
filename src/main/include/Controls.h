@@ -64,7 +64,7 @@ private:
     bool clearController = false;
 
 //Normal Aux Variables
-    Shooter::ShooterMode lastPressedMode = Shooter::ODOMETRY;
+    Shooter::ShooterMode lastPressedMode = Shooter::LOW_HUB_SHOT;
 //Manual Aux Variables
     int lastDPadValue = -1;
 

@@ -51,9 +51,9 @@ const ColorInterpolation kBlueInterp {
 BlinkyBlinky::BlinkyBlinky(GamEpiece* gamEpiece, Hang* hang, Limelight* limelight)
   : gamEpiece(gamEpiece), hang(hang), limelight(limelight) {
     
-    strip.SetLength(LED_NUM_TOTAL);
-    strip.SetData(stripBuffer);
-    strip.Start();
+    // strip.SetLength(LED_NUM_TOTAL);
+    // strip.SetData(stripBuffer);
+    // strip.Start();
 }
 
 BlinkyBlinky::~BlinkyBlinky() {
@@ -240,7 +240,7 @@ void BlinkyBlinky::process() {
     }
     
     if (updatePlease) {
-        strip.SetData(stripBuffer);
+        // strip.SetData(stripBuffer);
     }
     
     updatePlease = false;
