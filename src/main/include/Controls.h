@@ -73,4 +73,5 @@ private:
     ControllerState driveController{0};
     ControllerState auxController{1};
 
+    bool switchBoardDriveDisable = false;
 };

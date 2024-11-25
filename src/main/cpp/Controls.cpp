@@ -1,5 +1,6 @@
 #include "Controls.h"
 #include <iostream>
+#include "Demomode.h"
 
 // define moved to controllerstate
 
@@ -212,6 +213,10 @@ void Controls::doDrive() {
     std::pow(finalXVelocity, 3);
     std::pow(finalYVelocity, 3);*/
 
+    if (switchBoardDriveDisable) {
+        driveDisabled = true;
+    }
+
     if (!driveDisabled) {
         drive->manualDrive(finalXVelocity, -finalYVelocity, -finalRotateVelocity);
     }
@@ -223,6 +228,7 @@ void Controls::doAux() {
     int dPadValue = auxController.getRawAxis(6);
 
     if (hangActive == true) {
+#ifndef DEMO_MODE
         // Turn off gamepiece when hanging
         gamEpiece->setIntakeDirection(GamEpiece::NOTTAKE);
         gamEpiece->setShooterWarmUpEnabled(Shooter::TARMAC_LINE, false);
@@ -278,6 +284,7 @@ void Controls::doAux() {
                 hang->commandManual(Hang::NOT);
             }
         }
+#endif
     }
     else {
         
@@ -415,17 +422,28 @@ void Controls::doAux() {
 }
 
 void Controls::doSwitchPanel() {
+#ifndef DEMO_MODE // No more hang or pit mode
     hangActive = switchPanel.GetRawButton(8); 
+    isCraterMode = switchPanel.GetRawButton(10);
+#endif
     gamePieceManual = switchPanel.GetRawButton(1);
 #ifndef HOMER
+#ifndef DEMO_MODE
     if (hangActive) {
         hangManual = switchPanel.GetRawButton(3);
         hang->setIsLow(switchPanel.GetRawButton(4));
         hang->setGoingForHigh(switchPanel.GetRawButton(2)); // pressed means high bar
     }
 #endif
-
-    isCraterMode = switchPanel.GetRawButton(10);
+#endif
+#ifdef DEMO_MODE
+    if (switchPanel.GetRawButton(2)) { // Disable Drive, 2nd switch from the left
+        drive->makeBrick();
+        switchBoardDriveDisable = true;
+    } else {
+        switchBoardDriveDisable = false;
+    }
+#endif
     robotCentric = switchPanel.GetRawButton(5);
     if (robotCentric) {
         drive->setControlMode(Drive::ROBOT_CENTRIC);
@@ -433,6 +451,7 @@ void Controls::doSwitchPanel() {
     else {
         drive->setControlMode(Drive::FIELD_CENTRIC);
     }
+#ifndef DEMO_MODE
     highOrLow = false; // switchPanel.GetRawButton(7);
     nearOrFar = switchPanel.GetRawButton(6);
     recordController = switchPanel.GetRawButtonPressed(12) /*|| switchPanel.GetRawButtonReleased(12)*/;
@@ -487,6 +506,7 @@ void Controls::doSwitchPanel() {
     else {
         blinkyBlinky->setLEDMode(BlinkyBlinky::BALL_COUNT);
     }
+#endif
 #endif
 }
 

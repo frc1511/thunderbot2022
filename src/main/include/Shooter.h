@@ -11,6 +11,7 @@
 #include <frc/AnalogPotentiometer.h>
 #include <vector>
 #include <fstream>
+#include "Demomode.h"
 
 // Minimum / maximum hood servo positions.
 

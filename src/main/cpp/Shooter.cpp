@@ -12,7 +12,11 @@
 #define SHOOTER_FF_VALUE .000187
 
 // The tolerance of the hood position.
+#ifndef DEMO_MODE
 #define HOOD_TOLERANCE .005
+#else
+#define HOOD_TOLERANCE 360
+#endif
 
 // Speeds of the hood servo.
 #define HOOD_SPEED_STOPPED 0
@@ -193,6 +197,7 @@ void Shooter::resetToMode(MatchMode mode) {
 
 void Shooter::process() {
     units::meter_t limeDist = limelight->getDistance();
+    #ifndef DEMO_MODE
     switch (shooterMode) {
         case ODOMETRY:
             // if (odometryMode == INTERPOLATION) {
@@ -255,12 +260,19 @@ void Shooter::process() {
             }
             break;
     }
+    #else
+    targetRPM = LOW_HUB_SHOT_SHOOTER_RPM;
+    #endif
     
     if (!wantToShoot) {
         targetRPM = 0;
     }
     else if (!targetRPM) {
+        #ifdef DEMO_MODE
+        targetRPM = LOW_HUB_SHOT_SHOOTER_RPM;
+        #else
         targetRPM = NEAR_LAUNCH_PAD_SHOOTER_RPM;
+        #endif
     }
     
     if(reverse){

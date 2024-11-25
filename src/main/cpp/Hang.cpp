@@ -1,6 +1,7 @@
 #include "Hang.h"
 #include "string"
 #include "iostream"
+#include "Demomode.h"
 
 
 // hang retract speeds
@@ -113,6 +114,9 @@ void Hang::resetToMode(MatchMode mode){
 }
 
 void Hang::sendFeedback(){
+#ifdef DEMO_MODE
+    return;
+#endif
     if(teleopOrNo){
         currentLog();
     }
@@ -247,6 +251,9 @@ void Hang::sendFeedback(){
 }
 
 void Hang::process(){
+#ifdef DEMO_MODE
+    return;
+#endif
 ////std::cout << targetStage << "," << manual << '\n';
 if(autoDone == false && manual != NOT)
     {

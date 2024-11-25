@@ -10,7 +10,9 @@ void Robot::RobotPeriodic() {
     // if(feedbackTimer.Get().value() >= .01){
         for (int i = 0; i < nMechanisms; ++i)
             allMechanisms[i]->sendFeedback();
+#ifndef DEMO_MODE
         autonomous.sendFeedback();
+#endif
         controls.sendFeedback();
         feedbackTimer.Reset();
     // }
@@ -26,6 +28,7 @@ void Robot::AutonomousInit() {
 
 
 void Robot::AutonomousPeriodic() {
+#ifndef DEMO_MODE
     autonomous.process();
     for (int i = 0; i < nMechanisms; ++i)
         allMechanisms[i]->process();
@@ -34,6 +37,7 @@ void Robot::AutonomousPeriodic() {
     if (autonomous.isAutoDone()) {
         blinkyBlinky.setLEDMode(BlinkyBlinky::RAINBOW);
     }
+#endif
 #endif
 }
 
@@ -81,7 +85,9 @@ void Robot::TestPeriodic() {
 void Robot::reset(Mechanism::MatchMode mode) {
     for (int i = 0; i < nMechanisms; ++i)
         allMechanisms[i]->resetToMode(mode);
+#ifndef DEMO_MODE
     autonomous.resetToMode(mode);
+#endif
     controls.resetToMode(mode);
 }
 
