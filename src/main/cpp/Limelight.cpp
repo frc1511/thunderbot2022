@@ -1,13 +1,15 @@
 #include "Limelight.h"
 
-#define LIMELIGHT_ANGLE 29.3_deg // the limelight is really 22.4 degrees Farenheight
+#define LIMELIGHT_ANGLE 29.3_deg // the limelight is really 22.4 degrees Farenheit
 
 #define LIMELIGHT_HEIGHT 43_in
 
 #define HUB_HEIGHT (8_ft + 8_in)
 
 Limelight::Limelight() {
+    /*
     table = nt::NetworkTableInstance::GetDefault().GetTable("limelight-homer");
+    */
 }
 
 Limelight::~Limelight() {
@@ -28,41 +30,65 @@ void Limelight::resetToMode(MatchMode mode) {
 }
 
 void Limelight::sendFeedback() {
+    /*
     Feedback::sendDouble("limelight", "distance (meters)", getDistance().value());
     Feedback::sendDouble("limelight", "vertical angle (radians)", getAngleVertical().value());
+    */
 }
 
 bool Limelight::hasTarget() {
+    /*
     return table->GetNumber("tv", 0.0);
+    */
+   return false;
 }
 
 units::radian_t Limelight::getAngleHorizontal() {
+    /*
     return units::degree_t(table->GetNumber("tx", 0.0));
+    */
+   return 0.0_rad;
 }
 
 units::radian_t Limelight::getAngleVertical() {
+    /*
     return units::degree_t(table->GetNumber("ty", 0.0));
+    */
+   return 0.0_rad;
 }
 
 void Limelight::setLEDMode(LEDMode mode) {
+    /*
     table->PutNumber("ledMode", (int)mode);
+    */
 }
 
 Limelight::LEDMode Limelight::getLEDMode() {
+    /*
     return (LEDMode)(int)table->GetNumber("ledMode", 0.0);
+    */
+   return LEDMode::OFF;
 }
 
 void Limelight::setCameraMode(CameraMode mode) {
+    /*
     table->PutNumber("camMode", (int)mode);
+    */
 }
 
 Limelight::CameraMode Limelight::getCameraMode() {
+    /*
     return (CameraMode)(int)table->GetNumber("camMode", 0.0);
+    */
+   return CameraMode::DRIVER_CAMERA;
 }
 
 units::meter_t Limelight::getDistance(){
+    /*
     if (!hasTarget()) {
         return -1_m;
     }
     return units::meter_t(units::meter_t(HUB_HEIGHT - LIMELIGHT_HEIGHT).value() / units::math::tan(LIMELIGHT_ANGLE + getAngleVertical()).value());
+    */
+   return 0.0_m;
 }

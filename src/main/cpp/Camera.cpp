@@ -20,8 +20,8 @@
 #define THRESHOLD_CARGO_BLUE_HIGH cv::Scalar(0, 0, 0)
 
 Camera::Camera() 
-  : intakeCamera(frc::CameraServer::StartAutomaticCapture(USB_INTAKE_CAMERA)) {
-
+  /*: intakeCamera(frc::CameraServer::StartAutomaticCapture(USB_INTAKE_CAMERA))*/ {
+/*
     intakeCamera.SetResolution(CAMERA_WIDTH, CAMERA_HEIGHT);
     intakeCamera.SetFPS(CAMERA_FPS);
     intakeCamera.SetExposureManual(CAMERA_EXPOSURE);
@@ -31,6 +31,7 @@ Camera::Camera()
     
     // Send the video stream to the dashboard.
     outputStream = frc::CameraServer::PutVideo("intake_camera", CAMERA_WIDTH, CAMERA_HEIGHT);
+    */
 }
 
 Camera::~Camera() {
@@ -40,6 +41,7 @@ Camera::~Camera() {
 void Camera::process() {
     // Only do vision processing in the autonomous period and when the vision is
     // not broken.
+    /*
     if (getCurrentMode() != MODE_AUTO || visionBroken) {
         targetData = {};
         return;
@@ -121,25 +123,36 @@ void Camera::process() {
 
     // Send the output matrix to the dashboard.
     outputStream.PutFrame(outputMatrix);
+    */
 }
 
 bool Camera::hasTarget() {
+    /*
     return targetData.found;
+    */
+   return false;
 }
 
 double Camera::getTargetXPosition() {
     // Convert to -1 to 1.
+    /*
     double x = (targetData.xPos - (CAMERA_WIDTH / 2)) / (CAMERA_WIDTH / 2);
     return x;
+    */
+    return 0.0;
 }
 
 double Camera::getTargetYPosition() {
     // Convert to -1 to 1.
+    /*
     double y = (targetData.yPos - (CAMERA_HEIGHT / 2)) / (CAMERA_HEIGHT / 2);
     return y;
+    */
+   return 0.0;
 }
 
 Camera::FrameSector Camera::getTargetSector() {
+    /*
     const size_t sectorSize = CAMERA_WIDTH / 3;
 
     if (!targetData.found) {
@@ -156,18 +169,28 @@ Camera::FrameSector Camera::getTargetSector() {
     else {
         return CENTER;
     }
+    */
+   return UNKNOWN;
 }
 
 double Camera::getTargetArea() {
     // Convert area to percentage.
+    /*
     double area = targetData.area / (CAMERA_WIDTH * CAMERA_HEIGHT);
     return area;
+    */
+   return 0.0;
 }
 
 void Camera::setVisionBroken(bool broken) {
+    /*
     visionBroken = broken;
+    */
 }
 
 bool Camera::getVisionBroken() {
+    /*
     return visionBroken;
+    */
+   return true;
 }

@@ -514,7 +514,7 @@ frc::ChassisSpeeds PetersTrajectoryController::getVelocities(frc::Pose2d current
 // --- Drivetrain ---
 
 Drive::Drive(Camera* camera, Limelight* limelight)
-  : camera(camera), limelight(limelight), imu(NULL) {
+  : camera(nullptr), limelight(nullptr), imu(NULL) {
 
 #ifndef TEST_BOARD
     imu = new frc::ADIS16470_IMU();
@@ -801,6 +801,10 @@ void Drive::manualDrive(double xPct, double yPct, double rotPct) {
 
     bool vg = manualData.viceGrip;
 
+    if (fabs(xPct) < 0.5) xPct = 0.0; // Tolerance on driving
+    if (fabs(yPct) < 0.5) yPct = 0.0;
+    if (fabs(rotPct) < 0.5) rotPct = 0.0;
+
     manualData = { xPct, yPct, rotPct, vg };
 }
 
@@ -843,6 +847,7 @@ frc::TrajectoryConfig Drive::getTrajectoryConfig() {
 }
 
 bool Drive::cmdAlignToCargo() {
+    return false; /*
     // Make sure it is in auto and that the camera sees a target.
     if (getCurrentMode() != MODE_AUTO || !camera->hasTarget()) {
         return false;
@@ -852,9 +857,11 @@ bool Drive::cmdAlignToCargo() {
     cmdType = ALIGN_TO_CARGO;
 
     return true;
+    */
 }
 
 bool Drive::cmdAlignToHighHub() {
+    return false; /*
     // Make sure the limelight sees a target.
     if (!limelight->hasTarget()) {
         return false;
@@ -866,6 +873,7 @@ bool Drive::cmdAlignToHighHub() {
     cmdRotateToAngle(getPose().Rotation().Degrees() - limelight->getAngleHorizontal());
     
     return true;
+    */
 }
 
 void Drive::cmdRotateToAngle(frc::Rotation2d angle, units::radians_per_second_t velocity) {
@@ -909,9 +917,11 @@ bool Drive::cmdIsFinished() {
             return false;
         case ALIGN_TO_CARGO:
             // Check if the cargo is in the center of the frame.
+            /*
             if (camera->getTargetSector() == Camera::CENTER) {
                 return true;
             }
+            */
             return false;
     }
 
@@ -974,6 +984,7 @@ void Drive::exeManual() {
     units::radians_per_second_t angVel = 0_rad_per_s;
     
     if (manualData.viceGrip) {
+        /*
         if (limelight->hasTarget()) {
             units::degree_t angleToTurn = -limelight->getAngleHorizontal();
             
@@ -996,6 +1007,7 @@ void Drive::exeManual() {
                 }
             }
         }
+        */
     }
     else {
         angVel = manualData.rotPct * DRIVE_MANUAL_MAX_ANGULAR_VELOCITY;
@@ -1037,6 +1049,7 @@ void Drive::exeFollowTrajectory() {
 }
 
 void Drive::exeAlignToCargo() {
+    return; /*
     switch (camera->getTargetSector()) {
         case Camera::UNKNOWN:
             // Not found.
@@ -1054,6 +1067,7 @@ void Drive::exeAlignToCargo() {
             setModuleStates({ 0_mps, 0_mps, +DRIVE_VISION_MAX_ANGULAR_SPEED });
             break;
     }
+    */
 }
 
 bool Drive::readOffsetsFile() {
